@@ -1,0 +1,479 @@
+/* =========================
+GLOBAL
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden; /* FIX UTAMA */
+    font-family: "Poppins", sans-serif;
+    background: #f8fafc;
+}
+
+/* =========================
+APP WRAPPER
+========================= */
+
+.app-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* =========================
+LOADER
+========================= */
+
+.loader-wrapper {
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.5s;
+}
+
+.loader-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 6px solid #e5e7eb;
+    border-top-color: #0f8a43;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =========================
+GLOW BACKGROUND
+========================= */
+
+.glow {
+    position: fixed;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.glow-1 {
+    background: rgba(16, 185, 129, 0.18);
+    top: -100px;
+    left: -100px;
+    animation: floatGlow 12s ease-in-out infinite;
+}
+
+.glow-2 {
+    background: rgba(245, 158, 11, 0.12);
+    right: -100px;
+    bottom: -100px;
+    animation: floatGlow 16s ease-in-out infinite reverse;
+}
+
+@keyframes floatGlow {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(40px, 30px) scale(1.05);
+    }
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* =========================
+SIDEBAR
+========================= */
+
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    transition: 0.3s;
+    z-index: 3;
+
+    overflow-x: hidden;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+    padding: 20px 10px;
+}
+
+/* hide text when collapsed */
+.sidebar.collapsed span,
+.sidebar.collapsed .menu-title,
+.sidebar.collapsed .profile-text {
+    display: none;
+}
+
+/* center menu items when collapsed */
+.sidebar.collapsed .menu-item {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+/* icon clean mode */
+.sidebar.collapsed .menu-item i {
+    font-size: 20px;
+}
+
+/* brand */
+.sidebar-brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.sidebar-brand img {
+    width: 220px;
+    transition: 0.3s;
+}
+
+.sidebar.collapsed .sidebar-brand img {
+    width: 50px;
+}
+
+/* menu */
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.menu-title {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 18px 10px 8px;
+    font-weight: 600;
+}
+
+.menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #4b5563;
+    font-weight: 500;
+    transition: all 0.3s;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.menu-item i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.menu-item:hover {
+    background: linear-gradient(90deg, #0d7a3a, #0f8a43);
+    color: #fff;
+    transform: translateX(4px);
+}
+
+.menu-item.active {
+    background: #0f8a43;
+    color: #fff;
+}
+
+/* submenu */
+.submenu {
+    display: none;
+    flex-direction: column;
+    margin-left: 20px;
+}
+
+.menu-item.has-submenu.active + .submenu {
+    display: flex;
+}
+
+.submenu .menu-item {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+/* footer */
+.sidebar-footer {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 15px;
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f8fafc, #ffffff);
+    border: 1px solid #e5e7eb;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+/* hover subtle */
+.profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    border-color: #0f8a43;
+}
+
+/* avatar */
+.profile-avatar img {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px; /* bukan bulat full → lebih modern */
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+/* text */
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.profile-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-role {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* accent kecil */
+.profile-card::before {
+    content: "";
+    width: 3px;
+    height: 70%;
+    background: #0f8a43;
+    border-radius: 10px;
+    margin-right: 10px;
+}
+
+/* =========================
+FIX CHEVRON ICON (PRESTASI)
+========================= */
+
+/* normal state */
+.menu-item.has-submenu i.bi-chevron-down {
+    margin-left: auto;
+    transition: 0.3s;
+}
+
+/* saat sidebar collapse → hide arrow */
+.sidebar.collapsed .menu-item.has-submenu i.bi-chevron-down {
+    display: none;
+}
+
+/* =========================
+SIDEBAR PROFILE CARD FIX COLLAPSE
+========================= */
+
+.sidebar.collapsed .profile-card {
+    justify-content: center; /* center avatar */
+    padding: 12px 0;
+    gap: 0;
+}
+
+.sidebar.collapsed .profile-info {
+    display: none; /* sembunyikan text */
+}
+
+.sidebar.collapsed .profile-card::before {
+    display: none; /* hilangkan accent */
+}
+
+/* =========================
+MAIN
+========================= */
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* FIX OVERFLOW FLEX */
+    position: relative;
+    z-index: 1;
+    overflow-x: hidden;
+}
+
+/* =========================
+BACKGROUND
+========================= */
+
+.bg-ornament {
+    position: fixed;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-image: url("/assets/images/bg-ornament-2.png");
+    background-size: 600px;
+    background-repeat: repeat;
+
+    opacity: 0.5;
+    pointer-events: none;
+
+    z-index: 0;
+}
+
+/* =========================
+TOPBAR
+========================= */
+
+/* =========================
+APP TITLE (NAVBAR BRAND)
+========================= */
+
+.topbar .left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-title {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding-left: 10px;
+    border-left: 2px solid #e5e7eb; /* garis tipis elegan */
+}
+
+.app-name {
+    font-weight: 700;
+    font-size: 22px;
+    color: #0f8a43;
+    letter-spacing: 0.5px;
+}
+
+.app-region {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+}
+.topbar {
+    height: 70px;
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid #e5e7eb;
+    z-index: 2;
+}
+
+.toggle-btn {
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.avatar img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+}
+
+/* =========================
+CONTENT
+========================= */
+
+.content {
+    padding: 20px;
+    height: calc(100vh - 70px - 40px);
+    overflow: auto;
+    position: relative;
+    z-index: 2;
+}
+
+/* =========================
+FOOTER
+========================= */
+
+.footer {
+    height: 40px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #6b7280;
+    border-top: 1px solid #e5e7eb;
+    z-index: 2;
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: 0.3s ease;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .main::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+    }
+
+    .sidebar.active ~ .main::before {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
