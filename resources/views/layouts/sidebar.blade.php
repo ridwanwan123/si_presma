@@ -56,23 +56,23 @@
         </a>
 
         <div class="submenu">
-            <a href="#" class="menu-item">
+            <a href="#" class="menu-item my-1">
                 <span>Akademik</span>
             </a>
 
-            <a href="#" class="menu-item">
+            <a href="#" class="menu-item my-1">
                 <span>Non-Akademik</span>
             </a>
 
-            <a href="#" class="menu-item">
+            <a href="#" class="menu-item my-1">
                 <span>Keagamaan</span>
             </a>
 
-            <a href="#" class="menu-item">
+            <a href="#" class="menu-item my-1">
                 <span>GTK</span>
             </a>
 
-            <a href="#" class="menu-item">
+            <a href="#" class="menu-item my-1">
                 <span>Lembaga</span>
             </a>
         </div>
