@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,6 +14,7 @@ class User extends Authenticatable
     protected $fillable = [
         'role_id',
         'madrasah_id',
+        'wilayah_pengawas_id',
         'nama',
         'email',
         'username',
@@ -34,7 +34,7 @@ class User extends Authenticatable
 
     /*
     |--------------------------------------------------------------------------
-    | RELATION
+    | Relationships
     |--------------------------------------------------------------------------
     */
 
@@ -48,25 +48,36 @@ class User extends Authenticatable
         return $this->belongsTo(Madrasah::class);
     }
 
+    public function wilayahPengawas()
+    {
+        return $this->belongsTo(WilayahPengawas::class);
+    }
 
     /*
     |--------------------------------------------------------------------------
-    | CEK ROLE
+    | Helpers
     |--------------------------------------------------------------------------
     */
 
-    public function isSuperAdmin()
+    public function isAdministrator(): bool
     {
-        return $this->role->nama == 'superadmin';
+        return $this->role?->nama === 'Administrator';
     }
 
-    public function isMadrasah()
+    public function isOperator(): bool
     {
-        return $this->role->nama == 'madrasah';
+        return $this->role?->nama === 'Operator Madrasah';
     }
 
-    public function isAsesor()
+    public function isPengawas(): bool
     {
-        return $this->role->nama == 'asesor';
+        return $this->role?->nama === 'Pengawas';
+    }
+
+    public function hasRole(array|string $roles): bool
+    {
+        $roles = (array) $roles;
+
+        return in_array($this->role?->nama, $roles);
     }
 }

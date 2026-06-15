@@ -1,3 +1,7 @@
+@php
+    $user = auth()->user();
+@endphp
+
 <aside class="sidebar" id="sidebar">
     <!-- BRAND -->
     <div class="sidebar-brand">
@@ -6,28 +10,43 @@
 
     <!-- MENU -->
     <div class="sidebar-menu">
-        <a href="dashboard.html" class="menu-item active">
+
+        <!-- DASHBOARD -->
+        <a href="{{ route('dashboard') }}" class="menu-item active">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
 
-        <div class="menu-title">MASTER DATA</div>
+        <!-- MASTER DATA -->
+        @if ($user->hasRole(['Administrator', 'Operator Madrasah', 'Pengawas']))
+            <div class="menu-title">MASTER DATA</div>
+        @endif
 
-        <a href="#" class="menu-item">
-            <i class="bi bi-building"></i>
-            <span>Madrasah</span>
-        </a>
+        {{-- MADRASAH --}}
+        @if ($user->hasRole(['Administrator', 'Operator Madrasah']))
+            <a href="#" class="menu-item">
+                <i class="bi bi-building"></i>
+                <span>Madrasah</span>
+            </a>
+        @endif
 
-        <a href="#" class="menu-item">
-            <i class="bi bi-briefcase"></i>
-            <span>Penyelenggara</span>
-        </a>
+        {{-- PENYELENGGARA --}}
+        @if ($user->hasRole(['Administrator', 'Operator Madrasah']))
+            <a href="#" class="menu-item">
+                <i class="bi bi-briefcase"></i>
+                <span>Penyelenggara</span>
+            </a>
+        @endif
 
-        <a href="#" class="menu-item">
-            <i class="bi bi-people"></i>
-            <span>Asesor</span>
-        </a>
+        {{-- PENGAWAS --}}
+        @if ($user->hasRole(['Administrator', 'Pengawas']))
+            <a href="#" class="menu-item">
+                <i class="bi bi-people"></i>
+                <span>Pengawas</span>
+            </a>
+        @endif
 
+        <!-- KATEGORI PRESTASI -->
         <div class="menu-title">KATEGORI PRESTASI</div>
 
         <a href="#" class="menu-item has-submenu">
@@ -37,29 +56,49 @@
         </a>
 
         <div class="submenu">
-            <a href="#" class="menu-item"><span>Akademik</span></a>
-            <a href="#" class="menu-item"><span>Non-Akademik</span></a>
-            <a href="#" class="menu-item"><span>Keagamaan</span></a>
-            <a href="#" class="menu-item"><span>GTK</span></a>
-            <a href="#" class="menu-item"><span>Lembaga</span></a>
+            <a href="#" class="menu-item">
+                <span>Akademik</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span>Non-Akademik</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span>Keagamaan</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span>GTK</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span>Lembaga</span>
+            </a>
         </div>
 
-        <div class="menu-title">LAINNYA</div>
+        <!-- LAINNYA -->
+        @if ($user->hasRole(['Administrator', 'Pengawas']))
+            <div class="menu-title">LAINNYA</div>
 
-        <a href="#" class="menu-item">
-            <i class="bi bi-check2-circle"></i>
-            <span>Verifikasi</span>
-        </a>
+            <a href="#" class="menu-item">
+                <i class="bi bi-check2-circle"></i>
+                <span>Verifikasi</span>
+            </a>
 
-        <a href="#" class="menu-item">
-            <i class="bi bi-file-earmark-bar-graph"></i>
-            <span>Laporan</span>
-        </a>
+            <a href="#" class="menu-item">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Laporan</span>
+            </a>
+        @endif
 
+        <!-- UBAH PASSWORD -->
+        <div class="menu-title">AKUN</div>
         <a href="#" class="menu-item">
             <i class="bi bi-key"></i>
             <span>Ubah Password</span>
         </a>
+
     </div>
 
     <!-- PROFILE -->
@@ -70,8 +109,13 @@
             </div>
 
             <div class="profile-info">
-                <div class="profile-name">{{ auth()->user()->nama }}</div>
-                <div class="profile-role">{{ auth()->user()->role->nama }}</div>
+                <div class="profile-name">
+                    {{ auth()->user()->nama }}
+                </div>
+
+                <div class="profile-role">
+                    {{ auth()->user()->role->nama }}
+                </div>
             </div>
         </div>
     </div>

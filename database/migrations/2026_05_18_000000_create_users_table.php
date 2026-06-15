@@ -25,6 +25,12 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
+            $table->foreignId('wilayah_pengawas_id')
+                ->nullable()
+                ->constrained('wilayah_pengawas')
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
+
             $table->string('nama');
 
             $table->string('email')->unique();

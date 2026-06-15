@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Madrasah;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\WilayahPengawas;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -19,20 +20,54 @@ class DatabaseSeeder extends Seeder
         */
 
         $superadminRole = Role::create([
-            'nama' => 'Kanwil Kemenag',
+            'nama' => 'Administrator',
             'keterangan' => 'Super Administrator',
         ]);
 
         $madrasahRole = Role::create([
-            'nama' => 'Madrasah',
+            'nama' => 'Operator Madrasah',
             'keterangan' => 'Admin Madrasah',
         ]);
 
-        $asesorRole = Role::create([
-            'nama' => 'Asesor',
-            'keterangan' => 'Asesor Penilai',
+        $pengawasRole = Role::create([
+            'nama' => 'Pengawas',
+            'keterangan' => 'Pengawas/Asseor Penilai Madrasah',
         ]);
 
+         /*
+        |--------------------------------------------------------------------------
+        | WILAYAH PENGAWAS
+        |--------------------------------------------------------------------------
+        */
+
+        $wilayahPengawas = WilayahPengawas::create([
+            'kota' => 'ADMINISTRASI KOTA JAKARTA UTARA',
+            'unit_kerja' => 'KANKEMENAG JAKARTA UTARA',
+        ]);
+
+        $wilayahPengawas = WilayahPengawas::create([
+            'kota' => 'ADMINISTRASI KOTA JAKARTA TIMUR',
+            'unit_kerja' => 'KANKEMENAG JAKARTA TIMUR',
+        ]);
+
+        $wilayahPengawas = WilayahPengawas::create([
+            'kota' => 'ADMINISTRASI KOTA JAKARTA BARAT',
+            'unit_kerja' => 'KANKEMENAG JAKARTA BARAT',
+        ]);
+
+        $wilayahPengawas = WilayahPengawas::create([
+            'kota' => 'ADMINISTRASI KOTA JAKARTA PUSAT',
+            'unit_kerja' => 'KANKEMENAG JAKARTA PUSAT',
+        ]);
+        
+        $wilayahPengawas = WilayahPengawas::create([
+            'kota' => 'ADMINISTRASI KOTA KEPULAUAN SERIBU',
+            'unit_kerja' => 'KANKEMENAG KEPULAUAN SERIBU',
+        ]);
+
+
+
+        
         /*
         |--------------------------------------------------------------------------
         | MADRASAH
@@ -43,7 +78,7 @@ class DatabaseSeeder extends Seeder
             'jenjang_madrasah' => 'MA',
             'nama_madrasah' => 'MAN 1 Jakarta',
             'npsn' => '12345678',
-            'kota' => 'Jakarta',
+            'kota' => 'Jakarta Utara',
             'provinsi' => 'DKI Jakarta',
             'akreditasi' => 'A',
             'alamat_sekolah' => 'Jl. Pendidikan No. 1',
@@ -62,7 +97,8 @@ class DatabaseSeeder extends Seeder
         User::create([
             'role_id' => $superadminRole->id,
             'madrasah_id' => null,
-            'nama' => 'Super Admin',
+            'wilayah_pengawas_id' => null,
+            'nama' => 'Kanwil Kemenag',
             'email' => 'superadmin@mail.com',
             'username' => 'superadmin',
             'password' => Hash::make('penmad123'),
@@ -79,7 +115,8 @@ class DatabaseSeeder extends Seeder
         User::create([
             'role_id' => $madrasahRole->id,
             'madrasah_id' => $madrasah->id,
-            'nama' => 'MAN 01 Jakarta',
+            'wilayah_pengawas_id' => null,
+            'nama' => 'MAN 1 Jakarta',
             'email' => 'madrasah@mail.com',
             'username' => 'madrasah',
             'password' => Hash::make('penmad123'),
@@ -94,11 +131,12 @@ class DatabaseSeeder extends Seeder
         */
 
         User::create([
-            'role_id' => $asesorRole->id,
+            'role_id' => $pengawasRole->id,
             'madrasah_id' => null,
-            'nama' => 'Asesor',
-            'email' => 'asesor@mail.com',
-            'username' => 'asesor',
+            'wilayah_pengawas_id' => $wilayahPengawas->id,
+            'nama' => 'Pengawas',
+            'email' => 'pengawas@mail.com',
+            'username' => 'pengawas',
             'password' => Hash::make('penmad123'),
             'no_hp' => '083333333333',
             'is_active' => true,

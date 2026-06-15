@@ -6,7 +6,7 @@
         <i class="bi bi-list toggle-btn" id="toggleSidebar"></i>
 
         <!-- LOGO -->
-        <img src="{{ asset('assets/images/logo.png') }}" alt="logo"
+        <img src="{{ asset('assets/images/kemenag.png') }}" alt="logo"
             style="height:32px; width:32px; object-fit:contain;">
 
         <!-- APP NAME -->
