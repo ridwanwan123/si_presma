@@ -6,10 +6,12 @@
 
 body {
     font-family: "Poppins", sans-serif;
-    overflow: hidden;
     background: #fff;
 }
 
+.container-fluid {
+    min-height: 100vh;
+}
 /* =========================
 LEFT SIDE
 ========================= */
@@ -114,6 +116,11 @@ RIGHT SIDE
     border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
     background: #fff;
+}
+
+.alert {
+    margin-bottom: 20px;
+    border-radius: 12px;
 }
 
 /* ACTIVE */

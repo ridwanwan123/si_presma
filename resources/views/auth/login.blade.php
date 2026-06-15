@@ -49,11 +49,13 @@
                         @csrf
 
                         <!-- ALERT ERROR -->
-                        @if (session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
-                            </div>
-                        @endif
+                        <div class="position-relative">
+                            @if (session('error'))
+                                <div class="alert alert-danger position-absolute w-100" style="top: -60px;">
+                                    {{ session('error') }}
+                                </div>
+                            @endif
+                        </div>
 
                         <!-- Username / Email -->
                         <div class="mb-4">
