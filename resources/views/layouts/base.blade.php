@@ -15,6 +15,9 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    @stack('styles')
 </head>
 
 <body>
@@ -33,8 +36,15 @@
             <div class="bg-ornament"></div>
             @include('layouts.navbar')
 
-            @yield('content')
+            <div class="page-header">
+                @hasSection('breadcrumb')
+                    <nav aria-label="breadcrumb" class="breadcrumb-wrapper">
+                        @yield('breadcrumb')
+                    </nav>
+                @endif
+            </div>
 
+            @yield('content')
 
             <footer class="footer">
                 © 2026 Bidang Pendidikan Madrasah Kanwil Kemenag Prov. DKI Jakarta •
@@ -47,8 +57,10 @@
     SCRIPT
     ========================================================== -->
 
-    <!-- Bootstrap -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap -->
+    @stack('scripts')
     <!-- JS -->
     <script src="{{ asset('assets/js/base.js') }}"></script>
 </body>

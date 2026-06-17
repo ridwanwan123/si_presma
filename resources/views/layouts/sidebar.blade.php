@@ -5,7 +5,8 @@
 <aside class="sidebar" id="sidebar">
     <!-- BRAND -->
     <div class="sidebar-brand">
-        <img src="{{ asset('assets/images/logosidebar.png') }}" alt="logo" />
+        <img src="{{ asset('assets/images/logo p.png') }}" alt="logo" />
+        <span class="brand-text">PRESMA</span>
     </div>
 
     <!-- MENU -->

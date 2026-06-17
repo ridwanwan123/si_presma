@@ -99,6 +99,67 @@ GLOW BACKGROUND
 }
 
 /* =========================
+   Breadcrumb SaaS Modern
+========================= */
+
+.breadcrumb-wrapper {
+    padding: 0 1.5rem;
+    margin-top: 1rem;
+    /* margin-bottom: 1.5rem; */
+}
+
+.breadcrumb-modern {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(15, 138, 67, 0.08);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.breadcrumb-modern .crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breadcrumb-modern a {
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+.breadcrumb-modern a:hover {
+    color: #0f8a43;
+}
+
+.breadcrumb-modern .separator {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+}
+
+.breadcrumb-modern .active {
+    color: #0f8a43;
+    font-weight: 700;
+}
+
+.breadcrumb-modern .home-icon {
+    color: #0f8a43;
+}
+
+@media (max-width: 768px) {
+    .breadcrumb-modern {
+        padding: 0.85rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+/* =========================
 SIDEBAR
 ========================= */
 
@@ -139,20 +200,54 @@ SIDEBAR
     font-size: 20px;
 }
 
-/* brand */
+/* =========================
+   BRAND
+========================= */
+
 .sidebar-brand {
     display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 10px;
     margin-bottom: 25px;
 }
 
+/* LOGO */
 .sidebar-brand img {
-    width: 220px;
-    transition: 0.3s;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    transition: 0.3s ease;
+}
+
+/* TEXT */
+.brand-text {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 1px;
+
+    background: linear-gradient(90deg, #0f8a43, #16a34a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    transition: 0.3s ease;
+}
+
+/* =========================
+   COLLAPSED STATE
+========================= */
+
+.sidebar.collapsed .sidebar-brand {
+    justify-content: center;
+}
+
+.sidebar.collapsed .brand-text {
+    display: none;
 }
 
 .sidebar.collapsed .sidebar-brand img {
-    width: 50px;
+    width: 40px;
+    height: 40px;
 }
 
 /* menu */
@@ -200,20 +295,106 @@ SIDEBAR
     color: #fff;
 }
 
-/* submenu */
+/* =========================
+   MODERN ACTIVE STATE
+========================= */
+
+.menu-item {
+    position: relative;
+}
+
+/* active indicator line (SaaS style) */
+.menu-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    background: #0f8a43;
+    border-radius: 10px;
+}
+
+/* softer active background */
+.menu-item.active {
+    background: rgba(15, 138, 67, 0.1);
+    color: #0f8a43;
+    font-weight: 600;
+}
+
+/* hover upgrade (lebih soft, tidak full green) */
+.menu-item:hover {
+    background: rgba(15, 138, 67, 0.08);
+    color: #0f8a43;
+    transform: translateX(3px);
+}
+
+/* =========================
+   SUBMENU ANIMATION (SMOOTH)
+========================= */
+/* =========================
+   SUBMENU COLLAPSIBLE (DEFAULT CLOSED)
+========================= */
+
 .submenu {
-    display: none;
-    flex-direction: column;
-    margin-left: 20px;
-}
-
-.menu-item.has-submenu.active + .submenu {
     display: flex;
+    flex-direction: column;
+    margin-left: 18px;
+    margin-top: 6px;
+    gap: 4px;
+
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+
+    transition: all 0.3s ease;
 }
 
-.submenu .menu-item {
-    padding: 8px 16px;
-    font-size: 14px;
+/* OPEN STATE */
+.menu-item.has-submenu.active + .submenu {
+    max-height: 300px;
+    opacity: 1;
+}
+/* =========================
+   SECTION TITLE IMPROVEMENT
+========================= */
+
+.menu-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+/* =========================
+   ICON IMPROVEMENT
+========================= */
+
+.menu-item i {
+    color: #9ca3af;
+    transition: 0.3s;
+}
+
+.menu-item:hover i,
+.menu-item.active i {
+    color: #0f8a43;
+}
+
+/* =========================
+   PROFILE CARD POLISH
+========================= */
+
+.profile-card {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+}
+
+.profile-card:hover {
+    border-color: rgba(15, 138, 67, 0.4);
+    box-shadow: 0 10px 25px rgba(15, 138, 67, 0.08);
 }
 
 /* footer */
