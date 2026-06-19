@@ -38,16 +38,28 @@ Route::middleware('guest')->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN CONTROLLER
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/logout', [LoginController::class, 'logout'])
+        ->name('logout');
 
+    Route::get('/ubah-password', [LoginController::class, 'changePassword'])
+        ->name('ubah-password');
+
+    Route::post('/ubah-password', [LoginController::class, 'updatePassword'])
+        ->name('ubah-password.update');
+    /*
+    |--------------------------------------------------------------------------
+    | END LOGIN CONTROLLER
+    |--------------------------------------------------------------------------
+    */
+    
     /*
     | Dashboard (ALL ROLE)
     */
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
-
-    /*
-    | Logout
-    */
-    Route::post('/logout', [LoginController::class, 'logout'])
-        ->name('logout');
 });

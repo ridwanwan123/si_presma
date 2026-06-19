@@ -95,7 +95,7 @@
 
         <!-- UBAH PASSWORD -->
         <div class="menu-title">AKUN</div>
-        <a href="#" class="menu-item">
+        <a href="{{ route('ubah-password') }}" class="menu-item">
             <i class="bi bi-key"></i>
             <span>Ubah Password</span>
         </a>
