@@ -13,19 +13,11 @@
             <i class="bi bi-chevron-right"></i>
         </span>
 
-        <div class="crumb">
-            <a href="#">
-                Data Pegawai
-            </a>
-        </div>
-
-        <span class="separator">
-            <i class="bi bi-chevron-right"></i>
-        </span>
-
         <div class="active">
-            Detail Pegawai
+            Data Madrasah
         </div>
+
+
     </div>
 @endsection
 
@@ -97,6 +89,18 @@
         .toolbar-action {
             display: flex;
             gap: .75rem;
+        }
+
+        .toolbar-title h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .toolbar-title span {
+            color: #64748b;
+            font-size: .85rem;
         }
 
         /* FILTER */
@@ -226,87 +230,120 @@
     <main class="content">
 
         <div class="page-title">
-            <h2>Detail Pegawai</h2>
-            <p>Kelola data pegawai pada sistem SIPRESMA.</p>
+            <h2>Data Madrasah</h2>
+            <p>Kelola data madrasah pada sistem PRESMA.</p>
         </div>
 
         <div class="content-card">
 
             {{-- Toolbar --}}
             <div class="toolbar">
-
-                <div class="toolbar-search">
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="form-control" placeholder="Cari NIP, nama pegawai, madrasah...">
+                <div class="toolbar-title">
+                    <h5>
+                        Data Madrasah
+                    </h5>
+                    <span>
+                        Kelola data madrasah pada sistem PRESMA
+                    </span>
                 </div>
 
                 <div class="toolbar-action">
-
                     <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filterArea">
-
                         <i class="bi bi-funnel"></i>
                         Filter
-
                     </button>
 
-                    <button class="btn btn-success">
+                    <a href="{{ route('madrasah.create') }}" class="btn btn-success">
                         <i class="bi bi-plus-circle"></i>
                         Tambah Data
-                    </button>
-
+                    </a>
                 </div>
-
             </div>
 
             {{-- Filter --}}
             <div class="collapse" id="filterArea">
+                <form method="GET" action="{{ route('madrasah.index') }}">
+                    <div class="filter-panel">
+                        <div class="row g-3">
 
-                <div class="filter-panel">
+                            {{-- Jenjang Madrasah --}}
+                            <div class="col-md-4">
+                                <label class="form-label">Jenjang Madrasah</label>
+                                <select name="jenjang_madrasah" class="form-select">
+                                    <option value="">
+                                        Semua Jenjang
+                                    </option>
+                                    <option value="RA" {{ request('jenjang_madrasah') == 'RA' ? 'selected' : '' }}>
+                                        RA
+                                    </option>
+                                    <option value="MI" {{ request('jenjang_madrasah') == 'MI' ? 'selected' : '' }}>
+                                        MI
+                                    </option>
+                                    <option value="MTs" {{ request('jenjang_madrasah') == 'MTs' ? 'selected' : '' }}>
+                                        MTs
+                                    </option>
+                                    <option value="MA" {{ request('jenjang_madrasah') == 'MA' ? 'selected' : '' }}>
+                                        MA
+                                    </option>
+                                </select>
+                            </div>
 
-                    <div class="row g-3">
+                            {{-- Madrasah --}}
+                            <div class="col-md-4">
+                                <label class="form-label">Madrasah</label>
+                                <select name="nama_madrasah" class="form-select">
+                                    <option value="">
+                                        Semua Madrasah
+                                    </option>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Jabatan</label>
-                            <select class="form-select">
-                                <option>Semua Jabatan</option>
-                                <option>Guru</option>
-                                <option>Staff</option>
-                                <option>Kepala Madrasah</option>
-                            </select>
+                                    @foreach ($madrasahs as $item)
+                                        <option value="{{ $item->nama_madrasah }}"
+                                            {{ request('nama_madrasah') == $item->nama_madrasah ? 'selected' : '' }}>
+                                            {{ $item->nama_madrasah }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Kota --}}
+                            <div class="col-md-4">
+                                <label class="form-label">Kota</label>
+                                <select name="kota" class="form-select">
+                                    <option value="">
+                                        Semua Kota
+                                    </option>
+                                    @foreach ($kotas as $kota)
+                                        <option value="{{ $kota }}"
+                                            {{ request('kota') == $kota ? 'selected' : '' }}>
+                                            {{ $kota }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Madrasah</label>
-                            <select class="form-select">
-                                <option>Semua Madrasah</option>
-                                <option>MAN 01 Jakarta</option>
-                                <option>MAN 02 Jakarta</option>
-                            </select>
+                        {{-- Filter Action --}}
+                        <div class="filter-action mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-funnel"></i>
+                                Terapkan Filter
+                            </button>
+                            <a href="{{ route('madrasah.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                Reset
+                            </a>
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Status</label>
-                            <select class="form-select">
-                                <option>Semua Status</option>
-                                <option>Aktif</option>
-                                <option>Non Aktif</option>
-                            </select>
-                        </div>
-
                     </div>
-
-                </div>
-
+                </form>
             </div>
 
             {{-- Info --}}
-            <div class="table-header">
+            {{-- <div class="table-header">
                 <div>
-                    <h6>Data Pegawai</h6>
-                    <span>1 Data Ditemukan</span>
+                    <h6>Data Madrasah DKI Jakarta</h6>
+                    <span>? Data Ditemukan</span>
                 </div>
-
-            </div>
+            </div> --}}
 
             {{-- Table --}}
             <div class="content-card-body">
@@ -317,64 +354,88 @@
 
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>NIP</th>
-                                <th>Nama</th>
-                                <th>Jabatan</th>
-                                <th>Madrasah</th>
-                                <th>Nama Kamad</th>
-                                <th>Prestasi</th>
-                                <th>Status</th>
-                                <th width="120">Aksi</th>
+                                <th>NO</th>
+                                <th>NPSN</th>
+                                <th>NAMA MADRASAH</th>
+                                <th>KOTA</th>
+                                <th>KEPALA MADRASAH</th>
+                                <th>KEPALA URUSAN TATA USAHA</th>
+                                <th width="120">
+                                    <i class="bi bi-gear-fill"></i>
+                                </th>
                             </tr>
                         </thead>
 
                         <tbody>
 
-                            <tr>
+                            @forelse($madrasahs as $index => $madrasah)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <span class="text-muted">
+                                            {{ $madrasah->npsn }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ $madrasah->nama_madrasah }}
+                                    </td>
+                                    <td>
+                                        {{ $madrasah->kota }}
+                                    </td>
 
-                                <td>1</td>
+                                    <td>
+                                        <div class="pegawai-info">
+                                            <strong>
+                                                {{ $madrasah->nama_kepala_madrasah }}
+                                            </strong>
 
-                                <td>
-                                    <span class="text-muted">
-                                        20010410202505007
-                                    </span>
-                                </td>
+                                            @if ($madrasah->nip_kepala_madrasah)
+                                                <small>
+                                                    NIP. {{ $madrasah->nip_kepala_madrasah }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </td>
 
-                                <td>
-                                    <div class="pegawai-info">
-                                        <strong>Ahmad Fauzi Datang</strong>
-                                        <small>pegawai@email.com</small>
-                                    </div>
-                                </td>
 
-                                <td>Staff</td>
+                                    <td>
+                                        <div class="pegawai-info">
+                                            <strong>
+                                                {{ $madrasah->nama_kepala_urusan_tata_usaha ?? '-' }}
+                                            </strong>
+                                            @if ($madrasah->nip_kepala_urusan_tata_usaha)
+                                                <small>
+                                                    NIP. {{ $madrasah->nip_kepala_urusan_tata_usaha }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </td>
 
-                                <td>MAN 01 Jakarta</td>
+                                    <td>
+                                        <a href="{{ route('madrasah.edit', $madrasah->id) }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
 
-                                <td>Ahmad Fauzi</td>
+                                        <form action="{{ route('madrasah.destroy', $madrasah->id) }}" method="POST"
+                                            class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
 
-                                <td>Aktif</td>
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        Data madrasah belum ada.
+                                    </td>
+                                </tr>
+                            @endforelse
 
-                                <td>
-                                    <span class="badge-status success">
-                                        Aktif
-                                    </span>
-                                </td>
-
-                                <td>
-
-                                    <button class="btn btn-sm btn-outline-success">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-
-                                    <button class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-
-                                </td>
-
-                            </tr>
 
                         </tbody>
 

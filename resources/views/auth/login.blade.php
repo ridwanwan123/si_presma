@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>SIPRESMA Login</title>
+    <title>PRESMA Login</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -38,7 +38,7 @@
                     <img src="{{ asset('assets/images/logo.png') }}" class="logo" alt="logo" />
 
                     <!-- TITLE -->
-                    <h1 class="brand-title">SIPRESMA</h1>
+                    <h1 class="brand-title">PRESMA</h1>
 
                     <h5 class="brand-subtitle">DKI JAKARTA</h5>
 

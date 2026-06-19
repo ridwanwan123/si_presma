@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MadrasahController;
+use App\Http\Controllers\ActivityController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,4 +64,11 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    
+    Route::resource('madrasah', MadrasahController::class);
+    
+
+    Route::get('/activity', [ActivityController::class,'index'])
+    ->name('activity.index');
 });

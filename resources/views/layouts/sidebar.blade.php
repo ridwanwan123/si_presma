@@ -13,7 +13,7 @@
     <div class="sidebar-menu">
 
         <!-- DASHBOARD -->
-        <a href="{{ route('dashboard') }}" class="menu-item active">
+        <a href="{{ route('dashboard') }}" class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
@@ -25,7 +25,8 @@
 
         {{-- MADRASAH --}}
         @if ($user->hasRole(['Administrator', 'Operator Madrasah']))
-            <a href="#" class="menu-item">
+            <a href="{{ route('madrasah.index') }}"
+                class="menu-item {{ request()->routeIs('madrasah.index') ? 'active' : '' }}">
                 <i class="bi bi-building"></i>
                 <span>Madrasah</span>
             </a>
@@ -56,26 +57,33 @@
             <i class="bi bi-chevron-down ms-auto"></i>
         </a>
 
-        <div class="submenu">
-            <a href="#" class="menu-item my-1">
+        <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
+
+            {{-- <a href="{{ route('prestasi.akademik.index') }}"
+                class="menu-item my-1 {{ request()->routeIs('prestasi.akademik.*') ? 'active' : '' }}">
                 <span>Akademik</span>
             </a>
 
-            <a href="#" class="menu-item my-1">
+            <a href="{{ route('prestasi.non-akademik.index') }}"
+                class="menu-item my-1 {{ request()->routeIs('prestasi.non-akademik.*') ? 'active' : '' }}">
                 <span>Non-Akademik</span>
             </a>
 
-            <a href="#" class="menu-item my-1">
+            <a href="{{ route('prestasi.keagamaan.index') }}"
+                class="menu-item my-1 {{ request()->routeIs('prestasi.keagamaan.*') ? 'active' : '' }}">
                 <span>Keagamaan</span>
             </a>
 
-            <a href="#" class="menu-item my-1">
+            <a href="{{ route('prestasi.gtk.index') }}"
+                class="menu-item my-1 {{ request()->routeIs('prestasi.gtk.*') ? 'active' : '' }}">
                 <span>GTK</span>
             </a>
 
-            <a href="#" class="menu-item my-1">
+            <a href="{{ route('prestasi.lembaga.index') }}"
+                class="menu-item my-1 {{ request()->routeIs('prestasi.lembaga.*') ? 'active' : '' }}">
                 <span>Lembaga</span>
-            </a>
+            </a> --}}
+
         </div>
 
         <!-- LAINNYA -->
@@ -95,9 +103,19 @@
 
         <!-- UBAH PASSWORD -->
         <div class="menu-title">AKUN</div>
-        <a href="{{ route('ubah-password') }}" class="menu-item">
+        <a href="{{ route('ubah-password') }}"
+            class="menu-item {{ request()->routeIs('ubah-password') ? 'active' : '' }}">
             <i class="bi bi-key"></i>
             <span>Ubah Password</span>
+        </a>
+
+        <!-- SYSTEM -->
+        <div class="menu-title">SYSTEM</div>
+
+        <a href="{{ route('activity.index') }}"
+            class="menu-item {{ request()->routeIs('activity.index') ? 'active' : '' }}">
+            <i class="bi bi-clock-history"></i>
+            <span>Activity Log</span>
         </a>
 
     </div>

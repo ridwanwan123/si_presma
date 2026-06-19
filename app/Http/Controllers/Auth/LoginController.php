@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +57,14 @@ class LoginController extends Controller
         ];
 
         if (!Auth::attempt($credentials)) {
+             activity()
+                ->event('login-failed')
+                ->withProperties([
+                    'login' => $request->login,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('Percobaan login gagal');
 
             return back()
                 ->withInput()
@@ -76,6 +85,11 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        ActivityLogger::log(
+            event: 'login',
+            description: 'Login ke sistem'
+        );
+
         return redirect()->route('dashboard');
     }
 
@@ -87,6 +101,11 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        ActivityLogger::log(
+            event: 'logout',
+            description: 'Logout dari sistem'
+        );
+
         Auth::logout();
 
         $request->session()->invalidate();
@@ -138,6 +157,12 @@ class LoginController extends Controller
         $user->update([
             'password' => Hash::make($request->password)
         ]);
+
+        ActivityLogger::log(
+            event: 'update',
+            description: 'Mengubah password akun',
+            subject: $user
+        );
 
         return redirect()
             ->route('ubah-password')
