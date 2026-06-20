@@ -16,6 +16,8 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" />
+
     <link rel="icon" href="{{ asset('assets/images/logo p.png') }}" type="image/x-icon" />
 
     @stack('styles')
@@ -66,7 +68,7 @@
         <!-- =========================================================
     SCRIPT
     ========================================================== -->
-
+        <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Bootstrap -->
