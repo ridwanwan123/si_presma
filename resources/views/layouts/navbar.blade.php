@@ -11,7 +11,7 @@
 
         <!-- APP NAME -->
         <div class="app-title d-flex flex-column lh-sm">
-            <span class="app-name fw-bold">PRESMA</span>
+            <span class="app-name font-weight-bold">PRESMA</span>
             <span class="app-region text-muted small">Penmad DKI Jakarta</span>
         </div>
     </div>
