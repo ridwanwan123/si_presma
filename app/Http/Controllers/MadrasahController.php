@@ -55,9 +55,10 @@ class MadrasahController extends Controller
 
     public function create()
     {
-        $madrasah = Madrasah::first();
-
-        return view('madrasah.create', compact('madrasah'));
+        return view('madrasah.form', [
+            'mode' => 'create',
+            'madrasah' => new Madrasah(),
+        ]);
     }
 
     public function store(Request $request)
@@ -122,7 +123,10 @@ class MadrasahController extends Controller
 
     public function edit(Madrasah $madrasah)
     {
-        return view('madrasah.edit', compact('madrasah'));
+        return view('madrasah.form', [
+            'mode' => 'edit',
+            'madrasah' => $madrasah,
+        ]);
     }
 
     public function update(Request $request, Madrasah $madrasah)
