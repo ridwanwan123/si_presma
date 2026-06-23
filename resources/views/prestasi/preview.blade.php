@@ -448,7 +448,7 @@
                 Memproses Data
             </h5>
             <div class="text-muted small">
-                Mohon tunggu, sistem sedang melakukan simpan data.
+                Mohon tunggu, <br /> Sistem sedang melakukan simpan data.
             </div>
         </div>
     </div>

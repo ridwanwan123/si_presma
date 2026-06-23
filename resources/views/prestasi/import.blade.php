@@ -173,7 +173,6 @@
             inset: 0;
             background: rgba(255, 255, 255, .85);
             z-index: 9999;
-
             display: flex;
             justify-content: center;
             align-items: center;
@@ -188,52 +187,37 @@
             inset: 0;
             background: rgba(255, 255, 255, .75);
             backdrop-filter: blur(4px);
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             z-index: 9999;
         }
 
         .loading-card {
             width: 320px;
-
             background: white;
-
             border-radius: 20px;
-
             padding: 30px;
-
             text-align: center;
-
             box-shadow:
                 0 10px 30px rgba(0, 0, 0, .08);
-
             border: 1px solid #e5e7eb;
         }
 
         .loading-icon {
-
             width: 70px;
             height: 70px;
-
             margin: auto;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             background: #ecfdf5;
-
             border-radius: 50%;
         }
 
         .loading-icon .spinner-border {
-
             width: 2.8rem;
             height: 2.8rem;
-
         }
     </style>
 @endpush
@@ -354,7 +338,6 @@
                 </button>
             </div>
 
-
         </div>
     </main>
     <div id="loading" class="import-loading" style="display:none">
@@ -366,7 +349,7 @@
                 Memproses Data
             </h5>
             <div class="text-muted small">
-                Mohon tunggu, sistem sedang melakukan validasi file Excel.
+                Mohon tunggu,<br /> Sistem sedang melakukan validasi file Excel.
             </div>
         </div>
     </div>
