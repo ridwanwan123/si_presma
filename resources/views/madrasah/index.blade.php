@@ -1,26 +1,5 @@
 @extends('layouts.base')
 
-@section('breadcrumb')
-    <div class="breadcrumb-modern">
-        <div class="crumb">
-            <a href="{{ route('dashboard') }}">
-                <i class="bi bi-house-door-fill home-icon"></i>
-                Home
-            </a>
-        </div>
-
-        <span class="separator">
-            <i class="bi bi-chevron-right"></i>
-        </span>
-
-        <div class="active">
-            Data Madrasah
-        </div>
-
-
-    </div>
-@endsection
-
 @push('styles')
     <style>
         .page-title {

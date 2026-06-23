@@ -132,7 +132,6 @@
         }
 
         /* Active */
-
         .pagination .page-item.active .page-link {
 
             background: #2563eb;
@@ -142,8 +141,6 @@
             color: white;
 
         }
-
-
 
         /* Hover */
 
@@ -156,26 +153,6 @@
         }
     </style>
 @endpush
-
-
-@section('breadcrumb')
-    <div class="breadcrumb-modern">
-        <div class="crumb">
-            <a href="{{ route('dashboard') }}">
-                <i class="bi bi-house-door-fill"></i>
-                Home
-            </a>
-        </div>
-
-        <span class="separator">
-            <i class="bi bi-chevron-right"></i>
-        </span>
-
-        <div class="active">
-            Activity Log
-        </div>
-    </div>
-@endsection
 
 @section('content')
     <main class="content">
@@ -250,7 +227,7 @@
 
                             <div class="col-md-1 d-flex align-items-end">
                                 <button class="btn btn-primary w-100">
-                                    <i class="bi bi-filter"></i>
+                                    <i class="bi bi-funnel"></i>
                                 </button>
                             </div>
 

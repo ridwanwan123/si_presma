@@ -347,8 +347,13 @@ SIDEBAR
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-
     transition: all 0.3s ease;
+}
+
+/* OPEN STATE */
+.submenu.show {
+    max-height: 500px;
+    opacity: 1;
 }
 
 /* OPEN STATE */
@@ -625,15 +630,29 @@ FOOTER
 ========================= */
 
 .footer {
-    height: 40px;
     background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-top: 1px solid #e5e7eb;
+    padding: 10px 20px;
+    text-align: center;
     font-size: 13px;
     color: #6b7280;
-    border-top: 1px solid #e5e7eb;
     z-index: 2;
+}
+
+.footer-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .footer-desktop {
+        display: none;
+    }
+
+    .footer-mobile {
+        display: block;
+        font-size: 11px;
+        line-height: 1.5;
+    }
 }
 
 /* =========================

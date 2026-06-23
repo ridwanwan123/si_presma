@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>PRESMA Admin</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>PRESMA</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" />
 
-    <link rel="icon" href="{{ asset('assets/images/logo p.png') }}" type="image/x-icon" />
+    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}" type="image/x-icon" />
 
     @stack('styles')
 </head>
@@ -45,9 +45,38 @@
             <div class="main-scroll">
 
                 <div class="page-header">
-                    @hasSection('breadcrumb')
+                    @if (isset($breadcrumb))
                         <nav aria-label="breadcrumb" class="breadcrumb-wrapper">
-                            @yield('breadcrumb')
+
+                            <div class="breadcrumb-modern">
+
+                                <div class="crumb">
+                                    <a href="{{ route('dashboard') }}">
+                                        <i class="bi bi-house-door-fill home-icon"></i>
+                                        Home
+                                    </a>
+                                </div>
+
+                                @foreach ($breadcrumb as $item)
+                                    <span class="separator">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </span>
+
+                                    @if ($item['url'])
+                                        <div class="crumb">
+                                            <a href="{{ $item['url'] }}">
+                                                {{ $item['label'] }}
+                                            </a>
+                                        </div>
+                                    @else
+                                        <div class="active">
+                                            {{ $item['label'] }}
+                                        </div>
+                                    @endif
+                                @endforeach
+
+                            </div>
+
                         </nav>
                     @endif
                 </div>
@@ -58,8 +87,16 @@
 
             </div>
             <footer class="footer">
-                © 2026 Bidang Pendidikan Madrasah Kanwil Kemenag Prov. DKI Jakarta •
-                All Rights Reserved
+
+                <span class="footer-desktop">
+                    © 2026 Bidang Pendidikan Madrasah Kanwil Kemenag Prov. DKI Jakarta •
+                    All Rights Reserved
+                </span>
+
+                <span class="footer-mobile">
+                    © 2026 Penmad • Kanwil Kemenag Prov. DKI Jakarta
+                </span>
+
             </footer>
 
 
@@ -68,9 +105,11 @@
         <!-- =========================================================
     SCRIPT
     ========================================================== -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <!-- Bootstrap -->
         @stack('scripts')
         <!-- JS -->

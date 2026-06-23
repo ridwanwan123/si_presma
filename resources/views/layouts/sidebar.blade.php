@@ -48,8 +48,8 @@
             </a>
         @endif
 
-        <!-- KATEGORI PRESTASI -->
-        <div class="menu-title">KATEGORI PRESTASI</div>
+        <!-- Bidang Prestasi -->
+        <div class="menu-title">Bidang Prestasi</div>
 
         <a href="#" class="menu-item has-submenu">
             <i class="bi bi-trophy"></i>
@@ -59,30 +59,20 @@
 
         <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
 
-            {{-- <a href="{{ route('prestasi.akademik.index') }}"
-                class="menu-item my-1 {{ request()->routeIs('prestasi.akademik.*') ? 'active' : '' }}">
-                <span>Akademik</span>
+            <a href="{{ route('prestasi.index', 'akademik') }}"
+                class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
+                Akademik
             </a>
 
-            <a href="{{ route('prestasi.non-akademik.index') }}"
-                class="menu-item my-1 {{ request()->routeIs('prestasi.non-akademik.*') ? 'active' : '' }}">
-                <span>Non-Akademik</span>
+            <a href="{{ route('prestasi.index', 'non-akademik') }}"
+                class="menu-item {{ request()->route('jenis') == 'non-akademik' ? 'active' : '' }}">
+                Non-Akademik
             </a>
 
-            <a href="{{ route('prestasi.keagamaan.index') }}"
-                class="menu-item my-1 {{ request()->routeIs('prestasi.keagamaan.*') ? 'active' : '' }}">
-                <span>Keagamaan</span>
+            <a href="{{ route('prestasi.index', 'keagamaan') }}"
+                class="menu-item {{ request()->route('jenis') == 'keagamaan' ? 'active' : '' }}">
+                Keagamaan
             </a>
-
-            <a href="{{ route('prestasi.gtk.index') }}"
-                class="menu-item my-1 {{ request()->routeIs('prestasi.gtk.*') ? 'active' : '' }}">
-                <span>GTK</span>
-            </a>
-
-            <a href="{{ route('prestasi.lembaga.index') }}"
-                class="menu-item my-1 {{ request()->routeIs('prestasi.lembaga.*') ? 'active' : '' }}">
-                <span>Lembaga</span>
-            </a> --}}
 
         </div>
 

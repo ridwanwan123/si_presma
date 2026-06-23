@@ -60,10 +60,14 @@ class ActivityController extends Controller
             ->sortBy('nama')
             ->values();
 
+        $breadcrumb = breadcrumb([
+            'Data Activity'
+        ]);
             
         return view('activity.index', compact(
             'activities',
-            'users'
+            'users',
+            'breadcrumb'
         ));
     }
 }

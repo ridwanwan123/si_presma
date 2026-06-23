@@ -15,48 +15,47 @@ class MadrasahController extends Controller
         $query = Madrasah::query();
 
         if ($request->filled('jenjang_madrasah')) {
-            $query->where(
-                'jenjang_madrasah',
-                $request->jenjang_madrasah
-            );
-
+            $query->where('jenjang_madrasah', $request->jenjang_madrasah);
         }
 
         if ($request->filled('nama_madrasah')) {
-            $query->where(
-                'nama_madrasah',
-                $request->nama_madrasah
-            );
+            $query->where('nama_madrasah', $request->nama_madrasah);
         }
-
 
         if ($request->filled('kota')) {
-            $query->where(
-                'kota',
-                $request->kota
-            );
+            $query->where('kota', $request->kota);
         }
-
 
         $madrasahs = $query->get();
 
-        // untuk dropdown filter
+        // dropdown filter
         $kotas = Madrasah::select('kota')
             ->distinct()
             ->orderBy('kota')
             ->pluck('kota');
 
+        // 🔥 breadcrumb ditambahkan di sini
+        $breadcrumb = breadcrumb([
+            'Madrasah'
+        ]);
 
         return view('madrasah.index', compact(
             'madrasahs',
-            'kotas'
+            'kotas',
+            'breadcrumb'
         ));
     }
 
     public function create()
     {
+        $breadcrumb = breadcrumb([
+            'Madrasah' => route('madrasah.index'),
+            'Tambah Data'
+        ]);
+
         return view('madrasah.form', [
             'mode' => 'create',
+            'breadcrumb' => $breadcrumb,
             'madrasah' => new Madrasah(),
         ]);
     }
@@ -123,8 +122,14 @@ class MadrasahController extends Controller
 
     public function edit(Madrasah $madrasah)
     {
+        $breadcrumb = breadcrumb([
+            'Madrasah' => route('madrasah.index'),
+            'Edit Data'
+        ]);
+
         return view('madrasah.form', [
             'mode' => 'edit',
+            'breadcrumb' => $breadcrumb,
             'madrasah' => $madrasah,
         ]);
     }

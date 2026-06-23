@@ -19,7 +19,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
-    <link rel="icon" type="image/png" href="{{ asset('assets/images/kemenag.png') }}" />
+    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}" type="image/x-icon" />
     <link rel="stylesheet" href="{{ asset('assets/css/login.css') }}" />
 </head>
 

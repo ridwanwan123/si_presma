@@ -254,7 +254,7 @@
 
                 <div class="dashboard-card">
 
-                    <h6>Comparison Kategori Prestasi</h6>
+                    <h6>Comparison Bidang Prestasi</h6>
 
                     <canvas id="kategoriChart"></canvas>
 
