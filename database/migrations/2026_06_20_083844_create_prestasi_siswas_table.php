@@ -45,7 +45,7 @@ return new class extends Migration
             $table->decimal('presentase', 5, 2)->default(0)->nullable();
             $table->decimal('nilai_akhir', 8, 2)->default(0)->nullable();
             $table->text('keterangan')->nullable();
-            $table->date('periode');
+            $table->unsignedSmallInteger('periode');
             $table->enum('status_verifikasi', [
                 'pending',
                 'verified',

@@ -104,10 +104,12 @@
         /* UPLOAD */
         .file-input-field {
             position: relative;
-            height: 220px;
+            height: 255px;
             border: 2px dashed #198754;
             border-radius: 18px;
-            background: #f8fffb;
+            background: linear-gradient(180deg,
+                    #f8fffb 0%,
+                    #f0fdf4 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -165,6 +167,10 @@
             .content-card-body>.d-flex a {
                 width: 100%;
                 text-align: center;
+            }
+
+            .btn-template {
+                width: 100%;
             }
         }
 
@@ -260,7 +266,8 @@
         <div class="content-card">
             <div class="content-card-body">
                 {{-- HEADER --}}
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                     <div>
                         <h5 class="mb-1 fw-bold">
                             Upload File Excel
@@ -272,33 +279,57 @@
                     </div>
 
                     <a href="{{ route('prestasi.template', $jenis) }}"
-                        class="btn btn-success btn-sm d-inline-flex align-items-center">
+                        class="btn btn-success btn-sm d-inline-flex align-items-center justify-content-center btn-template">
                         <span>Download Template</span>
                         <span class="mx-2 opacity-50">|</span>
-                        <i class="bi bi-file-earmark-pdf-fill"></i>
-
+                        <i class="bi bi-file-earmark-excel-fill"></i>
                     </a>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4 align-items-stretch">
                     {{-- LEFT --}}
                     <div class="col-md-6">
-                        <label class="form-label">
-                            Madrasah
-                        </label>
-                        <input type="text" class="form-control" id="madrasah_id" name="madrasah_id" readonly
-                            value="{{ auth()->user()->madrasah?->nama_madrasah ?? '-' }}">
-                        <label class="form-label mt-3">
-                            Bidang Prestasi
-                        </label>
-                        <input type="text" class="form-control" id="bidang_prestasi" name="bidang_prestasi" readonly
-                            value="{{ ucfirst($jenis) }}">
+                        <div class="row g-3">
 
-                        <label class="form-label mt-3">
-                            Submitter
-                        </label>
-                        <input type="text" class="form-control" id="submitter" name="submitter" readonly
-                            value="{{ auth()->user()->nama }}">
+                            {{-- INFO --}}
+                            <div class="col-12">
+                                <div class="alert alert-success border-0 mb-0">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Data Madrasah, Bidang Prestasi, dan Submitter diisi otomatis oleh sistem.
+                                </div>
+                            </div>
+
+                            {{-- ROW 1: 2 KOLOM --}}
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    Madrasah
+                                </label>
+                                <input type="text" class="form-control" readonly
+                                    value="{{ auth()->user()->madrasah?->nama_madrasah ?? '-' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    Tahun Periode
+                                </label>
+                                <input type="text" class="form-control" readonly value="{{ date('Y') }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label mt-3">
+                                    Bidang Prestasi
+                                </label>
+                                <input type="text" class="form-control" readonly value="{{ ucfirst($jenis) }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label mt-3">
+                                    Submitter
+                                </label>
+                                <input type="text" class="form-control" readonly value="{{ auth()->user()->nama }}">
+                            </div>
+
+                        </div>
                     </div>
 
                     {{-- RIGHT --}}
@@ -310,17 +341,26 @@
                         <div class="file-input-field">
                             <input type="file" name="file_import" id="file_import" accept=".xlsx,.xls">
                             <div class="placeholder-content">
-                                <i class="bi bi-cloud-arrow-up fs-1 text-success"></i>
-                                <h5 class="mt-2 text-success">
-                                    Upload Document
-                                </h5>
-                                <p>
-                                    Excel XLSX / XLS
-                                    <br>
-                                    Maksimal 1 MB
-                                </p>
-                                <div id="selectedFile" class="fw-semibold text-success">
+
+                                <div class="mb-3">
+                                    <i class="bi bi-file-earmark-excel-fill text-success fs-1"></i>
                                 </div>
+
+                                <h5 class="fw-bold text-success">
+                                    Upload Template Prestasi
+                                </h5>
+
+                                <p class="text-muted mb-2">
+                                    Drag & Drop atau klik untuk memilih file
+                                </p>
+
+                                <small class="text-muted">
+                                    Format XLSX / XLS • Maks. 1 MB
+                                </small>
+
+                                <div id="selectedFile" class="mt-3 fw-semibold text-success">
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -397,17 +437,54 @@
                         $('#loading').hide();
 
                         if (response.errors && response.errors.length > 0) {
-                            let errorMessages = response.errors.map(e =>
-                                `Baris ${e.row}${e.column ? ', Kolom ' + e.column : ''}: ${e.error}`
-                            ).join('<br>');
+                            let errorHtml = response.errors.map(err =>
+                                `
+                            <div class="text-start border rounded p-3 mb-2 bg-light">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-danger me-2">
+                                        ${err.column}
+                                    </span>
+                                    <span class="fw-semibold text-danger">
+                                        ${err.message}
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-list-ol"></i>
+                                    Baris:
+                                    <span class="fw-semibold">
+                                        ${err.rows.join(', ')}
+                                    </span>
+                                </div>
+                            </div>
+                            `
+                            ).join('');
 
                             Swal.fire({
                                 icon: 'warning',
-                                title: 'Data yang dimasukkan tidak valid',
-                                html: `<p>Beberapa kesalahan ditemukan dalam data:</p><p>${errorMessages}</p>`,
-                                confirmButtonText: 'OK',
+                                title: 'Validasi Import Gagal',
+                                html: `
+                                    <div class="text-start">
+                                        <div class="alert alert-warning mb-3">
+                                            <div class="fw-semibold">
+                                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                                Ditemukan ${response.errors.length} masalah pada file Excel
+                                            </div>
+                                            <div class="small mt-1">
+                                                Silakan perbaiki data berikut sebelum melanjutkan proses import.
+                                            </div>
+                                        </div>
+                                        <div style="max-height:350px;overflow-y:auto;">
+                                            ${errorHtml}
+                                        </div>
+                                    </div>
+                                `,
+                                width: 800,
+                                confirmButtonText: 'Perbaiki Data',
                                 confirmButtonColor: '#198754'
+                            }).then(() => {
+                                location.reload();
                             });
+                            return;
                         } else {
                             Swal.fire({
                                 icon: 'success',

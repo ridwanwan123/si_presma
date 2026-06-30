@@ -27,27 +27,111 @@
         }
 
         .preview-table {
-            white-space: nowrap;
             margin-bottom: 0;
-            vertical-align: middle;
-        }
-
-        .preview-table th {
-            background: #f8fafc;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            font-size: .82rem;
-            font-weight: 600;
-        }
-
-        .preview-table td {
-            font-size: .85rem;
-            vertical-align: middle;
+            white-space: nowrap;
+            border-collapse: separate;
+            border-spacing: 0;
         }
 
         .table-responsive {
             max-height: 550px;
+            overflow: auto;
+        }
+
+        /* ===========================
+           HEADER
+        =========================== */
+
+        .preview-table thead th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 20;
+            font-size: .82rem;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        /* ===========================
+           BODY
+        =========================== */
+
+        .preview-table tbody td {
+            font-size: .85rem;
+            vertical-align: middle;
+        }
+
+        /* Zebra */
+        .preview-table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        /* Hover */
+        .preview-table tbody tr:hover {
+            background: #eef7ff;
+        }
+
+        /* ===========================
+           STICKY COLUMN
+        =========================== */
+
+        .preview-table tbody td.sticky-col {
+            position: sticky;
+            z-index: 10;
+        }
+
+        /* Header sticky lebih tinggi */
+        .preview-table thead th.sticky-col {
+            z-index: 30;
+        }
+
+        /* Kolom No */
+        .preview-table .sticky-no {
+            left: 0;
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+        }
+
+        /* Kolom Nama */
+        .preview-table .sticky-nama {
+            left: 70px;
+            min-width: 350px;
+        }
+
+        /* Background mengikuti zebra */
+        .preview-table tbody tr:nth-child(odd) td.sticky-col {
+            background: #fff;
+        }
+
+        .preview-table tbody tr:nth-child(even) td.sticky-col {
+            background: #fafafa;
+        }
+
+        .preview-table tbody tr:hover td.sticky-col {
+            background: #eef7ff;
+        }
+
+        /* Header sticky */
+        .preview-table thead th.sticky-col {
+            background: #f8fafc;
+        }
+
+        /* Garis pembatas freeze */
+        .preview-table .sticky-no,
+        .preview-table .sticky-nama {
+            border-right: 1px solid #dee2e6;
+            box-shadow: 3px 0 8px rgba(0, 0, 0, .05);
+        }
+
+        /* Lebar kolom */
+        .col-kegiatan {
+            min-width: 350px;
+        }
+
+        .col-lembaga {
+            min-width: 220px;
         }
 
         .col-kegiatan {
@@ -270,47 +354,16 @@
                         <thead>
 
                             <tr>
-
-                                <th width="50">
-                                    No
-                                </th>
-
-                                <th class="col-kegiatan">
-                                    Nama Kegiatan
-                                </th>
-
-                                <th>
-                                    Tingkat
-                                </th>
-
-                                <th>
-                                    Kategori
-                                </th>
-
-                                <th>
-                                    Juara
-                                </th>
-
-                                <th class="col-lembaga">
-                                    Lembaga
-                                </th>
-
-                                <th>
-                                    Penyelenggara
-                                </th>
-
-                                <th>
-                                    Tanggal
-                                </th>
-
-                                <th>
-                                    Skor Luring
-                                </th>
-
-                                <th>
-                                    Skor Daring
-                                </th>
-
+                                <th class="sticky-col sticky-no text-center">No</th>
+                                <th class="sticky-col sticky-nama">Nama Kegiatan</th>
+                                <th>Tingkat</th>
+                                <th>Kategori</th>
+                                <th>Juara</th>
+                                <th>Lembaga</th>
+                                <th>Penyelenggara</th>
+                                <th>Tanggal</th>
+                                <th>Skor Luring</th>
+                                <th>Skor Daring</th>
                             </tr>
 
                         </thead>
@@ -320,14 +373,12 @@
                             @forelse($data as $item)
                                 <tr>
 
-                                    <td>
+                                    <td class="sticky-col sticky-no text-center">
                                         {{ $loop->iteration }}
                                     </td>
 
-                                    <td class="col-kegiatan">
-
+                                    <td class="sticky-col sticky-nama">
                                         {{ $item['nama_kegiatan'] }}
-
                                     </td>
 
                                     <td>

@@ -31,7 +31,7 @@ class PrestasiSiswaImport implements ToCollection, WithHeadingRow
                 'skor_daring' => $row['skor_daring'] ?? 0,
                 'link_drive_bukti' => $row['link_drive_bukti'] ?? null,
                 'keterangan' => $row['keterangan'] ?? null,
-                'periode' => $row['periode'] ?? null,
+                // 'periode' => $row['periode'] ?? null,
             ];
         }
     }

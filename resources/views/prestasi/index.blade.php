@@ -99,59 +99,28 @@
             border-top: 1px dashed #e2e8f0;
         }
 
-        .content-card {
-            border: 1px solid #ebeef0;
-            border-radius: 18px;
-            transition: .2s;
+        .table-responsive {
+            overflow-x: auto;
         }
 
-        .content-card:hover {
-            box-shadow: 0 .25rem .8rem rgba(0, 0, 0, .08);
-            transform: translateY(-2px);
+        #tablePrestasi {
+            white-space: nowrap;
         }
 
-        .content-card .badge {
-            font-size: .75rem;
+        #tablePrestasi thead th {
+            background: #f8fafc;
+            font-size: .78rem;
+            font-weight: 700;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        /* PAGINATION */
-        .pagination {
-            gap: .35rem;
-            margin-bottom: 0;
+        #tablePrestasi tbody td {
+            font-size: .82rem;
+            vertical-align: middle;
         }
 
-        .pagination .page-item .page-link {
-            border-radius: 8px;
-            min-width: 38px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 .75rem;
-            font-size: .875rem;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-            background: #fff;
-        }
-
-        .pagination .page-item:first-child .page-link,
-        .pagination .page-item:last-child .page-link {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        /* Active */
-        .pagination .page-item.active .page-link {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: white;
-        }
-
-        /* Hover */
-        .pagination .page-link:hover {
-            background: #eff6ff;
-            color: #2563eb;
-
+        .badge-status {
+            font-size: .72rem;
         }
     </style>
 @endpush
@@ -260,37 +229,27 @@
         {{-- FILTER --}}
         <div class="content-card">
             <div style="padding:1rem">
-
                 <div class="filter-box">
-
                     <div class="row g-2">
-
                         <div class="col-md-4">
                             <input type="text" class="form-control form-control-sm"
                                 placeholder="Cari kegiatan / lembaga">
                         </div>
-
                         <div class="col-md-2">
                             <select class="form-select form-select-sm">
                                 <option>Tingkat</option>
-                                <option>NASIONAL</option>
-                                <option>PROVINSI</option>
+
                             </select>
                         </div>
-
                         <div class="col-md-2">
                             <select class="form-select form-select-sm">
                                 <option>Kategori</option>
-                                <option>INDIVIDU</option>
-                                <option>BERGERE</option>
+
                             </select>
                         </div>
-
                         <div class="col-md-2">
                             <select class="form-select form-select-sm">
                                 <option>Penyelenggara</option>
-                                <option>PEMERINTAH</option>
-                                <option>NON PEMERINTAH</option>
                             </select>
                         </div>
 
@@ -301,7 +260,7 @@
                         </div>
 
                         <div class="col-md-1">
-                            <a href="#" class="btn btn-light border btn-sm w-100">
+                            <a href="" class="btn btn-light border btn-sm w-100">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </a>
                         </div>
@@ -313,178 +272,139 @@
             </div>
         </div>
 
-        {{-- LIST DATA --}}
-        @if ($prestasi->count())
-            @foreach ($prestasi as $item)
-                <div class="content-card p-3 mb-3">
-                    <div class="row align-items-center">
-                        {{-- INFORMASI --}}
-                        <div class="col-lg-9">
-                            <div class="d-flex align-items-start justify-content-between">
-                                <div>
-                                    <div class="fw-bold fs-5">
-                                        {{ $item->nama_kegiatan }}
-                                    </div>
-                                    <div class="text-muted">
-                                        {{ $item->lembaga_penyelenggara }}
-                                    </div>
-                                </div>
-                                <span class="badge bg-primary">
-                                    {{ $item->bidang_prestasi }}
-                                </span>
-                            </div>
+        <div class="content-card">
+            <div class="table-responsive">
 
-                            <div class="mt-2 d-flex flex-wrap gap-2">
-                                <span class="badge bg-info text-dark">
-                                    {{ $item->tingkat }}
-                                </span>
-                                <span class="badge bg-dark">
-                                    {{ $item->kategori_kegiatan }}
-                                </span>
-                                <span class="badge bg-success">
-                                    🏆 {{ $item->juara }}
-                                </span>
-                            </div>
+                <table id="tablePrestasi" class="table table-hover table-sm align-middle mb-0">
 
-                            <div class="small text-muted mt-3">
-                                <i class="bi bi-bank"></i>
-                                {{ $item->penyelenggara }}
-                                <span class="mx-2">•</span>
-                                <i class="bi bi-calendar3"></i>
-                                {{ \Carbon\Carbon::parse($item->waktu_kegiatan)->translatedFormat('d F Y') }}
-                                @if ($item->link_drive_bukti)
-                                    <span class="mx-2">•</span>
-                                    <a href="{{ $item->link_drive_bukti }}" target="_blank">
-                                        Bukti Prestasi
-                                    </a>
-                                @endif
-                            </div>
+                    <thead>
 
-                            @if ($item->keterangan)
-                                <div class="small text-secondary mt-2 mb-2">
-                                    <i class="bi bi-chat-left-text"></i>
-                                    {{ $item->keterangan }}
-                                </div>
-                            @endif
-                        </div>
+                        <tr>
 
-                        {{-- NILAI --}}
-                        <div class="col-lg-3">
-                            <div class="border-start ps-3 h-100">
-                                {{-- STATUS --}}
-                                @if ($item->status_verifikasi == 'verified')
-                                    <span class="badge bg-success mb-3">
-                                        <i class="bi bi-check-circle"></i>
-                                        Sudah Dinilai
-                                    </span>
-                                @elseif($item->status_verifikasi == 'rejected')
-                                    <span class="badge bg-danger mb-3">
-                                        <i class="bi bi-x-circle"></i>
-                                        Tidak Dinilai
-                                    </span>
-                                @else
-                                    <span class="badge bg-warning text-dark mb-3">
-                                        <i class="bi bi-clock"></i>
-                                        Belum Dinilai
-                                    </span>
-                                @endif
+                            <th>No</th>
 
-                                <div class="small">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">
-                                            Luring
-                                        </span>
-                                        <b>
-                                            {{ $item->skor_luring }}
-                                        </b>
-                                    </div>
+                            <th>Nama Kegiatan</th>
 
-                                    <div class="d-flex justify-content-between mt-1">
-                                        <span class="text-muted">
-                                            Daring
-                                        </span>
-                                        <b>
-                                            {{ $item->skor_daring }}
-                                        </b>
-                                    </div>
+                            <th>Tingkat</th>
 
-                                    @if ($item->status_verifikasi == 'verified')
-                                        <hr class="my-2">
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-muted">
-                                                Presentase
-                                            </span>
-                                            <b>
-                                                {{ $item->presentase }}%
-                                            </b>
-                                        </div>
+                            <th>Kategori</th>
 
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <span class="text-muted">
-                                                Nilai Akhir
-                                            </span>
-                                            <b class="text-success">
-                                                {{ $item->nilai_akhir }}
-                                            </b>
-                                        </div>
-                                    @endif
-                                </div>
+                            <th>Juara</th>
 
-                                {{-- Tombol --}}
-                                <div class="mt-3">
-                                    @if ($item->status_verifikasi == 'pending')
-                                        <a href="" class="btn btn-primary btn-sm w-100">
-                                            <i class="bi bi-clipboard-check"></i>
-                                            Review
-                                        </a>
-                                    @elseif($item->status_verifikasi == 'verified')
-                                        <a href="" class="btn btn-outline-success btn-sm w-100">
-                                            <i class="bi bi-eye"></i>
-                                            Detail
-                                        </a>
-                                    @else
-                                        <a href="" class="btn btn-outline-danger btn-sm w-100">
-                                            <i class="bi bi-exclamation-circle"></i>
-                                            Alasan
-                                        </a>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @if ($item->status_verifikasi == 'verified' && $item->catatan_verifikasi)
-                        <div class="mt-3 pt-3 border-top">
-                            <div class="alert alert-success mb-0 py-2 px-3">
-                                <div class="small fw-semibold">
-                                    <i class="bi bi-chat-square-text"></i>
-                                    Catatan Assessor
-                                </div>
-                                <div class="small mt-1">
-                                    {{ $item->catatan_verifikasi }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        @else
-            <div class="content-card p-5 text-center">
-                <i class="bi bi-award fs-1 text-muted"></i>
-                <h5 class="fw-bold mt-3">
-                    Belum Ada Prestasi
-                </h5>
-                <div class="text-muted">
-                    Prestasi yang ditambahkan akan muncul di sini.
-                </div>
-                <div class="small text-secondary mt-3">
-                    <i class="bi bi-arrow-up-circle"></i>
-                    Gunakan tombol <b>Tambah</b> atau <b>Import</b> di atas.
-                </div>
+                            <th>Lembaga</th>
+
+                            <th>Penyelenggara</th>
+
+                            <th>Tanggal</th>
+
+                            <th>Status</th>
+
+                            <th width="80">Aksi</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
             </div>
-        @endif
-        <div class="mt-3">
-            {{ $prestasi->onEachSide(1)->links('pagination::bootstrap-5') }}
         </div>
-
     </main>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <script>
+        $(function() {
+
+            $.get(
+                "{{ route('prestasi.data', $jenis) }}",
+                function(rows) {
+
+                    let html = '';
+
+                    rows.forEach((item, index) => {
+
+                        let status = '';
+
+                        if (item.status_verifikasi == 'verified') {
+
+                            status =
+                                `<span class="badge bg-success">
+                        Dinilai
+                    </span>`;
+
+                        } else if (item.status_verifikasi == 'pending') {
+
+                            status =
+                                `<span class="badge bg-warning text-dark">
+                        Pending
+                    </span>`;
+
+                        } else {
+
+                            status =
+                                `<span class="badge bg-danger">
+                        Ditolak
+                    </span>`;
+                        }
+
+                        html += `
+                <tr>
+
+                    <td>${index+1}</td>
+
+                    <td>
+                        <div class="fw-semibold">
+                            ${item.nama_kegiatan}
+                        </div>
+                    </td>
+
+                    <td>${item.tingkat}</td>
+
+                    <td>${item.kategori_kegiatan}</td>
+
+                    <td>
+                        <span class="badge bg-success">
+                            ${item.juara}
+                        </span>
+                    </td>
+
+                    <td>${item.lembaga_penyelenggara}</td>
+
+                    <td>${item.kategori_penyelenggara}</td>
+
+                    <td>${item.waktu_kegiatan}</td>
+
+                    <td>${status}</td>
+
+                    <td>
+
+                        <button
+                            class="btn btn-sm btn-light border">
+                                0
+                            <i class="bi bi-eye"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+                `;
+                    });
+
+                    $('#tablePrestasi tbody').html(html);
+
+                }
+            );
+
+        });
+    </script>
+@endpush

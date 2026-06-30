@@ -10,6 +10,73 @@ use App\Exports\PrestasiTemplateExport;
 
 class PrestasiController extends Controller
 {
+    // UNTUK TAMPILAN CARD
+    // public function index($jenis)
+    // {
+    //     $mapping = [
+    //         'akademik' => 'Akademik',
+    //         'non-akademik' => 'Non Akademik',
+    //         'keagamaan' => 'Keagamaan',
+    //         'gtk' => 'GTK',
+    //         'lembaga' => 'Lembaga',
+    //     ];
+
+    //     $query = PrestasiSiswa::visible()
+    //         ->where(
+    //             'bidang_prestasi',
+    //             $mapping[$jenis]
+    //         );
+
+    //     $user = auth()->user();
+
+    //     if ($user->isOperator()) {
+
+    //         $query->where(
+    //             'madrasah_id',
+    //             $user->madrasah_id
+    //         );
+
+    //     }
+
+    //     $prestasi = (clone $query)
+    //         ->latest()
+    //         ->paginate(10);
+
+    //     $summary = (clone $query)
+    //         ->selectRaw("
+    //             COUNT(*) as total,
+    //             SUM(status_verifikasi = 'verified') as verified,
+    //             SUM(status_verifikasi = 'pending') as pending,
+    //             SUM(status_verifikasi = 'rejected') as rejected
+    //         ")
+    //         ->first();
+
+    //     $breadcrumb = breadcrumb([
+    //         'Prestasi ' => route('prestasi.index', $jenis),
+    //         $mapping[$jenis]
+    //     ]);
+
+    //     return view(
+    //         'prestasi.index',
+    //         compact(
+    //             'jenis',
+    //             'prestasi',
+    //             'summary',
+    //             'breadcrumb'
+    //         )
+    //     );
+    // }
+    
+    // public function data($jenis)
+    // {
+    //     return response()->json([
+    //         'data' => PrestasiSiswa::where(
+    //             'bidang_prestasi',
+    //             ucfirst($jenis)
+    //         )->get()
+    //     ]);
+    // }
+
     public function index($jenis)
     {
         $mapping = [
@@ -26,21 +93,6 @@ class PrestasiController extends Controller
                 $mapping[$jenis]
             );
 
-        $user = auth()->user();
-
-        if ($user->isOperator()) {
-
-            $query->where(
-                'madrasah_id',
-                $user->madrasah_id
-            );
-
-        }
-
-        $prestasi = (clone $query)
-            ->latest()
-            ->paginate(10);
-
         $summary = (clone $query)
             ->selectRaw("
                 COUNT(*) as total,
@@ -51,7 +103,7 @@ class PrestasiController extends Controller
             ->first();
 
         $breadcrumb = breadcrumb([
-            'Prestasi ' => route('prestasi.index', $jenis),
+            'Prestasi' => route('prestasi.index', $jenis),
             $mapping[$jenis]
         ]);
 
@@ -59,21 +111,30 @@ class PrestasiController extends Controller
             'prestasi.index',
             compact(
                 'jenis',
-                'prestasi',
                 'summary',
                 'breadcrumb'
             )
         );
     }
-    
     public function data($jenis)
     {
-        return response()->json([
-            'data' => PrestasiSiswa::where(
+        $mapping = [
+            'akademik' => 'Akademik',
+            'non-akademik' => 'Non Akademik',
+            'keagamaan' => 'Keagamaan',
+            'gtk' => 'GTK',
+            'lembaga' => 'Lembaga',
+        ];
+
+        $data = PrestasiSiswa::visible()
+            ->where(
                 'bidang_prestasi',
-                ucfirst($jenis)
-            )->get()
-        ]);
+                $mapping[$jenis]
+            )
+            ->latest()
+            ->get();
+
+        return response()->json($data);
     }
 
     public function template($jenis)
@@ -131,10 +192,18 @@ class PrestasiController extends Controller
         }
     }
 
-    public function checking_import_prestasi(Request $request,$jenis)
+    private function normalizeKey($value)
+    {
+        $value = strtolower(trim((string) $value));
+
+        // Hilangkan semua karakter selain huruf dan angka
+        return preg_replace('/[^a-z0-9]/', '', $value);
+    }
+
+    public function checking_import_prestasi(Request $request, $jenis)
     {
         $request->validate([
-            'file_import'=>'required|mimes:xlsx,xls,csv|max:2048',
+            'file_import' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
 
         $mapping = [
@@ -145,10 +214,16 @@ class PrestasiController extends Controller
             'lembaga' => 'Lembaga',
         ];
 
+        $normalizedMapping = collect($mapping)
+            ->mapWithKeys(function ($value) {
+                return [$this->normalizeKey($value) => $value];
+            })
+            ->toArray();
+
         $madrasah_id = auth()->user()->madrasah_id;
         $submitter = auth()->user()->nama;
         $bidang_prestasi = $mapping[$jenis];
-        $periode = date('Y-m-d');
+        $periode = now()->year;
 
         $requiredFields = [
             'bidang_prestasi',
@@ -164,46 +239,147 @@ class PrestasiController extends Controller
             'link_drive_bukti',
         ];
 
-        $nullableFields = [
-            'keterangan',
-            'periode',
+        $validTingkat = [
+            'kabupatenkota' => 'Kabupaten/Kota',
+            'provinsi' => 'Provinsi',
+            'nasional' => 'Nasional',
+            'internasional' => 'Internasional',
+        ];
+
+        $validKategoriKegiatan = [
+            'individu' => 'Individu',
+            'beregu' => 'Beregu',
         ];
 
         $errors = [];
         $result = [];
 
         try {
+
             $import = new PrestasiSiswaImport();
-            Excel::import(
-                $import,
-                $request->file('file_import')
-            );
+
+            Excel::import($import, $request->file('file_import'));
 
             $data = $import->rows;
 
-            
-            foreach($data as $index=>$row){
-                if(count($row) != 13){
-                    $errors[]=[
-                        'row'=>$index+2,
-                        'error'=>'Jumlah kolom harus 13'
+            foreach ($data as $index => $row) {
+
+                // Rapikan seluruh kolom string
+                foreach ($row as $key => $value) {
+                    if (is_string($value)) {
+                        $row[$key] = preg_replace('/\s+/', ' ', trim($value));
+                    }
+                }
+
+                if (count($row) != 12) {
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'error' => 'Jumlah kolom harus 12'
                     ];
                     continue;
                 }
 
+                // Validasi wajib isi
                 foreach ($requiredFields as $field) {
+
                     $value = $row[$field] ?? null;
 
-                    if (is_null($value)|| trim((string) $value) === '') {
+                    if (is_null($value) || trim((string)$value) === '') {
+
                         $errors[] = [
-                            'row'    => $index + 2,
+                            'row' => $index + 2,
                             'column' => $field,
-                            'error'  => 'Kolom wajib diisi'
+                            'error' => 'Kolom wajib diisi'
                         ];
 
                         continue 2;
                     }
                 }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validasi Bidang Prestasi
+                |--------------------------------------------------------------------------
+                */
+
+                $bidang = $this->normalizeKey($row['bidang_prestasi']);
+
+                // apakah nama bidang pada excel valid?
+                if (!isset($normalizedMapping[$bidang])) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'bidang_prestasi',
+                        'error' => 'Bidang prestasi tidak valid'
+                    ];
+
+                    continue;
+                }
+
+                $excelBidang = $normalizedMapping[$bidang];
+
+                // apakah bidang sesuai halaman yang sedang dibuka?
+                if ($excelBidang !== $bidang_prestasi) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'bidang_prestasi',
+                        'error' => "Halaman ini untuk import {$bidang_prestasi}, tetapi Excel berisi {$excelBidang}"
+                    ];
+
+                    continue;
+                }
+
+                // rapikan nilainya
+                $row['bidang_prestasi'] = $excelBidang;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validasi Tingkat
+                |--------------------------------------------------------------------------
+                */
+
+                $tingkat = $this->normalizeKey($row['tingkat']);
+
+                if (!isset($validTingkat[$tingkat])) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'tingkat',
+                        'error' => 'Tingkat harus Kabupaten/Kota, Provinsi, Nasional atau Internasional'
+                    ];
+
+                    continue;
+                }
+
+                $row['tingkat'] = $validTingkat[$tingkat];
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validasi Kategori Kegiatan
+                |--------------------------------------------------------------------------
+                */
+
+                $kategori = $this->normalizeKey($row['kategori_kegiatan']);
+
+                if (!isset($validKategoriKegiatan[$kategori])) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'kategori_kegiatan',
+                        'error' => 'Kategori kegiatan harus Individu atau Beregu'
+                    ];
+
+                    continue;
+                }
+
+                $row['kategori_kegiatan'] = $validKategoriKegiatan[$kategori];
+
+                /*
+                |--------------------------------------------------------------------------
+                | Data hasil
+                |--------------------------------------------------------------------------
+                */
 
                 $result[] = [
                     'madrasah_id' => $madrasah_id,
@@ -219,21 +395,35 @@ class PrestasiController extends Controller
                     'skor_luring' => $row['skor_luring'],
                     'skor_daring' => $row['skor_daring'],
                     'link_drive_bukti' => $row['link_drive_bukti'],
-                    'keterangan' => $row['keterangan'],
-                    'periode' => $periode
+                    'keterangan' => $row['keterangan'] ?? null,
+                    'periode' => $periode,
                 ];
             }
 
+            $groupedErrors = collect($errors)
+                ->groupBy(function ($item) {
+                    return ($item['column'] ?? 'general') . '|' . $item['error'];
+                })
+                ->map(function ($items) {
+                    return [
+                        'column' => $items->first()['column'] ?? null,
+                        'message' => $items->first()['error'],
+                        'rows' => $items->pluck('row')->toArray()
+                    ];
+                })
+                ->values();
+
             return response()->json([
-                'success'=>true,
-                'data'=>$result,
-                'errors'=>$errors,
-                'redirect'=>route('prestasi.preview',$jenis)
+                'success' => true,
+                'data' => $result,
+                'errors' => $groupedErrors,
+                'redirect' => route('prestasi.preview', $jenis)
             ]);
-        } catch(\Throwable $e){
+        } catch (\Throwable $e) {
             return response()->json([
-                'message'=>$e->getMessage()
-            ],500);
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

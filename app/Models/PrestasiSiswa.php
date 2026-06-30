@@ -34,7 +34,6 @@ class PrestasiSiswa extends Model
 
     protected $casts = [
         'waktu_kegiatan' => 'date',
-        'periode' => 'datetime',
     ];
 
     public function madrasah()
