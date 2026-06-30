@@ -62,8 +62,8 @@
         }
 
         /* =====================================================
-                                           TABLE CARD
-                                        ===================================================== */
+          TABLE CARD
+        ===================================================== */
         .table-header {
             padding: 18px 22px;
             border-bottom: 1px solid #eef2f7;
@@ -80,8 +80,8 @@
         }
 
         /* =====================================================
-                                           TABLE
-                                        ===================================================== */
+                                               TABLE
+                                            ===================================================== */
         #tablePrestasi {
             width: 100% !important;
             border-collapse: collapse !important;
@@ -116,15 +116,15 @@
         }
 
         /* =====================================================
-                                           DATATABLE WRAPPER
-                                        ===================================================== */
+                                               DATATABLE WRAPPER
+                                            ===================================================== */
         .dataTables_wrapper {
             padding: 20px;
         }
 
         /* =====================================================
-                                           TOP AREA
-                                        ===================================================== */
+                                               TOP AREA
+                                            ===================================================== */
         .dataTables_wrapper .row:first-child {
             margin-bottom: 18px;
             align-items: center;
@@ -149,8 +149,8 @@
         }
 
         /* =====================================================
-                                           SELECT
-                                        ===================================================== */
+                                               SELECT
+                                            ===================================================== */
         .dataTables_wrapper .dataTables_length select {
             width: 80px;
             border-radius: 10px;
@@ -162,8 +162,8 @@
         }
 
         /* =====================================================
-                                           SEARCH
-                                        ===================================================== */
+                                               SEARCH
+                                            ===================================================== */
         .dataTables_wrapper .dataTables_filter input {
             margin-left: 0 !important;
             width: 260px;
@@ -181,8 +181,8 @@
         }
 
         /* =====================================================
-                                           INFO
-                                        ===================================================== */
+                                               INFO
+                                            ===================================================== */
         .dataTables_wrapper .dataTables_info {
             color: #64748b;
             font-size: .85rem;
@@ -190,8 +190,8 @@
         }
 
         /* =====================================================
-                                           PAGINATION (BOOTSTRAP 5)
-                                        ===================================================== */
+                                               PAGINATION (BOOTSTRAP 5)
+                                            ===================================================== */
         .dataTables_wrapper .dataTables_paginate {
             padding-top: 12px;
         }
@@ -233,8 +233,8 @@
         }
 
         /* =====================================================
-                                           PROCESSING
-                                        ===================================================== */
+                                               PROCESSING
+                                            ===================================================== */
         .dataTables_processing {
             border-radius: 12px;
             border: 1px solid #e2e8f0;
@@ -242,8 +242,8 @@
         }
 
         /* ==========================
-                               BADGE
-                            ========================== */
+                                   BADGE
+                                ========================== */
         .badge-soft {
             display: inline-flex;
             align-items: center;
@@ -298,8 +298,8 @@
         }
 
         /* =====================================================
-                                RESPONSIVE
-                            ===================================================== */
+                                    RESPONSIVE
+                                ===================================================== */
         @media (max-width:768px) {
             .dataTables_wrapper {
                 padding: 15px;
@@ -346,7 +346,8 @@
                     <i class="bi bi-upload"></i>
                     Import
                 </a> </div>
-        </div> {{-- SUMMARY --}}
+        </div>
+        {{-- SUMMARY --}}
         <div class="row g-3 mb-4">
             <div class="col-md-3">
                 <div class="content-card p-3">
@@ -404,7 +405,9 @@
                     </div>
                 </div>
             </div>
-        </div> {{-- FILTER --}}
+        </div>
+
+        {{-- FILTER --}}
         <div class="content-card">
             <div style="padding:1rem">
                 <div class="filter-box">
@@ -420,12 +423,12 @@
                         </div>
                         <div class="col-md-2">
                             <select class="form-select form-select-sm">
-                                <option>Kategori</option>
+                                <option>Juara</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <select class="form-select form-select-sm">
-                                <option>Penyelenggara</option>
+                                <option>Lembaga</option>
                             </select>
                         </div>
                         <div class="col-md-1">
@@ -442,6 +445,7 @@
                 </div>
             </div>
         </div>
+
         <div class="content-card">
             <div class="table-header">
                 <div>
