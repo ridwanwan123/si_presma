@@ -491,13 +491,14 @@ class PrestasiController extends Controller
             }
 
             ActivityLogger::log(
-                event: 'create',
+                event: 'import',
                 description: 'Import Data Prestasi',
                 subject: new PrestasiSiswa(),
                 properties: [
                     'jenis' => $jenis,
                     'jumlah_data' => count($data),
                     'madrasah_id' => auth()->user()->madrasah_id,
+                    'nama_madrasah' => auth()->user()->madrasah->nama_madrasah,
                 ]
             );
 
@@ -513,7 +514,14 @@ class PrestasiController extends Controller
 
             DB::rollBack();
 
-            Log::error(...);
+            Log::error('Gagal import data prestasi', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'jenis' => $jenis,
+                'jumlah_data' => count($data),
+                'madrasah_id' => auth()->user()->madrasah_id,
+            ]);
 
             return response()->json([
                 'success' => false,

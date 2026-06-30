@@ -387,180 +387,479 @@
 @foreach ($activities as $activity)
     @php
         $module = $activity->subject_type ? class_basename($activity->subject_type) : '-';
+
         $properties = $activity->properties ?? [];
+
         $old = $properties['old'] ?? [];
         $new = $properties['new'] ?? [];
+
+        $namaMadrasah = $properties['nama_madrasah'] ?? '-';
     @endphp
 
+
     <div class="modal fade" id="detail{{ $activity->id }}" tabindex="-1">
+
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
+
             <div class="modal-content">
+
+
                 <div class="modal-header">
+
                     <h5 class="modal-title">
+
                         <i class="bi bi-clock-history"></i>
+
                         Detail Activity
+
                     </h5>
+
+
                     <button type="button" class="btn-close" data-bs-dismiss="modal">
                     </button>
+
                 </div>
+
+
+
                 <div class="modal-body">
+
+
+                    {{-- INFO UTAMA --}}
+
                     <div class="row g-3 mb-3">
+
+
                         <div class="col-md-6">
+
                             <label class="text-muted small">
                                 User
                             </label>
+
                             <div class="fw-semibold">
+
                                 {{ $activity->causer?->nama ?? 'System' }}
+
                             </div>
+
                             <div>
+
                                 {{ $activity->causer?->email }}
+
                             </div>
+
                         </div>
 
+
+
                         <div class="col-md-6">
+
                             <label class="text-muted small">
                                 Waktu
                             </label>
+
                             <div>
+
                                 {{ $activity->created_at->format('d M Y H:i:s') }}
+
                             </div>
+
                         </div>
 
+
+
                         <div class="col-md-6">
+
                             <label class="text-muted small">
                                 Event
                             </label>
+
                             <div>
+
                                 <span class="badge bg-primary">
+
                                     {{ strtoupper($activity->event) }}
+
                                 </span>
+
                             </div>
+
                         </div>
 
+
+
                         <div class="col-md-6">
+
                             <label class="text-muted small">
                                 Module
                             </label>
+
                             <div>
+
                                 {{ $module }}
+
                             </div>
+
                         </div>
 
+
+
                         <div class="col-12">
+
                             <label class="text-muted small">
                                 Aktivitas
                             </label>
 
+
                             <p class="mb-0">
+
                                 {{ $activity->description }}
+
                             </p>
+
                         </div>
+
+
                     </div>
+
+
 
                     <hr>
 
+
+
+                    {{-- REQUEST INFO --}}
+
+
                     <h6>
+
                         <i class="bi bi-globe"></i>
+
                         Informasi Request
+
                     </h6>
 
+
+
                     <table class="table table-sm">
+
+
                         <tr>
+
                             <th width="150">
                                 IP Address
                             </th>
+
                             <td>
+
                                 {{ $properties['ip_address'] ?? '-' }}
+
                             </td>
+
                         </tr>
+
+
+
                         <tr>
+
                             <th>
                                 User Agent
                             </th>
+
                             <td style="word-break:break-word">
+
                                 {{ $properties['user_agent'] ?? '-' }}
+
                             </td>
+
                         </tr>
+
+
                     </table>
 
-                    @if (count($old) || count($new))
+
+
+
+
+                    {{-- IMPORT INFO --}}
+
+
+                    @if ($activity->event == 'import')
                         <hr>
+
+
                         <h6>
-                            <i class="bi bi-pencil-square"></i>
-                            Perubahan Data
+
+                            <i class="bi bi-file-earmark-arrow-up"></i>
+
+                            Informasi Import
+
                         </h6>
+
+
+
+                        <table class="table table-sm table-bordered">
+
+
+                            <tr>
+
+                                <th width="180">
+
+                                    Jenis Prestasi
+
+                                </th>
+
+
+                                <td>
+
+                                    {{ $properties['jenis'] ?? '-' }}
+
+                                </td>
+
+
+                            </tr>
+
+
+
+                            <tr>
+
+                                <th>
+
+                                    Jumlah Data
+
+                                </th>
+
+
+                                <td>
+
+                                    <span class="badge bg-success">
+
+                                        {{ $properties['jumlah_data'] ?? 0 }}
+                                        Data
+
+                                    </span>
+
+                                </td>
+
+
+                            </tr>
+
+
+
+                            <tr>
+
+                                <th>
+                                    Madrasah
+                                </th>
+
+                                <td>
+                                    {{ $namaMadrasah }}
+                                </td>
+
+                            </tr>
+
+
+
+                        </table>
+                    @endif
+
+
+
+
+
+
+                    {{-- UPDATE / CREATE --}}
+
+
+                    @if ($activity->event != 'import' && (count($old) || count($new)))
+                        <hr>
+
+
+                        <h6>
+
+                            <i class="bi bi-pencil-square"></i>
+
+                            Perubahan Data
+
+                        </h6>
+
+
+
                         <table class="table table-bordered table-sm">
+
+
                             <thead class="table-light">
+
                                 <tr>
+
                                     <th>
                                         Field
                                     </th>
+
                                     <th>
                                         Sebelum
                                     </th>
+
                                     <th>
                                         Sesudah
                                     </th>
+
                                 </tr>
+
                             </thead>
+
+
+
                             <tbody>
+
+
                                 @foreach ($new as $field => $value)
                                     <tr>
+
+
                                         <td class="fw-semibold">
+
                                             {{ ucwords(str_replace('_', ' ', $field)) }}
+
                                         </td>
+
+
 
                                         <td class="text-danger">
+
+
                                             {{ $old[$field] ?? '-' }}
+
+
                                         </td>
 
+
+
                                         <td class="text-success">
+
+
                                             {{ is_array($value) ? json_encode($value) : $value }}
+
+
                                         </td>
+
+
                                     </tr>
                                 @endforeach
+
+
                             </tbody>
+
+
                         </table>
                     @endif
+
+
+
+
+
+
+
+                    {{-- DELETE --}}
+
 
                     @if (isset($properties['deleted_data']))
                         <hr class="my-2">
 
+
                         <h6 class="text-danger mb-2">
+
+
                             <i class="bi bi-trash"></i>
+
+
                             Deleted Data
+
+
                         </h6>
 
+
+
                         <div class="table-responsive">
+
+
                             <table class="table table-sm table-bordered mb-0">
+
+
                                 <tbody>
+
+
                                     @foreach ($properties['deleted_data'] as $field => $value)
                                         <tr>
+
+
                                             <th class="bg-light text-muted fw-semibold py-1 px-2">
+
+
                                                 {{ ucwords(str_replace('_', ' ', $field)) }}
+
+
                                             </th>
 
+
+
                                             <td class="py-1 px-2">
+
+
                                                 @if (is_array($value))
-                                                    <small>{{ json_encode($value) }}</small>
+                                                    <small>
+
+                                                        {{ json_encode($value) }}
+
+                                                    </small>
                                                 @else
-                                                    <small>{{ $value ?? '-' }}</small>
+                                                    <small>
+
+                                                        {{ $value ?? '-' }}
+
+                                                    </small>
                                                 @endif
+
+
                                             </td>
+
+
                                         </tr>
                                     @endforeach
+
+
                                 </tbody>
+
+
                             </table>
+
+
                         </div>
                     @endif
+
+
+
                 </div>
 
+
+
+
                 <div class="modal-footer">
+
+
                     <button class="btn btn-secondary" data-bs-dismiss="modal">
+
                         Tutup
+
                     </button>
+
+
                 </div>
+
+
             </div>
+
         </div>
+
     </div>
 @endforeach
