@@ -122,22 +122,35 @@ class PrestasiController extends Controller
     public function data($jenis)
     {
         $mapping = [
-            'akademik' => 'Akademik',
+            'akademik'     => 'Akademik',
             'non-akademik' => 'Non Akademik',
-            'keagamaan' => 'Keagamaan',
-            'gtk' => 'GTK',
-            'lembaga' => 'Lembaga',
+            'keagamaan'    => 'Keagamaan',
+            'gtk'          => 'GTK',
+            'lembaga'      => 'Lembaga',
         ];
 
         $data = PrestasiSiswa::visible()
-            ->where(
-                'bidang_prestasi',
-                $mapping[$jenis]
-            )
+            ->where('bidang_prestasi', $mapping[$jenis])
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($item) {
 
-        return response()->json($data);
+                return [
+                    'id'                  => $item->id,
+                    'nama_kegiatan'       => $item->nama_kegiatan,
+                    'tingkat'             => $item->tingkat,
+                    'kategori'            => $item->kategori_kegiatan,
+                    'juara'               => $item->juara,
+                    'lembaga'             => $item->lembaga_penyelenggara,
+                    'penyelenggara'       => $item->kategori_penyelenggara,
+                    'tanggal'             => optional($item->waktu_kegiatan)->format('d M Y'),
+                    'status_verifikasi'   => $item->status_verifikasi,
+                ];
+            });
+
+        return response()->json([
+            'data' => $data
+        ]);
     }
 
     public function template($jenis)
