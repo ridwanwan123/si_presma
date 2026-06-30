@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PrestasiSiswaImport;
 use App\Exports\PrestasiTemplateExport;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Helpers\ActivityLogger;
 
 class PrestasiController extends Controller
 {
@@ -472,21 +475,51 @@ class PrestasiController extends Controller
     {
         $data = session("preview_prestasi_$jenis", []);
 
-        if(empty($data)){
+        if (empty($data)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tidak ada data preview.'
-            ],422);
+            ], 422);
         }
 
-        foreach($data as $row){
-            PrestasiSiswa::create($row);
+        DB::beginTransaction();
+
+        try {
+
+            foreach ($data as $row) {
+                PrestasiSiswa::create($row);
+            }
+
+            ActivityLogger::log(
+                event: 'create',
+                description: 'Import Data Prestasi',
+                subject: new PrestasiSiswa(),
+                properties: [
+                    'jenis' => $jenis,
+                    'jumlah_data' => count($data),
+                    'madrasah_id' => auth()->user()->madrasah_id,
+                ]
+            );
+
+            DB::commit();
+
+            session()->forget("preview_prestasi_$jenis");
+
+            return response()->json([
+                'success' => true
+            ]);
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            Log::error(...);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data.'
+            ], 500);
+
         }
-
-        session()->forget("preview_prestasi_$jenis");
-
-        return response()->json([
-            'success' => true
-        ]);
     }
 }
