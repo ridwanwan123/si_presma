@@ -54,6 +54,20 @@ return new class extends Migration
             $table->text('catatan_verifikasi')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+             /*
+            |--------------------------------------------------------------------------
+            | INDEX
+            |--------------------------------------------------------------------------
+            */
+            $table->index([
+                'madrasah_id',
+                'bidang_prestasi',
+                'waktu_kegiatan'
+            ]);
+
+            $table->index('nama_kegiatan');
+            $table->index('status_verifikasi');
         });
     }
 

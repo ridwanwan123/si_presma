@@ -10,6 +10,7 @@ use App\Exports\PrestasiTemplateExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\ActivityLogger;
+use Yajra\DataTables\Facades\DataTables;
 
 class PrestasiController extends Controller
 {
@@ -129,37 +130,27 @@ class PrestasiController extends Controller
             'lembaga'      => 'Lembaga',
         ];
 
-        $data = PrestasiSiswa::visible()
+        $query = PrestasiSiswa::visible()
             ->where('bidang_prestasi', $mapping[$jenis])
-            ->latest()
-            ->get()
-            ->map(function ($item) {
+            ->latest();
 
-                return [
-                    'id'                        => $item->id,
-                    'bidang_prestasi'           => $item->bidang_prestasi,
-                    'nama_kegiatan'             => $item->nama_kegiatan,
-                    'tingkat'                   => $item->tingkat,
-                    'kategori'                  => $item->kategori_kegiatan,
-                    'juara'                     => $item->juara,
-                    'lembaga_penyelenggara'     => $item->lembaga_penyelenggara,
-                    'kategori_penyelenggara'    => $item->kategori_penyelenggara,
-                    'waktu_kegiatan'            => optional($item->waktu_kegiatan)->format('d M Y'),
-                    'skor_luring' => $item->skor_luring !== null
-                        ? number_format($item->skor_luring, 0, ',', '.')
-                        : null,
-
-                    'skor_daring' => $item->skor_daring !== null
-                        ? number_format($item->skor_daring, 0, ',', '.')
-                        : null,
-                    'link_drive_bukti'          => $item->link_drive_bukti,
-                    'keterangan'                => $item->keterangan,
-                ];
-            });
-
-        return response()->json([
-            'data' => $data
-        ]);
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->editColumn('waktu_kegiatan', function($item){
+                return optional($item->waktu_kegiatan)
+                    ->format('d M Y');
+            })
+            ->editColumn('skor_luring', function($item){
+                return $item->skor_luring !== null
+                    ? number_format($item->skor_luring,0,',','.')
+                    : null;
+            })
+            ->editColumn('skor_daring', function($item){
+                return $item->skor_daring !== null
+                    ? number_format($item->skor_daring,0,',','.')
+                    : null;
+            })
+            ->make(true);
     }
 
     public function template($jenis)

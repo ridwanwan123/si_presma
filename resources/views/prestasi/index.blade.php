@@ -62,8 +62,8 @@
         }
 
         /* =====================================================
-                                                                          TABLE CARD
-                                                                        ===================================================== */
+                                                                                          TABLE CARD
+                                                                                        ===================================================== */
         .table-header {
             padding: 18px 22px;
             border-bottom: 1px solid #eef2f7;
@@ -80,8 +80,8 @@
         }
 
         /* =====================================================
-                                                                                                               TABLE
-                                                                                                            ===================================================== */
+                                                                                                                               TABLE
+                                                                                                                            ===================================================== */
         #tablePrestasi {
             width: 100% !important;
             border-collapse: collapse !important;
@@ -111,26 +111,20 @@
             vertical-align: middle;
         }
 
-        #tablePrestasi tbody tr {
-            transition: .18s ease;
-        }
-
         #tablePrestasi tbody tr:hover {
-            background: #f8fbff;
-            transform: scale(1.002);
-            box-shadow: inset 4px 0 #3b82f6;
+            background: #f8fafc;
         }
 
         /* =====================================================
-                                                                                                               DATATABLE WRAPPER
-                                                                                                            ===================================================== */
+                                                                                                                               DATATABLE WRAPPER
+                                                                                                                            ===================================================== */
         .dataTables_wrapper {
             padding: 20px;
         }
 
         /* =====================================================
-                                                                                                               TOP AREA
-                                                                                                            ===================================================== */
+                                                                                                                               TOP AREA
+                                                                                                                            ===================================================== */
         .dataTables_wrapper .row:first-child {
             margin-bottom: 18px;
             align-items: center;
@@ -155,8 +149,8 @@
         }
 
         /* =====================================================
-                                                                                                               SELECT
-                                                                                                            ===================================================== */
+                                                                                                                               SELECT
+                                                                                                                            ===================================================== */
         .dataTables_wrapper .dataTables_length select {
             width: 80px;
             border-radius: 10px;
@@ -168,8 +162,8 @@
         }
 
         /* =====================================================
-                                                                                                               SEARCH
-                                                                                                            ===================================================== */
+                                                                                                                               SEARCH
+                                                                                                                            ===================================================== */
         .dataTables_wrapper .dataTables_filter input {
             margin-left: 0 !important;
             width: 260px;
@@ -187,8 +181,8 @@
         }
 
         /* =====================================================
-                                                                                                               INFO
-                                                                                                            ===================================================== */
+                                                                                                                               INFO
+                                                                                                                            ===================================================== */
         .dataTables_wrapper .dataTables_info {
             color: #64748b;
             font-size: .85rem;
@@ -196,8 +190,8 @@
         }
 
         /* =====================================================
-                                                                                                               PAGINATION (BOOTSTRAP 5)
-                                                                                                            ===================================================== */
+                                                                                                                               PAGINATION (BOOTSTRAP 5)
+                                                                                                                            ===================================================== */
         .dataTables_wrapper .dataTables_paginate {
             padding-top: 12px;
         }
@@ -260,8 +254,8 @@
         }
 
         /* =====================================================
-                                                                                                               PROCESSING
-                                                                                                            ===================================================== */
+                                                                                                                               PROCESSING
+                                                                                                                            ===================================================== */
         .dataTables_processing {
             border-radius: 12px;
             border: 1px solid #e2e8f0;
@@ -269,8 +263,8 @@
         }
 
         /* =========================================
-                            SOFT BADGE
-                        ========================================= */
+                                            SOFT BADGE
+                                        ========================================= */
 
         .badge-soft {
             display: inline-flex;
@@ -308,6 +302,22 @@
         .badge-lembaga {
             background: #f5f3ff;
             color: #6d28d9;
+        }
+
+
+        .nama-kegiatan {
+            width: 260px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+            font-weight: 600;
+            color: #334155;
         }
 
         /* Tingkat */
@@ -371,9 +381,10 @@
             font-weight: 600;
         }
 
+
         /* =====================================================
-                                                                                                    RESPONSIVE
-                                                                                                ===================================================== */
+                                                                                                                    RESPONSIVE
+                                                                                                                ===================================================== */
         @media (max-width:768px) {
             .dataTables_wrapper {
                 padding: 15px;
@@ -568,6 +579,8 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script>
         $('#tablePrestasi').DataTable({
+            processing: true,
+            serverSide: true,
             ajax: "{{ route('prestasi.data', $jenis) }}",
             scrollX: true,
             scrollCollapse: true,
@@ -576,10 +589,7 @@
                 "rt" +
                 "<'row align-items-center mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-md-end'p>>",
             columns: [{
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return meta.row + meta.settings._iDisplayStart + 1;
-                    },
+                    data: 'DT_RowIndex',
                     searchable: false,
                     orderable: false
                 },
@@ -623,16 +633,10 @@
                     render: function(data) {
 
                         return `
-                        <span
-                        title="${data}"
-                        style="
-                        display:inline-block;
-                        max-width:260px;
-                        overflow:hidden;
-                        text-overflow:ellipsis;
-                        white-space:nowrap;">
-                        ${data}
-                        </span>`;
+                        <div class="nama-kegiatan"
+                            title="${data}">
+                            ${data}
+                        </div>`;
                     }
                 },
                 {
@@ -654,7 +658,7 @@
                     }
                 },
                 {
-                    data: 'kategori'
+                    data: 'kategori_kegiatan'
                 },
                 {
                     data: 'juara',
