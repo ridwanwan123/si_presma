@@ -136,15 +136,24 @@ class PrestasiController extends Controller
             ->map(function ($item) {
 
                 return [
-                    'id'                  => $item->id,
-                    'nama_kegiatan'       => $item->nama_kegiatan,
-                    'tingkat'             => $item->tingkat,
-                    'kategori'            => $item->kategori_kegiatan,
-                    'juara'               => $item->juara,
-                    'lembaga'             => $item->lembaga_penyelenggara,
-                    'penyelenggara'       => $item->kategori_penyelenggara,
-                    'tanggal'             => optional($item->waktu_kegiatan)->format('d M Y'),
-                    'status_verifikasi'   => $item->status_verifikasi,
+                    'id'                        => $item->id,
+                    'bidang_prestasi'           => $item->bidang_prestasi,
+                    'nama_kegiatan'             => $item->nama_kegiatan,
+                    'tingkat'                   => $item->tingkat,
+                    'kategori'                  => $item->kategori_kegiatan,
+                    'juara'                     => $item->juara,
+                    'lembaga_penyelenggara'     => $item->lembaga_penyelenggara,
+                    'kategori_penyelenggara'    => $item->kategori_penyelenggara,
+                    'waktu_kegiatan'            => optional($item->waktu_kegiatan)->format('d M Y'),
+                    'skor_luring' => $item->skor_luring !== null
+                        ? number_format($item->skor_luring, 0, ',', '.')
+                        : null,
+
+                    'skor_daring' => $item->skor_daring !== null
+                        ? number_format($item->skor_daring, 0, ',', '.')
+                        : null,
+                    'link_drive_bukti'          => $item->link_drive_bukti,
+                    'keterangan'                => $item->keterangan,
                 ];
             });
 
