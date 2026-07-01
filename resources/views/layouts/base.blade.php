@@ -114,6 +114,23 @@
         @stack('scripts')
         <!-- JS -->
         <script src="{{ asset('assets/js/base.js') }}"></script>
+        <script>
+            document.querySelectorAll('.has-submenu').forEach(menu => {
+
+                menu.addEventListener('click', function(e) {
+
+                    e.preventDefault();
+
+                    const submenu = this.nextElementSibling;
+
+                    submenu.classList.toggle('show');
+
+                    this.classList.toggle('open');
+
+                });
+
+            });
+        </script>
 </body>
 
 </html>

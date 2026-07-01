@@ -51,7 +51,7 @@
         <!-- Bidang Prestasi -->
         <div class="menu-title">Bidang Prestasi</div>
 
-        <a href="#" class="menu-item has-submenu">
+        <a href="#" class="menu-item has-submenu {{ request()->routeIs('prestasi.*') ? 'open' : '' }}">
             <i class="bi bi-trophy"></i>
             <span>Prestasi</span>
             <i class="bi bi-chevron-down ms-auto"></i>
@@ -61,17 +61,29 @@
 
             <a href="{{ route('prestasi.index', 'akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
-                Akademik
+
+                <i class="bi bi-mortarboard"></i>
+
+                <span>Akademik</span>
+
             </a>
 
             <a href="{{ route('prestasi.index', 'non-akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'non-akademik' ? 'active' : '' }}">
-                Non-Akademik
+
+                <i class="bi bi-award"></i>
+
+                <span>Non-Akademik</span>
+
             </a>
 
             <a href="{{ route('prestasi.index', 'keagamaan') }}"
                 class="menu-item {{ request()->route('jenis') == 'keagamaan' ? 'active' : '' }}">
-                Keagamaan
+
+                <i class="bi bi-book"></i>
+
+                <span>Keagamaan</span>
+
             </a>
 
         </div>

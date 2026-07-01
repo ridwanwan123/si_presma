@@ -251,6 +251,11 @@ SIDEBAR
     height: 40px;
 }
 
+/* hide arrow */
+.sidebar.collapsed .has-submenu .bi-chevron-down {
+    display: none;
+}
+
 /* menu */
 .sidebar-menu {
     flex: 1;
@@ -334,7 +339,7 @@ SIDEBAR
    SUBMENU ANIMATION (SMOOTH)
 ========================= */
 /* =========================
-   SUBMENU COLLAPSIBLE (DEFAULT CLOSED)
+   SUBMENU COLLAPSIBLE
 ========================= */
 
 .submenu {
@@ -343,23 +348,24 @@ SIDEBAR
     margin-left: 18px;
     margin-top: 6px;
     gap: 4px;
-
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: all 0.3s ease;
+    transition:
+        max-height 0.3s ease,
+        opacity 0.25s ease;
 }
 
 /* OPEN STATE */
 .submenu.show {
-    max-height: 500px;
+    max-height: 300px;
     opacity: 1;
 }
 
-/* OPEN STATE */
-.menu-item.has-submenu.active + .submenu {
-    max-height: 300px;
-    opacity: 1;
+/* ARROW ROTATE */
+.has-submenu.open .bi-chevron-down {
+    transform: rotate(180deg);
+    transition: 0.25s ease;
 }
 /* =========================
    SECTION TITLE IMPROVEMENT
