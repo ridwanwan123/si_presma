@@ -9,14 +9,18 @@
                 <h2>Prestasi {{ ucfirst($jenis) }}</h2>
                 <p>Data lomba & hasil verifikasi assessor</p>
             </div>
-            <div class="action-group"> <button class="btn btn-success btn-sm">
+            <div class="action-group">
+                <a href="{{ route('prestasi.create', $jenis) }}"
+                    class="btn btn-success btn-sm {{ request()->routeIs('prestasi.create') ? 'active' : '' }}"">
                     <i class="bi bi-plus"></i>
                     Tambah
-                </button> <a href="{{ route('prestasi.import', $jenis) }}"
+                </a>
+                <a href="{{ route('prestasi.import', $jenis) }}"
                     class="btn btn-primary btn-sm {{ request()->routeIs('prestasi.import') ? 'active' : '' }}"">
                     <i class="bi bi-upload"></i>
                     Import
-                </a> </div>
+                </a>
+            </div>
         </div>
         {{-- SUMMARY --}}
         <div class="row g-3 mb-4">
@@ -150,6 +154,7 @@
                             <th>Skor</th>
                             <th>Link Drive</th>
                             <th>Keterangan</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -325,9 +330,72 @@
                 },
                 {
                     data: 'keterangan',
-                    defaultContent: '-'
+                    defaultContent: ''
+                },
+                {
+                    data: 'id',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function(data) {
+
+                        const editUrl = "{{ route('prestasi.edit', ['jenis' => $jenis, 'id' => ':id']) }}"
+                            .replace(':id', data);
+
+                        const deleteUrl =
+                            "{{ route('prestasi.destroy', ['jenis' => $jenis, 'id' => ':id']) }}"
+                            .replace(':id', data);
+
+                        return `
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="${editUrl}"
+                                    class="btn btn-sm btn-warning"
+                                    title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <form action="${deleteUrl}" method="POST" class="form-delete" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        title="Hapus">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        `;
+                    }
                 }
             ]
+        });
+    </script>
+    <script>
+        document.addEventListener('submit', function(e) {
+
+            if (!e.target.matches('.form-delete')) {
+                return;
+            }
+
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Hapus Data?',
+                text: 'Apakah Anda yakin ingin menghapus data ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit();
+                }
+            });
+
         });
     </script>
 @endpush

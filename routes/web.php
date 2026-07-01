@@ -79,6 +79,11 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('prestasi')->name('prestasi.')->group(function () {
+        /*
+        |--------------------------------------------------------------------------
+        | SECTION IMPORT
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('{jenis}/import', [PrestasiController::class, 'import'])
             ->name('import');
@@ -86,28 +91,92 @@ Route::middleware('auth')->group(function () {
         Route::post('{jenis}/import', [PrestasiController::class, 'upload'])
             ->name('import.upload');
 
-        Route::post('{jenis}/checking_import',[PrestasiController::class, 'checking_import_prestasi'])
+        Route::post('{jenis}/checking_import',
+            [PrestasiController::class, 'checking_import_prestasi']
+        )
             ->name('checking_import');
-        
-        Route::post('{jenis}/save-preview',[PrestasiController::class,'save_preview']) //tombol preview
+
+        Route::post('{jenis}/save-preview',
+            [PrestasiController::class,'save_preview']
+        )
             ->name('save_preview');
 
-        Route::get('{jenis}/preview',[PrestasiController::class,'preview']) // bawa data ke halaman preview
+        Route::get('{jenis}/preview',
+            [PrestasiController::class,'preview']
+        )
             ->name('preview');
 
-        Route::post('{jenis}/store-import', [PrestasiController::class, 'store_import']) // simpan data ke database
+        Route::post('{jenis}/store-import',
+            [PrestasiController::class,'store_import']
+        )
             ->name('store_import');
 
-        Route::get('{jenis}/template', [PrestasiController::class, 'template'])
+        Route::get('{jenis}/template',
+            [PrestasiController::class,'template']
+        )
             ->name('template');
 
-        Route::get('{jenis}', [PrestasiController::class, 'index'])
+        /*
+        |--------------------------------------------------------------------------
+        | CRUD PRESTASI
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('{jenis}/create',
+            [PrestasiController::class,'create']
+        )
+            ->name('create');
+
+
+        Route::post('{jenis}',
+            [PrestasiController::class,'store']
+        )
+            ->name('store');
+
+
+        Route::get('{jenis}/{id}/edit',
+            [PrestasiController::class,'edit']
+        )
+            ->name('edit');
+
+
+        Route::put('{jenis}/{id}',
+            [PrestasiController::class,'update']
+        )
+            ->name('update');
+
+
+        Route::delete('{jenis}/{id}',
+            [PrestasiController::class,'destroy']
+        )
+            ->name('destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATATABLE SERVER SIDE
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('{jenis}/data',
+            [PrestasiController::class,'data']
+        )
+            ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
+            ->name('data');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | INDEX (PALING BAWAH)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('{jenis}',
+            [PrestasiController::class,'index']
+        )
             ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
             ->name('index');
 
-        Route::get('{jenis}/data', [PrestasiController::class, 'data'])
-            ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
-            ->name('data');
     });
     /*
     |--------------------------------------------------------------------------

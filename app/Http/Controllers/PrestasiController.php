@@ -81,6 +81,11 @@ class PrestasiController extends Controller
     //     ]);
     // }
 
+    /*
+    |--------------------------------------------------------------------------
+    | INDEX & DATA
+    |--------------------------------------------------------------------------
+    */
     public function index($jenis)
     {
         $mapping = [
@@ -153,6 +158,11 @@ class PrestasiController extends Controller
             ->make(true);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FITUR IMPORT
+    |--------------------------------------------------------------------------
+    */
     public function template($jenis)
     {
         return Excel::download(
@@ -541,6 +551,292 @@ class PrestasiController extends Controller
                 'message' => 'Terjadi kesalahan saat menyimpan data.'
             ], 500);
 
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | FITUR CREATE, EDIT, DELETE
+    |--------------------------------------------------------------------------
+    */
+
+    public function create($jenis)
+    {
+        $mapping = [
+            'akademik' => 'Akademik',
+            'non-akademik' => 'Non Akademik',
+            'keagamaan' => 'Keagamaan',
+            'gtk' => 'GTK',
+            'lembaga' => 'Lembaga',
+        ];
+
+        $breadcrumb = breadcrumb([
+            'Prestasi' => route('prestasi.index', $jenis),
+            $mapping[$jenis] => route('prestasi.index', $jenis),
+            'Tambah Prestasi '.$mapping[$jenis]
+        ]);
+
+        return view(
+            'prestasi.form',
+            [
+                'jenis' => $jenis,
+                'mode' => 'create',
+                'prestasi' => null,
+                'data' => null,
+                'breadcrumb' => $breadcrumb
+            ]
+        );
+    }
+
+    public function store(Request $request, $jenis)
+    {
+        $validatedData = $request->validate([
+            'bidang_prestasi' => 'required|in:Akademik,Non Akademik,Keagamaan,GTK,Lembaga',
+            'nama_kegiatan' => 'required|string|max:255',
+            'tingkat' => 'required|in:Kabupaten/Kota,Provinsi,Nasional,Internasional',
+            'kategori_kegiatan' => 'required|in:Individu,Beregu',
+            'juara' => 'required|string|max:255',
+            'lembaga_penyelenggara' => 'nullable|string|max:255',
+            'kategori_penyelenggara' => 'nullable|string|max:255',
+            'waktu_kegiatan' => 'required|date',
+            'skor_luring' => 'nullable|numeric',
+            'skor_daring' => 'nullable|numeric',
+            'link_drive_bukti' => 'nullable|url',
+            'keterangan' => 'nullable|string',
+        ]);
+
+
+        try {
+            DB::beginTransaction();
+
+            $validatedData['madrasah_id'] = auth()->user()->madrasah_id;
+            $validatedData['submitter'] = auth()->user()->nama;
+            $validatedData['periode'] = now()->year;
+
+            $prestasi = PrestasiSiswa::create($validatedData);
+
+            ActivityLogger::log(
+                event: 'create',
+                description: 'Insert Data Prestasi ' . $prestasi->bidang_prestasi,
+                subject: $prestasi,
+                properties: $validatedData
+            );
+
+            DB::commit();
+
+            return redirect()->route('prestasi.index', $jenis)->with('success', 'Data prestasi berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Gagal menambahkan data prestasi', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'data' => $validatedData ?? null,
+            ]);
+
+            return redirect()->back()->withInput()->with('error', 'Data prestasi gagal ditambahkan.');
+        }
+    }
+
+    public function edit($jenis, $id)
+    {
+        $mapping = [
+            'akademik' => 'Akademik',
+            'non-akademik' => 'Non Akademik',
+            'keagamaan' => 'Keagamaan',
+            'gtk' => 'GTK',
+            'lembaga' => 'Lembaga',
+        ];
+
+        $prestasi = PrestasiSiswa::findOrFail($id);
+
+        $breadcrumb = breadcrumb([
+            'Prestasi' => route('prestasi.index', $jenis),
+            $mapping[$jenis] => route('prestasi.index', $jenis),
+            'Edit Prestasi ' . $mapping[$jenis]
+        ]);
+
+        return view('prestasi.form', compact('jenis', 'breadcrumb', 'prestasi'))
+            ->with(['mode' => 'edit']);
+    }
+
+    public function update(Request $request, $jenis, $id)
+    {
+        $validatedData = $request->validate([
+            'bidang_prestasi' => 'required|in:Akademik,Non Akademik,Keagamaan,GTK,Lembaga',
+            'nama_kegiatan' => 'required|string|max:255',
+            'tingkat' => 'required|in:Kabupaten/Kota,Provinsi,Nasional,Internasional',
+            'kategori_kegiatan' => 'required|in:Individu,Beregu',
+            'juara' => 'required|string|max:255',
+            'lembaga_penyelenggara' => 'nullable|string|max:255',
+            'kategori_penyelenggara' => 'nullable|string|max:255',
+            'waktu_kegiatan' => 'required|date',
+            'skor_luring' => 'nullable|numeric',
+            'skor_daring' => 'nullable|numeric',
+            'link_drive_bukti' => 'nullable|url',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $prestasi = PrestasiSiswa::findOrFail($id);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Data lama sebelum update
+            |--------------------------------------------------------------------------
+            */
+            $oldData = $prestasi->only([
+                'bidang_prestasi',
+                'nama_kegiatan',
+                'tingkat',
+                'kategori_kegiatan',
+                'juara',
+                'lembaga_penyelenggara',
+                'kategori_penyelenggara',
+                'waktu_kegiatan',
+                'skor_luring',
+                'skor_daring',
+                'link_drive_bukti',
+                'keterangan',
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update data
+            |--------------------------------------------------------------------------
+            */
+            $prestasi->update($validatedData);
+            $prestasi->refresh();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Data baru setelah update
+            |--------------------------------------------------------------------------
+            */
+            $newData = $prestasi->only([
+                'bidang_prestasi',
+                'nama_kegiatan',
+                'tingkat',
+                'kategori_kegiatan',
+                'juara',
+                'lembaga_penyelenggara',
+                'kategori_penyelenggara',
+                'waktu_kegiatan',
+                'skor_luring',
+                'skor_daring',
+                'link_drive_bukti',
+                'keterangan',
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Log
+            |--------------------------------------------------------------------------
+            */
+            ActivityLogger::log(
+                event: 'update',
+                description: 'Update Data Prestasi ' . $prestasi->bidang_prestasi,
+                subject: $prestasi,
+                properties: [
+                    'old' => $oldData,
+                    'new' => $newData,
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()->route('prestasi.index', $jenis)
+                ->with('success', 'Data prestasi berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Gagal update data prestasi', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'id' => $id,
+                'data' => $validatedData ?? null,
+            ]);
+
+            return redirect()->back()->withInput()
+                ->with('error', 'Data prestasi gagal diperbarui.');
+        }
+    }
+
+    public function destroy($jenis, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $prestasi = PrestasiSiswa::findOrFail($id);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Backup data sebelum delete
+            |--------------------------------------------------------------------------
+            */
+
+            $deletedData = $prestasi->only([
+                'id',
+                'bidang_prestasi',
+                'nama_kegiatan',
+                'tingkat',
+                'kategori_kegiatan',
+                'juara',
+                'lembaga_penyelenggara',
+                'kategori_penyelenggara',
+                'waktu_kegiatan',
+                'skor_luring',
+                'skor_daring',
+                'link_drive_bukti',
+                'keterangan',
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete data (Soft Delete)
+            |--------------------------------------------------------------------------
+            */
+
+            $prestasi->delete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Log
+            |--------------------------------------------------------------------------
+            */
+
+            ActivityLogger::log(
+                event: 'delete',
+                description: 'Menghapus data prestasi ' . $prestasi->bidang_prestasi,
+                subject: $prestasi,
+                properties: [
+                    'deleted_data' => $deletedData,
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()
+                ->route('prestasi.index', $jenis)
+                ->with('success', 'Data prestasi berhasil dihapus.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Gagal menghapus data prestasi', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'prestasi_id' => $id,
+            ]);
+
+            return redirect()
+                ->route('prestasi.index', $jenis)
+                ->with('error', 'Data prestasi gagal dihapus.');
         }
     }
 }
