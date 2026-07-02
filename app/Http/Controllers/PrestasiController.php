@@ -104,10 +104,15 @@ class PrestasiController extends Controller
 
         $summary = (clone $query)
             ->selectRaw("
-                COUNT(*) as total,
-                SUM(status_verifikasi = 'verified') as verified,
-                SUM(status_verifikasi = 'pending') as pending,
-                SUM(status_verifikasi = 'rejected') as rejected
+                COUNT(*) as total_prestasi,
+
+                SUM(CASE WHEN tingkat = 'Kabupaten/Kota' THEN 1 ELSE 0 END) as kabupaten,
+                SUM(CASE WHEN tingkat = 'Provinsi' THEN 1 ELSE 0 END) as provinsi,
+                SUM(CASE WHEN tingkat = 'Nasional' THEN 1 ELSE 0 END) as nasional,
+                SUM(CASE WHEN tingkat = 'Internasional' THEN 1 ELSE 0 END) as internasional,
+
+                COALESCE(SUM(skor_luring), 0) as total_skor_luring,
+                COALESCE(SUM(skor_daring), 0) as total_skor_daring
             ")
             ->first();
 
@@ -140,21 +145,48 @@ class PrestasiController extends Controller
             ->latest();
 
         return DataTables::of($query)
+
             ->addIndexColumn()
-            ->editColumn('waktu_kegiatan', function($item){
+
+            ->editColumn('waktu_kegiatan', function ($item) {
                 return optional($item->waktu_kegiatan)
                     ->format('d M Y');
             })
-            ->editColumn('skor_luring', function($item){
+
+            ->editColumn('skor_luring', function ($item) {
                 return $item->skor_luring !== null
-                    ? number_format($item->skor_luring,0,',','.')
+                    ? number_format($item->skor_luring, 0, ',', '.')
                     : null;
             })
-            ->editColumn('skor_daring', function($item){
+
+            ->editColumn('skor_daring', function ($item) {
                 return $item->skor_daring !== null
-                    ? number_format($item->skor_daring,0,',','.')
+                    ? number_format($item->skor_daring, 0, ',', '.')
                     : null;
             })
+
+            ->filter(function ($query) {
+
+                if (request()->has('search')) {
+
+                    $keyword = request('search')['value'];
+
+                    if (!empty($keyword)) {
+
+                        $query->where(function ($q) use ($keyword) {
+
+                            $q->where('nama_kegiatan', 'like', "%{$keyword}%")
+                            ->orWhere('kategori_kegiatan', 'like', "%{$keyword}%")
+                            ->orWhere('lembaga_penyelenggara', 'like', "%{$keyword}%")
+                            ->orWhere('kategori_penyelenggara', 'like', "%{$keyword}%")
+                            ->orWhere('keterangan', 'like', "%{$keyword}%")
+                            ->orWhere('bidang_prestasi', 'like', "%{$keyword}%")
+                            ->orWhere('tingkat', 'like', "%{$keyword}%");
+                        });
+                    }
+                }
+            })
+
             ->make(true);
     }
 
