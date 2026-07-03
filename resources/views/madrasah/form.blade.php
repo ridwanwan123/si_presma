@@ -5,8 +5,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                       FORM MADRASAH
-                                                                                                                                                                    ========================= */
+                                                                                                                                                                                                                                                                                                                                                                                                       FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                                                                                                    ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -97,6 +97,25 @@
 
         }
 
+        .form-card {
+            border: 1px solid #eef2f7;
+            border-radius: 14px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .form-card-header {
+            padding: 12px 16px;
+            font-weight: 700;
+            font-size: .9rem;
+            border-bottom: 1px solid #eef2f7;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .form-card-body {
+            padding: 16px;
+        }
 
 
         /* BUTTON */
@@ -153,6 +172,42 @@
             }
 
         }
+
+        #map {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+        }
+
+        #mapSearch {
+            border-radius: 10px 0 0 10px;
+        }
+
+        #btnSearchMap {
+            border-radius: 0 10px 10px 0;
+            font-weight: 600;
+        }
+
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+
+        .modal {
+            z-index: 1055 !important;
+        }
+
+        .cropper-container {
+            z-index: 1060 !important;
+        }
+
+        .cropper-canvas,
+        .cropper-crop-box,
+        .cropper-drag-box,
+        .cropper-face {
+            z-index: 1065 !important;
+        }
+
+        .cropper-modal {
+            background-color: rgba(0, 0, 0, 0.35) !important;
+        }
     </style>
 @endpush
 
@@ -203,357 +258,696 @@
 
         <div class="content-card">
 
-
+            {{-- HEADER --}}
             <div class="table-header">
-                <h6>
-                    Form Data Madrasah
-                </h6>
+                <div>
+                    <h6 class="mb-0">Form Data Madrasah</h6>
+                    <small class="text-muted">
+                        Lengkapi data madrasah dengan benar
+                    </small>
+                </div>
             </div>
 
 
             <div class="content-card-body">
 
-
                 <form action="{{ $mode === 'edit' ? route('madrasah.update', $madrasah->id) : route('madrasah.store') }}"
-                    method="POST">
+                    method="POST" enctype="multipart/form-data">
 
                     @csrf
-
                     @if ($mode === 'edit')
                         @method('PUT')
                     @endif
 
 
-                    <div class="row g-3">
+                    {{-- =========================
+                        PROFILE MADRASAH
+                    ========================= --}}
+                    <div class="form-card mb-4">
 
-
-                        {{-- Jenjang --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Jenjang Madrasah
-                            </label>
-
-                            <select name="jenjang_madrasah"
-                                class="form-select @error('jenjang_madrasah') is-invalid @enderror">
-
-                                <option value="">
-                                    Pilih Jenjang
-                                </option>
-
-                                <option value="RA"
-                                    {{ old('jenjang_madrasah', $madrasah->jenjang_madrasah) == 'RA' ? 'selected' : '' }}>
-                                    RA
-                                </option>
-
-                                <option value="MI"
-                                    {{ old('jenjang_madrasah', $madrasah->jenjang_madrasah) == 'MI' ? 'selected' : '' }}>
-                                    MI
-                                </option>
-
-                                <option value="MTs"
-                                    {{ old('jenjang_madrasah', $madrasah->jenjang_madrasah) == 'MTs' ? 'selected' : '' }}>
-                                    MTs
-                                </option>
-
-                                <option value="MA"
-                                    {{ old('jenjang_madrasah', $madrasah->jenjang_madrasah) == 'MA' ? 'selected' : '' }}>
-                                    MA
-                                </option>
-
-                            </select>
-                            @error('jenjang_madrasah')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
+                        <div class="form-card-header">
+                            Profile Madrasah
                         </div>
 
+                        <div class="form-card-body">
+                            <div class="row g-3">
 
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Jenjang Madrasah <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="jenjang_madrasah" class="form-select" required>
+                                        <option value="">Pilih Jenjang</option>
 
-                        {{-- Nama Madrasah --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Nama Madrasah
-                            </label>
-
-                            <input type="text" name="nama_madrasah"
-                                value="{{ old('nama_madrasah', $madrasah->nama_madrasah) }}"
-                                class="form-control @error('nama_madrasah') is-invalid @enderror">
-
-                            @error('nama_madrasah')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
+                                        @foreach (['RA', 'MI', 'MTs', 'MA'] as $jenjang)
+                                            <option value="{{ $jenjang }}"
+                                                {{ old('jenjang_madrasah', $madrasah->jenjang_madrasah ?? '') == $jenjang ? 'selected' : '' }}>
+                                                {{ $jenjang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                            @enderror
 
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Status Madrasah <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="status_madrasah" class="form-select" required>
+                                        <option value="">Pilih Status</option>
 
-
-
-                        {{-- NPSN --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                NPSN
-                            </label>
-
-                            <input type="text" name="npsn" maxlength="8" value="{{ old('npsn', $madrasah->npsn) }}"
-                                class="form-control @error('npsn') is-invalid @enderror">
-
-                            @error('npsn')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
+                                        @foreach (['Negeri', 'Swasta'] as $status)
+                                            <option value="{{ $status }}"
+                                                {{ old('status_madrasah', $madrasah->status_madrasah ?? '') == $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                            @enderror
 
-                        </div>
-
-
-
-                        {{-- Akreditasi --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Akreditasi
-                            </label>
-
-                            <select name="akreditasi" class="form-select @error('akreditasi') is-invalid @enderror">
-                                <option value="">
-                                    Pilih Akreditasi
-                                </option>
-
-                                <option value="A"
-                                    {{ old('akreditasi', $madrasah->akreditasi) == 'A' ? 'selected' : '' }}>
-                                    A
-                                </option>
-
-                                <option value="B"
-                                    {{ old('akreditasi', $madrasah->akreditasi) == 'B' ? 'selected' : '' }}>
-                                    B
-                                </option>
-
-                                <option value="C"
-                                    {{ old('akreditasi', $madrasah->akreditasi) == 'C' ? 'selected' : '' }}>
-                                    C
-                                </option>
-
-                                <option value="belum_diakreditasi"
-                                    {{ old('akreditasi', $madrasah->akreditasi) == 'belum_diakreditasi' ? 'selected' : '' }}>
-                                    Belum Diakreditasi
-                                </option>
-
-                            </select>
-
-                            @error('akreditasi')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Nama Madrasah <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="nama_madrasah" class="form-control" required
+                                        value="{{ old('nama_madrasah', $madrasah->nama_madrasah ?? '') }}">
                                 </div>
-                            @enderror
 
-                        </div>
-
-
-
-                        {{-- Kota --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Kota/Kabupaten
-                            </label>
-
-                            <select name="kota" class="form-select @error('kota') is-invalid @enderror">
-
-                                <option value="">
-                                    Pilih Kota/Kabupaten
-                                </option>
-
-                                <option value="Jakarta Timur"
-                                    {{ old('kota', $madrasah->kota) == 'Jakarta Timur' ? 'selected' : '' }}>
-                                    Jakarta Timur
-                                </option>
-
-                                <option value="Jakarta Barat"
-                                    {{ old('kota', $madrasah->kota) == 'Jakarta Barat' ? 'selected' : '' }}>
-                                    Jakarta Barat
-                                </option>
-
-                                <option value="Jakarta Selatan"
-                                    {{ old('kota', $madrasah->kota) == 'Jakarta Selatan' ? 'selected' : '' }}>
-                                    Jakarta Selatan
-                                </option>
-
-                                <option value="Jakarta Utara"
-                                    {{ old('kota', $madrasah->kota) == 'Jakarta Utara' ? 'selected' : '' }}>
-                                    Jakarta Utara
-                                </option>
-
-                                <option value="Jakarta Pusat"
-                                    {{ old('kota', $madrasah->kota) == 'Jakarta Pusat' ? 'selected' : '' }}>
-                                    Jakarta Pusat
-                                </option>
-
-                                <option value="Kepulauan Seribu"
-                                    {{ old('kota', $madrasah->kota) == 'Kepulauan Seribu' ? 'selected' : '' }}>
-                                    Kepulauan Seribu
-                                </option>
-
-                            </select>
-                            @error('kota')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        NPSN <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="npsn" class="form-control" maxlength="8" required
+                                        value="{{ old('npsn', $madrasah->npsn ?? '') }}">
                                 </div>
-                            @enderror
 
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Akreditasi
+                                    </label>
+                                    <select name="akreditasi" class="form-select">
+                                        <option value="">Pilih</option>
 
-
-
-                        {{-- Provinsi --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Provinsi
-                            </label>
-
-                            <input type="text" name="provinsi"
-                                value="{{ old('provinsi', $madrasah->provinsi ?: 'DKI Jakarta') }}" readonly
-                                class="form-control">
-
-                            @error('provinsi')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
+                                        @foreach (['A', 'B', 'C'] as $ak)
+                                            <option value="{{ $ak }}"
+                                                {{ old('akreditasi', $madrasah->akreditasi ?? '') == $ak ? 'selected' : '' }}>
+                                                {{ $ak }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                            @enderror
 
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Logo Madrasah</label>
 
+                                    <input type="file" class="form-control crop-image-input" data-target="logo_cropped"
+                                        data-preview="previewLogo" data-title="Crop Logo Madrasah" accept="image/*">
 
+                                    <input type="hidden" name="logo_cropped" id="logo_cropped">
 
-                        {{-- Alamat --}}
-                        <div class="col-12">
-
-                            <label class="form-label">
-                                Alamat Sekolah
-                            </label>
-
-                            <textarea name="alamat_sekolah" rows="4" class="form-control @error('alamat_sekolah') is-invalid @enderror">{{ old('alamat_sekolah', $madrasah->alamat_sekolah) }}</textarea>
-
-                            @error('alamat_sekolah')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
+                                    <img id="previewLogo" class="mt-2 rounded"
+                                        style="width:90px;height:90px;object-fit:cover;"
+                                        src="{{ $mode == 'edit' && $madrasah->logo ? asset('storage/' . $madrasah->logo) : '' }}">
                                 </div>
-                            @enderror
 
+                            </div>
                         </div>
-
-
-
-                        {{-- Kepala Madrasah --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Nama Kepala Madrasah
-                            </label>
-
-                            <input type="text" name="nama_kepala_madrasah"
-                                value="{{ old('nama_kepala_madrasah', $madrasah->nama_kepala_madrasah) }}"
-                                class="form-control">
-
-                            @error('nama_kepala_madrasah')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
-                        </div>
-
-
-
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                NIP Kepala Madrasah
-                            </label>
-
-                            <input type="text" name="nip_kepala_madrasah" maxlength="18"
-                                value="{{ old('nip_kepala_madrasah', $madrasah->nip_kepala_madrasah) }}"
-                                oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="form-control">
-
-                            @error('nip_kepala_madrasah')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
-                        </div>
-
-
-
-                        {{-- TU --}}
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Nama Kepala Urusan Tata Usaha
-                            </label>
-
-                            <input type="text" name="nama_kepala_urusan_tata_usaha"
-                                value="{{ old('nama_kepala_urusan_tata_usaha', $madrasah->nama_kepala_urusan_tata_usaha) }}"
-                                class="form-control @error('nama_kepala_urusan_tata_usaha') is-invalid @enderror">
-
-                            @error('nama_kepala_urusan_tata_usaha')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
-                        </div>
-
-
-
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                NIP Kepala Urusan Tata Usaha
-                            </label>
-
-                            <input type="text" name="nip_kepala_urusan_tata_usaha"
-                                value="{{ old('nip_kepala_urusan_tata_usaha', $madrasah->nip_kepala_urusan_tata_usaha) }}"
-                                maxlength="18" pattern="[0-9]{18}" oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                                class="form-control @error('nip_kepala_urusan_tata_usaha') is-invalid @enderror">
-
-                            @error('nip_kepala_urusan_tata_usaha')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
-                        </div>
-
-
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2 mt-4">
+
+                    {{-- =========================
+                        LOKASI
+                    ========================= --}}
+                    <div class="form-card mb-4">
+
+                        <div class="form-card-header">
+                            Lokasi Madrasah
+                        </div>
+
+                        <div class="form-card-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Provinsi</label>
+                                    <input type="text" name="provinsi" class="form-control"
+                                        value="{{ old('provinsi', $madrasah->provinsi ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Kota</label>
+                                    <input type="text" name="kota" class="form-control"
+                                        value="{{ old('kota', $madrasah->kota ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Kecamatan</label>
+                                    <input type="text" name="kecamatan" class="form-control"
+                                        value="{{ old('kecamatan', $madrasah->kecamatan ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Kelurahan</label>
+                                    <input type="text" name="kelurahan" class="form-control"
+                                        value="{{ old('kelurahan', $madrasah->kelurahan ?? '') }}">
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Alamat Sekolah</label>
+                                    <textarea name="alamat_sekolah" rows="3" class="form-control">{{ old('alamat_sekolah', $madrasah->alamat_sekolah ?? '') }}</textarea>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Latitude</label>
+                                    <input type="text" name="latitude" class="form-control"
+                                        value="{{ old('latitude', $madrasah->latitude ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Longitude</label>
+                                    <input type="text" name="longitude" class="form-control"
+                                        value="{{ old('longitude', $madrasah->longitude ?? '') }}">
+                                </div>
+
+                                <div class="col-12 mt-2">
+
+                                    <label class="form-label">
+                                        Lokasi di Peta
+                                    </label>
+
+                                    <!-- SEARCH BOX -->
+                                    <div class="position-relative mb-2">
+
+                                        <input type="text" id="mapSearch" class="form-control"
+                                            placeholder="Cari alamat madrasah...">
+
+                                        <div id="mapSuggestions" class="list-group position-absolute w-100"
+                                            style="z-index: 999; max-height: 250px; overflow-y: auto;">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- MAP -->
+                                    <div id="map"
+                                        style="height: 350px; border-radius: 12px; border: 1px solid #ddd;"></div>
+
+                                    <small class="text-muted d-block mt-2">
+                                        Klik peta atau gunakan pencarian untuk menentukan lokasi
+                                    </small>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {{-- =========================
+                        KAMAD
+                    ========================= --}}
+                    <div class="form-card mb-4">
+
+                        <div class="form-card-header">
+                            Kepala Madrasah (Kamad)
+                        </div>
+
+                        <div class="form-card-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Kamad <span class="text-danger">*</span></label>
+                                    <input type="text" name="nama_kepala_madrasah" class="form-control" required
+                                        value="{{ old('nama_kepala_madrasah', $madrasah->nama_kepala_madrasah ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">NIP Kamad</label>
+                                    <input type="text" name="nip_kepala_madrasah" class="form-control"
+                                        value="{{ old('nip_kepala_madrasah', $madrasah->nip_kepala_madrasah ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">No Telepon Kamad</label>
+                                    <input type="text" name="no_telepon_kamad" class="form-control"
+                                        value="{{ old('no_telepon_kamad', $madrasah->no_telepon_kamad ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Foto Kamad</label>
+
+                                    <input type="file" class="form-control crop-image-input"
+                                        data-target="foto_kamad_cropped" data-preview="previewKamad"
+                                        data-title="Crop Foto Kamad" accept="image/*">
+
+                                    <input type="hidden" name="foto_kamad_cropped" id="foto_kamad_cropped">
+
+                                    <img id="previewKamad" class="mt-2 rounded"
+                                        style="width:90px;height:90px;object-fit:cover;"
+                                        src="{{ $mode == 'edit' && $madrasah->foto_kamad ? asset('storage/' . $madrasah->foto_kamad) : '' }}">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {{-- =========================
+                        KTU
+                    ========================= --}}
+                    <div class="form-card mb-4">
+
+                        <div class="form-card-header">
+                            Kepala TU (KTU)
+                        </div>
+
+                        <div class="form-card-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama KTU</label>
+                                    <input type="text" name="nama_kepala_urusan_tata_usaha" class="form-control"
+                                        value="{{ old('nama_kepala_urusan_tata_usaha', $madrasah->nama_kepala_urusan_tata_usaha ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">NIP KTU</label>
+                                    <input type="text" name="nip_kepala_urusan_tata_usaha" class="form-control"
+                                        value="{{ old('nip_kepala_urusan_tata_usaha', $madrasah->nip_kepala_urusan_tata_usaha ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">No Telepon KTU</label>
+                                    <input type="text" name="no_telepon_katu" class="form-control"
+                                        value="{{ old('no_telepon_katu', $madrasah->no_telepon_katu ?? '') }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Foto KTU</label>
+
+                                    <input type="file" class="form-control crop-image-input"
+                                        data-target="foto_katu_cropped" data-preview="previewKatu"
+                                        data-title="Crop Foto KTU" accept="image/*">
+
+                                    <input type="hidden" name="foto_katu_cropped" id="foto_katu_cropped">
+
+                                    <img id="previewKatu" class="mt-2 rounded"
+                                        style="width:90px;height:90px;object-fit:cover;"
+                                        src="{{ $mode == 'edit' && $madrasah->foto_katu ? asset('storage/' . $madrasah->foto_katu) : '' }}">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {{-- BUTTON --}}
+                    <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('madrasah.index') }}" class="btn btn-light">
-                            <i class="bi bi-arrow-left"></i>
                             Kembali
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-save"></i>
 
+                        <button class="btn btn-success">
                             {{ $mode === 'edit' ? 'Simpan Perubahan' : 'Simpan Data' }}
                         </button>
                     </div>
+
                 </form>
 
 
             </div>
-
-
         </div>
+
 
 
     </main>
 @endsection
+<div class="modal fade" id="cropModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropModalTitle">
+                    Crop Gambar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div style="max-height:450px">
+                    <img id="cropImage" style="max-width:100%;display:block">
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Batal
+                </button>
+                <button id="cropBtn" class="btn btn-success">
+                    Simpan Crop
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@push('scripts')
+    <script>
+        // ==========================================
+        // GENERIC IMAGE CROPPER
+        // ==========================================
+
+        let cropper = null;
+        let imageURL = null;
+        let currentTarget = null;
+
+        const cropModalEl = document.getElementById('cropModal');
+        const cropModal = new bootstrap.Modal(cropModalEl, {
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        const cropImage = document.getElementById('cropImage');
+        const cropTitle = document.getElementById('cropModalTitle');
+        const cropBtn = document.getElementById('cropBtn');
+
+        // ==========================================
+        // OPEN CROPPER
+        // ==========================================
+
+        document.querySelectorAll('.crop-image-input').forEach(input => {
+
+            input.addEventListener('change', function(e) {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                // target hidden input
+                currentTarget = document.getElementById(
+                    this.dataset.target
+                );
+
+                // judul modal
+                cropTitle.innerText = this.dataset.title ?? 'Crop Gambar';
+
+                if (imageURL) {
+                    URL.revokeObjectURL(imageURL);
+                }
+
+                imageURL = URL.createObjectURL(file);
+
+                cropImage.src = imageURL;
+
+                cropModal.show();
+
+            });
+
+        });
+
+
+        // ==========================================
+        // INIT CROPPER
+        // ==========================================
+
+        cropModalEl.addEventListener('shown.bs.modal', function() {
+
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                responsive: true,
+                background: false,
+                restore: false
+            });
+
+        });
+
+
+        // ==========================================
+        // SAVE RESULT
+        // ==========================================
+
+        cropBtn.addEventListener('click', function() {
+
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 300,
+                height: 300,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            canvas.toBlob(function(blob) {
+
+                const reader = new FileReader();
+
+                reader.onloadend = function() {
+
+                    // SET VALUE KE HIDDEN INPUT
+                    if (currentTarget) {
+                        currentTarget.value = reader.result;
+                    }
+
+                    // SET PREVIEW IMAGE
+                    const previewId = document
+                        .querySelector('.crop-image-input[data-target="' + currentTarget.id + '"]')
+                        ?.dataset.preview;
+
+                    if (previewId) {
+                        const previewEl = document.getElementById(previewId);
+
+                        if (previewEl) {
+                            previewEl.src = reader.result;
+                            previewEl.style.display = 'block';
+                        }
+                    }
+                };
+
+                reader.readAsDataURL(blob);
+
+                cropModal.hide();
+
+            }, 'image/png');
+
+        });
+
+
+        // ==========================================
+        // CLEANUP
+        // ==========================================
+
+        cropModalEl.addEventListener('hidden.bs.modal', function() {
+
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            if (imageURL) {
+                URL.revokeObjectURL(imageURL);
+                imageURL = null;
+            }
+
+            cropImage.src = '';
+
+            currentTarget = null;
+
+        });
+
+        // ==========================================
+
+        // ==========================================
+        // INIT MAP
+        // ==========================================
+        let map;
+        let marker;
+        let searchTimeout;
+
+        // default koordinat
+        let defaultLat = Number({{ $madrasah->latitude ?? -6.2 }});
+        let defaultLng = Number({{ $madrasah->longitude ?? 106.816666 }});
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // ======================
+            // INIT MAP
+            // ======================
+            map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // marker
+            marker = L.marker([defaultLat, defaultLng], {
+                draggable: true
+            }).addTo(map);
+
+            setLatLng(defaultLat, defaultLng);
+
+            // ======================
+            // CLICK MAP
+            // ======================
+            map.on('click', function(e) {
+                moveMarker(e.latlng.lat, e.latlng.lng);
+                reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+
+            // ======================
+            // DRAG MARKER
+            // ======================
+            marker.on('dragend', function() {
+                let pos = marker.getLatLng();
+                setLatLng(pos.lat, pos.lng);
+                reverseGeocode(pos.lat, pos.lng);
+            });
+
+            // ======================
+            // AUTOCOMPLETE INPUT
+            // ======================
+            const searchInput = document.getElementById('mapSearch');
+
+            searchInput.addEventListener('input', function() {
+
+                let query = this.value;
+
+                clearTimeout(searchTimeout);
+
+                if (query.length < 3) {
+                    document.getElementById('mapSuggestions').innerHTML = '';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
+
+            });
+
+            // klik luar untuk close dropdown
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#mapSearch')) {
+                    document.getElementById('mapSuggestions').innerHTML = '';
+                }
+            });
+
+        });
+
+
+        // ======================
+        // MOVE MARKER
+        // ======================
+        function moveMarker(lat, lng) {
+
+            lat = Number(lat);
+            lng = Number(lng);
+
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            marker.setLatLng([lat, lng]);
+            map.setView([lat, lng], 15);
+
+            setLatLng(lat, lng);
+        }
+
+
+        // ======================
+        // SET LAT LNG INPUT
+        // ======================
+        function setLatLng(lat, lng) {
+
+            lat = Number(lat);
+            lng = Number(lng);
+
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            const latInput = document.querySelector('[name="latitude"]');
+            const lngInput = document.querySelector('[name="longitude"]');
+
+            if (latInput && lngInput) {
+                latInput.value = lat.toFixed(7);
+                lngInput.value = lng.toFixed(7);
+            }
+        }
+
+
+        // ======================
+        // AUTOCOMPLETE SEARCH
+        // ======================
+        function fetchSuggestions(query) {
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    let box = document.getElementById('mapSuggestions');
+                    box.innerHTML = '';
+
+                    if (!data.length) return;
+
+                    data.forEach(item => {
+
+                        let div = document.createElement('div');
+
+                        div.className = "list-group-item list-group-item-action";
+                        div.style.cursor = "pointer";
+                        div.style.fontSize = "0.85rem";
+
+                        div.innerHTML = `
+                            <div class="fw-semibold">${item.display_name}</div>
+                        `;
+
+                        div.addEventListener('click', function() {
+
+                            let lat = Number(item.lat);
+                            let lon = Number(item.lon);
+
+                            moveMarker(lat, lon);
+                            reverseGeocode(lat, lon);
+
+                            document.getElementById('mapSearch').value = item.display_name;
+                            box.innerHTML = '';
+
+                        });
+
+                        box.appendChild(div);
+
+                    });
+
+                })
+                .catch(err => console.log(err));
+
+        }
+
+
+        // ======================
+        // REVERSE GEOCODING
+        // ======================
+        function reverseGeocode(lat, lng) {
+
+            lat = Number(lat);
+            lng = Number(lng);
+
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data?.display_name) {
+                        let alamat = document.querySelector('[name="alamat_sekolah"]');
+                        if (alamat) {
+                            alamat.value = data.display_name;
+                        }
+                    }
+
+                })
+                .catch(err => console.log("Reverse error:", err));
+
+        }
+    </script>
+@endpush

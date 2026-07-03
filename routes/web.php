@@ -68,6 +68,11 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard');
 
     
+    // Route::get('/madrasah', [MadrasahController::class, 'index'])
+    //     ->name('madrasah.index');
+
+    // Route::get('/madrasah/{madrasah}', [MadrasahController::class, 'show'])
+    //     ->name('madrasah.show');
     Route::resource('madrasah', MadrasahController::class);
     
     Route::resource('activity', ActivityController::class);

@@ -11,16 +11,29 @@ class Madrasah extends Model
 
     protected $fillable = [
         'jenjang_madrasah',
+        'status_madrasah',
+        'logo',
         'nama_madrasah',
         'npsn',
-        'kota',
-        'provinsi',
         'akreditasi',
+
+        'provinsi',
+        'kota',
+        'kecamatan',
+        'kelurahan',
         'alamat_sekolah',
+        'latitude',
+        'longitude',
+
         'nama_kepala_madrasah',
         'nip_kepala_madrasah',
+        'no_telepon_kamad',
+        'foto_kamad',
+
         'nama_kepala_urusan_tata_usaha',
         'nip_kepala_urusan_tata_usaha',
+        'no_telepon_katu',
+        'foto_katu',
     ];
 
     /*
