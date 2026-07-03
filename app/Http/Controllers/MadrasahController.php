@@ -92,6 +92,14 @@ class MadrasahController extends Controller
         return base64_decode(str_replace(' ', '+', $data));
     }
 
+    private function makeImageName(string $prefix, string $name): string
+    {
+        // ambil nama aman (slug)
+        $slug = Str::slug($name);
+
+        return $prefix . '_' . $slug . '_' . time() . '.png';
+    }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -133,7 +141,12 @@ class MadrasahController extends Controller
 
                 $image = $this->decodeBase64($validatedData['logo_cropped']);
 
-                $path = 'madrasah/logo/logo_' . time() . '.png';
+                $fileName = $this->makeImageName(
+                    'logo',
+                    $validatedData['nama_madrasah']
+                );
+
+                $path = 'madrasah/logo/' . $fileName;
 
                 Storage::disk('public')->put($path, $image);
 
@@ -149,7 +162,12 @@ class MadrasahController extends Controller
 
                 $image = $this->decodeBase64($validatedData['foto_kamad_cropped']);
 
-                $path = 'madrasah/kamad/kamad_' . time() . '.png';
+                $fileName = $this->makeImageName(
+                    'kamad',
+                    $validatedData['nama_kepala_madrasah']
+                );
+
+                $path = 'madrasah/kamad/' . $fileName;
 
                 Storage::disk('public')->put($path, $image);
 
@@ -165,7 +183,12 @@ class MadrasahController extends Controller
 
                 $image = $this->decodeBase64($validatedData['foto_katu_cropped']);
 
-                $path = 'madrasah/katu/katu_' . time() . '.png';
+                $fileName = $this->makeImageName(
+                    'katu',
+                    $validatedData['nama_kepala_urusan_tata_usaha'] ?? 'ktu'
+                );
+
+                $path = 'madrasah/katu/' . $fileName;
 
                 Storage::disk('public')->put($path, $image);
 
@@ -244,7 +267,11 @@ class MadrasahController extends Controller
                 $image = str_replace('data:image/png;base64,', '', $imageData);
                 $image = str_replace(' ', '+', $image);
 
-                $fileName = 'logo_' . time() . '.png';
+                $fileName = $this->makeImageName(
+                    'logo',
+                    $validatedData['nama_madrasah']
+                );
+
                 $path = 'madrasah/logo/' . $fileName;
 
                 Storage::disk('public')->put(
@@ -272,7 +299,11 @@ class MadrasahController extends Controller
                 $image = str_replace('data:image/png;base64,', '', $imageData);
                 $image = str_replace(' ', '+', $image);
 
-                $fileName = 'kamad_' . time() . '.png';
+                $fileName = $this->makeImageName(
+                    'kamad',
+                    $validatedData['nama_kepala_madrasah']
+                );
+                
                 $path = 'madrasah/kamad/' . $fileName;
 
                 Storage::disk('public')->put(
@@ -300,7 +331,11 @@ class MadrasahController extends Controller
                 $image = str_replace('data:image/png;base64,', '', $imageData);
                 $image = str_replace(' ', '+', $image);
 
-                $fileName = 'katu_' . time() . '.png';
+                $fileName = $this->makeImageName(
+                    'katu',
+                    $validatedData['nama_kepala_urusan_tata_usaha'] ?? 'ktu'
+                );
+                
                 $path = 'madrasah/katu/' . $fileName;
 
                 Storage::disk('public')->put(
