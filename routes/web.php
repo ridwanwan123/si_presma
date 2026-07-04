@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MadrasahController;
 use App\Http\Controllers\ActivityController;
@@ -33,6 +34,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/login', [LoginController::class, 'authenticate'])
         ->name('login');
+
+    // =========================
+    // REGISTER
+    // =========================
+    Route::get('/register', [RegisterController::class, 'showRegisterForm'])
+        ->name('register.form');
+
+    Route::post('/register', [RegisterController::class, 'register'])
+        ->name('register');
 });
 
 /*

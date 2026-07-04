@@ -202,6 +202,53 @@
                 flex: 1;
             }
         }
+
+        /* PAGINATION */
+        .pagination {
+            gap: .35rem;
+            margin-bottom: 0;
+        }
+
+        .pagination .page-item .page-link {
+            border-radius: 8px;
+            min-width: 38px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 .75rem;
+            font-size: .875rem;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child .page-link {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        /* Active */
+        .pagination .page-item.active .page-link {
+
+            background: #2563eb;
+
+            border-color: #2563eb;
+
+            color: white;
+
+        }
+
+        /* Hover */
+
+        .pagination .page-link:hover {
+
+            background: #eff6ff;
+
+            color: #2563eb;
+
+        }
     </style>
 @endpush
 
@@ -243,54 +290,42 @@
             <div class="collapse" id="filterArea">
                 <form method="GET" action="{{ route('madrasah.index') }}">
                     <div class="filter-panel">
-                        <div class="row g-3">
 
-                            {{-- Jenjang Madrasah --}}
-                            <div class="col-md-4">
-                                <label class="form-label">Jenjang Madrasah</label>
-                                <select name="jenjang_madrasah" class="form-select">
-                                    <option value="">
-                                        Semua Jenjang
-                                    </option>
-                                    <option value="RA" {{ request('jenjang_madrasah') == 'RA' ? 'selected' : '' }}>
-                                        RA
-                                    </option>
-                                    <option value="MI" {{ request('jenjang_madrasah') == 'MI' ? 'selected' : '' }}>
-                                        MI
-                                    </option>
-                                    <option value="MTs" {{ request('jenjang_madrasah') == 'MTs' ? 'selected' : '' }}>
-                                        MTs
-                                    </option>
-                                    <option value="MA" {{ request('jenjang_madrasah') == 'MA' ? 'selected' : '' }}>
-                                        MA
-                                    </option>
+                        <div class="row g-2 align-items-end">
+
+                            {{-- Status --}}
+                            <div class="col-md-2">
+                                <label class="form-label">Status</label>
+                                <select name="status_madrasah" class="form-select">
+                                    <option value="">Semua</option>
+                                    <option value="Negeri" {{ request('status_madrasah') == 'Negeri' ? 'selected' : '' }}>
+                                        Negeri</option>
+                                    <option value="Swasta" {{ request('status_madrasah') == 'Swasta' ? 'selected' : '' }}>
+                                        Swasta</option>
                                 </select>
                             </div>
 
-                            {{-- Madrasah --}}
-                            <div class="col-md-4">
-                                <label class="form-label">Madrasah</label>
-                                <select name="nama_madrasah" class="form-select">
-                                    <option value="">
-                                        Semua Madrasah
+                            {{-- Jenjang --}}
+                            <div class="col-md-2">
+                                <label class="form-label">Jenjang</label>
+                                <select name="jenjang_madrasah" class="form-select">
+                                    <option value="">Semua</option>
+                                    <option value="RA" {{ request('jenjang_madrasah') == 'RA' ? 'selected' : '' }}>RA
                                     </option>
-
-                                    @foreach ($madrasahs as $item)
-                                        <option value="{{ $item->nama_madrasah }}"
-                                            {{ request('nama_madrasah') == $item->nama_madrasah ? 'selected' : '' }}>
-                                            {{ $item->nama_madrasah }}
-                                        </option>
-                                    @endforeach
+                                    <option value="MI" {{ request('jenjang_madrasah') == 'MI' ? 'selected' : '' }}>MI
+                                    </option>
+                                    <option value="MTs" {{ request('jenjang_madrasah') == 'MTs' ? 'selected' : '' }}>MTs
+                                    </option>
+                                    <option value="MA" {{ request('jenjang_madrasah') == 'MA' ? 'selected' : '' }}>MA
+                                    </option>
                                 </select>
                             </div>
 
                             {{-- Kota --}}
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Kota</label>
                                 <select name="kota" class="form-select">
-                                    <option value="">
-                                        Semua Kota
-                                    </option>
+                                    <option value="">Semua Kota</option>
                                     @foreach ($kotas as $kota)
                                         <option value="{{ $kota }}"
                                             {{ request('kota') == $kota ? 'selected' : '' }}>
@@ -299,19 +334,27 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            {{-- Nama Search --}}
+                            <div class="col-md-3">
+                                <label class="form-label">Nama Madrasah</label>
+                                <input type="text" name="nama_madrasah" class="form-control" placeholder="Cari..."
+                                    value="{{ request('nama_madrasah') }}">
+                            </div>
+
+                            {{-- Button --}}
+                            <div class="col-md-2 d-flex gap-2">
+                                <button type="submit" class="btn btn-success w-100">
+                                    Filter
+                                </button>
+
+                                <a href="{{ route('madrasah.index') }}" class="btn btn-outline-secondary w-100">
+                                    Reset
+                                </a>
+                            </div>
+
                         </div>
 
-                        {{-- Filter Action --}}
-                        <div class="filter-action mt-4">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-funnel"></i>
-                                Terapkan Filter
-                            </button>
-                            <a href="{{ route('madrasah.index') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-clockwise"></i>
-                                Reset
-                            </a>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -422,6 +465,7 @@
 
                 </div>
 
+                {{ $madrasahs->onEachSide(1)->links('pagination::bootstrap-5') }}
             </div>
 
         </div>

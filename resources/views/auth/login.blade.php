@@ -92,6 +92,14 @@
                         <button type="submit" class="btn login-btn w-100">
                             Masuk
                         </button>
+
+                        <!-- REGISTER LINK -->
+                        <div class="text-center mt-3">
+                            <span class="text-muted">Belum punya akun?</span>
+                            <a href="{{ route('register.form') }}" class="text-success fw-semibold">
+                                Registrasi
+                            </a>
+                        </div>
                     </form>
 
                     <!-- HELP -->

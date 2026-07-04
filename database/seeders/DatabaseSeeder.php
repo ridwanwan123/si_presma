@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Madrasah;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WilayahPengawas;
+use App\Models\Madrasah;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -34,59 +34,54 @@ class DatabaseSeeder extends Seeder
             'keterangan' => 'Pengawas/Asseor Penilai Madrasah',
         ]);
 
-         /*
+        /*
         |--------------------------------------------------------------------------
         | WILAYAH PENGAWAS
         |--------------------------------------------------------------------------
         */
 
-        $wilayahPengawas = WilayahPengawas::create([
+        $wilayahUtara = WilayahPengawas::create([
             'kota' => 'ADMINISTRASI KOTA JAKARTA UTARA',
             'unit_kerja' => 'KANKEMENAG JAKARTA UTARA',
         ]);
 
-        $wilayahPengawas = WilayahPengawas::create([
+        $wilayahTimur = WilayahPengawas::create([
             'kota' => 'ADMINISTRASI KOTA JAKARTA TIMUR',
             'unit_kerja' => 'KANKEMENAG JAKARTA TIMUR',
         ]);
 
-        $wilayahPengawas = WilayahPengawas::create([
+        $wilayahBarat = WilayahPengawas::create([
             'kota' => 'ADMINISTRASI KOTA JAKARTA BARAT',
             'unit_kerja' => 'KANKEMENAG JAKARTA BARAT',
         ]);
 
-        $wilayahPengawas = WilayahPengawas::create([
+        $wilayahPusat = WilayahPengawas::create([
             'kota' => 'ADMINISTRASI KOTA JAKARTA PUSAT',
             'unit_kerja' => 'KANKEMENAG JAKARTA PUSAT',
         ]);
-        
-        $wilayahPengawas = WilayahPengawas::create([
+
+        $wilayahKepSeribu = WilayahPengawas::create([
             'kota' => 'ADMINISTRASI KOTA KEPULAUAN SERIBU',
             'unit_kerja' => 'KANKEMENAG KEPULAUAN SERIBU',
         ]);
 
-
-
-        
         /*
         |--------------------------------------------------------------------------
-        | MADRASAH
+        | MADRASAH SEEDER
         |--------------------------------------------------------------------------
         */
 
-        $madrasah = Madrasah::create([
-            'jenjang_madrasah' => 'MA',
-            'nama_madrasah' => 'MAN 1 Jakarta',
-            'npsn' => '12345678',
-            'kota' => 'Jakarta Utara',
-            'provinsi' => 'DKI Jakarta',
-            'akreditasi' => 'A',
-            'alamat_sekolah' => 'Jl. Pendidikan No. 1',
-            'nama_kepala_madrasah' => 'Ahmad Fauzi',
-            'nip_kepala_madrasah' => '1987654321',
-            'nama_kepala_urusan_tata_usaha' => 'Budi Santoso',
-            'nip_kepala_urusan_tata_usaha' => '1976543210',
+        $this->call([
+            MadrasahSeeder::class
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | AMBIL 1 MADRASAH UNTUK USER MADRASAH
+        |--------------------------------------------------------------------------
+        */
+
+        $madrasah = \App\Models\Madrasah::where('npsn', '20177932')->first();
 
         /*
         |--------------------------------------------------------------------------
@@ -114,9 +109,9 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'role_id' => $madrasahRole->id,
-            'madrasah_id' => $madrasah->id,
+            'madrasah_id' => $madrasah?->id, // SAFE NULL HANDLING
             'wilayah_pengawas_id' => null,
-            'nama' => 'MAN 1 Jakarta',
+            'nama' => $madrasah?->nama_madrasah ?? 'Madrasah Demo',
             'email' => 'madrasah@mail.com',
             'username' => 'madrasah',
             'password' => Hash::make('penmad123'),
@@ -126,14 +121,14 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | USER ASESOR
+        | USER PENGAWAS
         |--------------------------------------------------------------------------
         */
 
         User::create([
             'role_id' => $pengawasRole->id,
             'madrasah_id' => null,
-            'wilayah_pengawas_id' => $wilayahPengawas->id,
+            'wilayah_pengawas_id' => $wilayahUtara->id,
             'nama' => 'Pengawas',
             'email' => 'pengawas@mail.com',
             'username' => 'pengawas',

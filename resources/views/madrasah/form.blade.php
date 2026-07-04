@@ -5,8 +5,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                                                                                                                                                                                                                                                       FORM MADRASAH
-                                                                                                                                                                                                                                                                                                                                                                                                    ========================= */
+                                                                                                                                                                                                                                                                                                                                                                                                                       FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                                                                                                                    ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -410,47 +410,65 @@
                                         value="{{ old('kelurahan', $madrasah->kelurahan ?? '') }}">
                                 </div>
 
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card mb-4">
+
+                        <div class="form-card-header d-flex justify-content-between align-items-center">
+                            <span>Lokasi Madrasah</span>
+
+                            <button type="button" class="btn btn-sm btn-warning" id="btnEditLokasi">
+                                Edit Lokasi
+                            </button>
+                        </div>
+
+                        <div class="form-card-body">
+
+                            <!-- LOCK NOTICE -->
+                            <div id="lockNotice" class="alert alert-info">
+                                Lokasi terkunci. Klik <b>Edit Lokasi</b> untuk mengubah.
+                            </div>
+
+                            <div class="row g-3" id="lokasiWrapper">
+
                                 <div class="col-12">
                                     <label class="form-label">Alamat Sekolah</label>
-                                    <textarea name="alamat_sekolah" rows="3" class="form-control">{{ old('alamat_sekolah', $madrasah->alamat_sekolah ?? '') }}</textarea>
+                                    <textarea name="alamat_sekolah" rows="3" class="form-control lokasi-input" readonly>{{ old('alamat_sekolah', $madrasah->alamat_sekolah ?? '') }}</textarea>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Latitude</label>
-                                    <input type="text" name="latitude" class="form-control"
+                                    <input type="text" name="latitude" class="form-control lokasi-input" readonly
                                         value="{{ old('latitude', $madrasah->latitude ?? '') }}">
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Longitude</label>
-                                    <input type="text" name="longitude" class="form-control"
+                                    <input type="text" name="longitude" class="form-control lokasi-input" readonly
                                         value="{{ old('longitude', $madrasah->longitude ?? '') }}">
                                 </div>
 
                                 <div class="col-12 mt-2">
 
-                                    <label class="form-label">
-                                        Lokasi di Peta
-                                    </label>
+                                    <label class="form-label">Lokasi di Peta</label>
 
-                                    <!-- SEARCH BOX -->
                                     <div class="position-relative mb-2">
-
-                                        <input type="text" id="mapSearch" class="form-control"
+                                        <input type="text" id="mapSearch" class="form-control lokasi-input" disabled
                                             placeholder="Cari alamat madrasah...">
 
                                         <div id="mapSuggestions" class="list-group position-absolute w-100"
                                             style="z-index: 999; max-height: 250px; overflow-y: auto;">
                                         </div>
-
                                     </div>
 
-                                    <!-- MAP -->
                                     <div id="map"
-                                        style="height: 350px; border-radius: 12px; border: 1px solid #ddd;"></div>
+                                        style="height: 350px; border-radius: 12px; border: 1px solid #ddd; opacity: 0.5; pointer-events: none;">
+                                    </div>
 
                                     <small class="text-muted d-block mt-2">
-                                        Klik peta atau gunakan pencarian untuk menentukan lokasi
+                                        Lokasi terkunci. Klik "Edit Lokasi" untuk mengubah.
                                     </small>
 
                                 </div>
@@ -579,6 +597,28 @@
 
     </main>
 @endsection
+<div class="modal fade" id="confirmLokasiModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Edit Lokasi</h5>
+            </div>
+
+            <div class="modal-body">
+                Yakin ingin mengubah lokasi madrasah?
+                Setelah diubah, koordinat harus diverifikasi ulang.
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button class="btn btn-danger" id="confirmEditLokasi">Ya, Edit</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="cropModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -610,6 +650,35 @@
 </div>
 @push('scripts')
     <script>
+        // kONFIRM update lokasi
+        let lokasiUnlocked = false;
+
+        document.getElementById('btnEditLokasi').addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('confirmLokasiModal'));
+            modal.show();
+        });
+
+        document.getElementById('confirmEditLokasi').addEventListener('click', function() {
+
+            lokasiUnlocked = true;
+
+            // enable input
+            document.querySelectorAll('.lokasi-input').forEach(el => {
+                el.removeAttribute('readonly');
+                el.removeAttribute('disabled');
+            });
+
+            // enable map
+            const mapEl = document.getElementById('map');
+            mapEl.style.opacity = "1";
+            mapEl.style.pointerEvents = "auto";
+
+            // hide notice
+            document.getElementById('lockNotice').style.display = 'none';
+
+            bootstrap.Modal.getInstance(document.getElementById('confirmLokasiModal')).hide();
+        });
+
         // ==========================================
         // GENERIC IMAGE CROPPER
         // ==========================================

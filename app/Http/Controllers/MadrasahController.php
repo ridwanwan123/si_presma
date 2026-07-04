@@ -33,15 +33,32 @@ class MadrasahController extends Controller
             $query->where('jenjang_madrasah', $request->jenjang_madrasah);
         }
 
-        if ($request->filled('nama_madrasah')) {
-            $query->where('nama_madrasah', $request->nama_madrasah);
+        if ($request->filled('status_madrasah')) {
+            $query->where('status_madrasah', $request->status_madrasah);
         }
 
         if ($request->filled('kota')) {
             $query->where('kota', $request->kota);
         }
 
-        $madrasahs = $query->latest()->get();
+        if ($request->filled('nama_madrasah')) {
+            $query->where('nama_madrasah', 'like', '%' . $request->nama_madrasah . '%');
+        }
+
+        $madrasahs = $query
+            ->orderByRaw('
+                CASE
+                    WHEN nama_madrasah LIKE "MAN%" THEN 1
+                    WHEN nama_madrasah LIKE "MIN%" THEN 2
+                    WHEN nama_madrasah LIKE "MTs%" THEN 3
+                    ELSE 4
+                END
+            ')
+            ->orderByRaw('
+                CAST(REGEXP_SUBSTR(nama_madrasah, "[0-9]+") AS UNSIGNED)
+            ')
+            ->paginate(25)
+            ->withQueryString();
 
         $kotas = Madrasah::select('kota')
             ->distinct()
