@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $madrasahRole = Role::create([
-            'nama' => 'Operator Madrasah',
+            'nama' => 'Madrasah',
             'keterangan' => 'Admin Madrasah',
         ]);
 

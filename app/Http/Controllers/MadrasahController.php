@@ -20,7 +20,7 @@ class MadrasahController extends Controller
         // =========================
         // ROLE MADRASAH → langsung profile sendiri
         // =========================
-        if ($user->hasRole('Operator Madrasah')) {
+        if ($user->hasRole('Madrasah')) {
             return redirect()->route('madrasah.show', $user->madrasah_id);
         }
 
@@ -79,7 +79,7 @@ class MadrasahController extends Controller
         $user = auth()->user();
 
         // Operator hanya boleh lihat miliknya
-        if ($user->hasRole('Operator Madrasah')) {
+        if ($user->hasRole('Madrasah')) {
             abort_unless($user->madrasah_id === $madrasah->id, 403);
         }
 

@@ -66,7 +66,7 @@ class User extends Authenticatable
 
     public function isOperator(): bool
     {
-        return $this->role?->nama === 'Operator Madrasah';
+        return $this->role?->nama === 'Madrasah';
     }
 
     public function isPengawas(): bool

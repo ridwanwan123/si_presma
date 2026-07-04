@@ -19,12 +19,12 @@
         </a>
 
         <!-- MASTER DATA -->
-        @if ($user->hasRole(['Administrator', 'Operator Madrasah', 'Pengawas']))
+        @if ($user->hasRole(['Administrator', 'Madrasah', 'Pengawas']))
             <div class="menu-title">MASTER DATA</div>
         @endif
 
         {{-- MADRASAH --}}
-        @if ($user->hasRole(['Administrator', 'Operator Madrasah']))
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
             <a href="{{ route('madrasah.index') }}"
                 class="menu-item {{ request()->routeIs('madrasah.index') ? 'active' : '' }}">
                 <i class="bi bi-building"></i>
@@ -33,7 +33,7 @@
         @endif
 
         {{-- PENYELENGGARA --}}
-        @if ($user->hasRole(['Administrator', 'Operator Madrasah']))
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
             <a href="#" class="menu-item">
                 <i class="bi bi-briefcase"></i>
                 <span>Penyelenggara</span>

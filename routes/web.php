@@ -41,7 +41,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])
         ->name('register.form');
 
-    Route::post('/register', [RegisterController::class, 'register'])
+    Route::post('/register', [RegisterController::class, 'store'])
         ->name('register');
 });
 
