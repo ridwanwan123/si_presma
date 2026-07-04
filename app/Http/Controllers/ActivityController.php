@@ -9,40 +9,45 @@ class ActivityController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
+
         $query = Activity::query()
             ->with([
                 'causer:id,nama,email',
                 'subject',
             ]);
 
+        // =========================
+        // ROLE BASE ACCESS CONTROL
+        // =========================
+        if ($user->role->nama !== 'Administrator') {
+            // madrasah hanya lihat dirinya sendiri
+            $query->where('causer_id', $user->id);
+        }
+
+        // =========================
+        // FILTER EVENT
+        // =========================
         if ($request->filled('event')) {
             $query->where('event', $request->event);
         }
 
-        if ($request->filled('causer_id')) {
-            $query->where('causer_id', $request->causer_id);
-        }
-
+        // =========================
+        // FILTER SEARCH
+        // =========================
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('description', 'like', '%' . $request->search . '%');
-            });
+            $query->where('description', 'like', '%' . $request->search . '%');
         }
 
+        // =========================
+        // FILTER DATE
+        // =========================
         if ($request->filled('start_date')) {
-            $query->whereDate(
-                'created_at',
-                '>=',
-                $request->start_date
-            );
+            $query->whereDate('created_at', '>=', $request->start_date);
         }
 
         if ($request->filled('end_date')) {
-            $query->whereDate(
-                'created_at',
-                '<=',
-                $request->end_date
-            );
+            $query->whereDate('created_at', '<=', $request->end_date);
         }
 
         $activities = $query
@@ -50,9 +55,18 @@ class ActivityController extends Controller
             ->paginate(5)
             ->withQueryString();
 
-        $users = Activity::query()
+        // =========================
+        // USERS FILTER (IMPORTANT)
+        // =========================
+        $usersQuery = Activity::query()
             ->with('causer:id,nama')
-            ->whereNotNull('causer_id')
+            ->whereNotNull('causer_id');
+
+        if ($user->role->nama !== 'Administrator') {
+            $usersQuery->where('causer_id', $user->id);
+        }
+
+        $users = $usersQuery
             ->get()
             ->pluck('causer')
             ->filter()
@@ -63,7 +77,7 @@ class ActivityController extends Controller
         $breadcrumb = breadcrumb([
             'Data Activity'
         ]);
-            
+
         return view('activity.index', compact(
             'activities',
             'users',
