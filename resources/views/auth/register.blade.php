@@ -2,343 +2,224 @@
 <html lang="id">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRESMA | Daftar Akun</title>
 
-    <title>PRESMA | Registrasi</title>
-
-    {{-- Bootstrap --}}
+    {{-- Bootstrap (grid & alert utilities only) --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-
     {{-- Boxicons --}}
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    {{-- Fonts: Sora (display) + Inter (UI) + JetBrains Mono (stat numbers) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap"
+        rel="stylesheet">
 
-    {{-- CSS --}}
     <link rel="stylesheet" href="{{ asset('assets/css/registrasi.css') }}">
-
 </head>
 
 <body>
 
-    <div class="bg-circle bg-circle-1"></div>
-    <div class="bg-circle bg-circle-2"></div>
-    <div class="bg-circle bg-circle-3"></div>
+    <div class="auth-wrapper">
 
-    <div class="container-fluid p-0">
+        {{-- ============================== ASIDE — signature panel ============================== --}}
+        <div class="auth-aside">
 
-        <div class="row g-0 min-vh-100">
-
-            {{-- ==============================
-            LEFT
-        =============================== --}}
-            <div class="col-lg-6 d-none d-lg-flex">
-
-                <div class="register-left">
-
-                    <div class="overlay"></div>
-
-                    <div class="left-content">
-
-                        <span class="badge-presma">
-                            JMA | Penmad Kanwil Kemenag Prov. DKI Jakarta
-                        </span>
-
-                        <h1>
-                            PRESMA
-                        </h1>
-
-                        <h3>
-                            Jakarta Madrasah Awards
-                        </h3>
-
-                        <p>
-                            Sistem informasi terintegrasi untuk mendukung proses pendataan,
-                            validasi, dan penilaian prestasi madrasah pada program Jakarta Madrasah Awards
-                            di lingkungan Kanwil Kementerian Agama Provinsi DKI Jakarta.
-                        </p>
-
-                        <div class="feature-list">
-
-                            <div class="feature-item">
-
-                                <i class='bx bx-check-circle'></i>
-
-                                <span>
-                                    Verifikasi Prestasi Terstandar
-                                </span>
-
-                            </div>
-
-                            <div class="feature-item">
-
-                                <i class='bx bx-check-circle'></i>
-
-                                <span>
-                                    Penilaian Berbasis Sistem
-                                </span>
-
-                            </div>
-
-                            <div class="feature-item">
-
-                                <i class='bx bx-check-circle'></i>
-
-                                <span>
-                                    Monitoring oleh Pengawas Wilayah
-                                </span>
-
-                            </div>
-
-                            <div class="feature-item">
-
-                                <i class='bx bx-check-circle'></i>
-
-                                <span>
-                                    Dashboard Modern
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+            <div class="aside-brand">
+                <div class="mark"><i class='bx bxs-graduation'></i></div>
+                <span>PRESMA</span>
             </div>
 
-            {{-- ==============================
-            RIGHT
-        =============================== --}}
-            <div class="col-lg-6">
+            <div class="aside-copy">
+                <span class="eyebrow"><i class='bx bxs-certification'></i> Sistem Prestasi Madrasah</span>
+                <h1>Satu dashboard untuk <em>seluruh capaian</em> madrasah Anda.</h1>
+                <p>Pantau akademik, non-akademik, dan keagamaan secara real-time — dari satu akun terverifikasi.</p>
+            </div>
 
-                <div class="register-right">
+            <div class="mock-stage">
+                <div class="dash-card">
+                    <div class="dash-card__head">
+                        <div class="dots"><span></span><span></span><span></span></div>
+                        <strong>Ringkasan Prestasi</strong>
+                    </div>
 
-                    <div class="register-card">
-
-                        <div class="text-center mb-4 mt-5">
-
-                            <h2 class="fw-bold  mb-2">
-                                Registrasi Akun
-                            </h2>
-
-                            <p class="text-muted mb-0">
-                                Pilih jenis akun terlebih dahulu
-                            </p>
-
-                        </div>
-
-                        @if (session('success'))
-                            <div class="alert alert-success">
-
-                                {{ session('success') }}
-
-                            </div>
-                        @endif
-
-                        @if (session('error'))
-                            <div class="alert alert-danger">
-
-                                {{ session('error') }}
-
-                            </div>
-                        @endif
-
-                        <form action="{{ route('register') }}" method="POST" id="registerForm">
-
-                            @csrf
-
-                            {{-- =============================
-                            ROLE
-                        ============================== --}}
-                            <div id="roleError" class="text-danger text-center mb-2 d-none">
-                                Silakan pilih role terlebih dahulu
-                            </div>
-                            <div class="role-container">
-                                @foreach ($roles as $role)
-                                    <label class="role-card">
-                                        <input type="radio" name="role_id" value="{{ $role->id }}"
-                                            class="role-radio" data-role="{{ strtolower($role->nama) }}">
-                                        <div class="role-body">
-                                            <div class="role-icon">
-                                                @if (strtolower($role->nama) == 'madrasah')
-                                                    <i class='bx bxs-school'></i>
-                                                @else
-                                                    <i class='bx bx-map'></i>
-                                                @endif
-                                            </div>
-
-                                            <div>
-                                                <h5>
-                                                    {{ $role->nama }}
-                                                </h5>
-
-                                                <small>
-                                                    @if (strtolower($role->nama) == 'madrasah')
-                                                        Operator Madrasah
-                                                    @else
-                                                        Pengawas Madrasah
-                                                    @endif
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-
-                            <div id="dynamicForm" class="dynamic-form">
-                                {{-- =============================
-        MADRASAH
-    ============================== --}}
-
-                                <div id="madrasahFields" class="role-fields d-none">
-                                    <div class="">
-                                        <label class="form-label">
-                                            Nama Madrasah
-                                        </label>
-                                        <div class="search-select">
-                                            <input type="text" id="madrasahSearch" class="form-control"
-                                                placeholder="Cari nama madrasah..." autocomplete="off">
-                                            <input type="hidden" name="madrasah_id" id="madrasahValue"
-                                                value="{{ old('madrasah_id') }}">
-                                            <div class="search-dropdown" id="madrasahDropdown">
-                                                @foreach ($madrasahs as $madrasah)
-                                                    <div class="dropdown-item-custom" data-id="{{ $madrasah->id }}">
-                                                        {{ $madrasah->nama_madrasah }}
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- =============================
-        PENGAWAS
-    ============================== --}}
-
-                                <div id="pengawasFields" class="role-fields d-none">
-                                    <div class="">
-                                        <label class="form-label">
-                                            Wilayah Pengawas
-                                        </label>
-                                        <select class="form-select" name="wilayah_pengawas_id">
-                                            <option value="">
-                                                -- Pilih Wilayah --
-                                            </option>
-                                            <option value="1">
-                                                Jakarta Pusat
-                                            </option>
-
-                                            <option value="2">
-                                                Jakarta Utara
-                                            </option>
-
-                                            <option value="3">
-                                                Jakarta Barat
-                                            </option>
-
-                                            <option value="4">
-                                                Jakarta Timur
-                                            </option>
-
-                                            <option value="5">
-                                                Jakarta Selatan
-                                            </option>
-
-                                            <option value="6">
-                                                Kepulauan Seribu
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label class="form-label">
-                                            Nama Lengkap
-                                        </label>
-                                        <input type="text" name="nama" class="form-control"
-                                            value="{{ old('nama') }}" placeholder="Masukkan nama">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">
-                                            Email
-                                        </label>
-                                        <input type="email" name="email" class="form-control"
-                                            value="{{ old('email') }}" placeholder="email@gmail.com">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">
-                                            Username
-                                        </label>
-
-                                        <input type="text" name="username" class="form-control"
-                                            value="{{ old('username') }}" placeholder="Username">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">
-                                            No. HP
-                                        </label>
-                                        <input type="text" name="no_hp" class="form-control"
-                                            value="{{ old('no_hp') }}" placeholder="08xxxxxxxxxx">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">
-                                            Password
-                                        </label>
-
-                                        <input type="password" name="password" id="password" class="form-control"
-                                            placeholder="******">
-
-                                        <div class="password-check mt-2">
-
-                                            <small id="rule-length" class="invalid-rule">
-                                                <i class='bx bx-x-circle'></i>
-                                                Minimal 8 karakter
-                                            </small>
-
-                                            <small id="rule-number" class="invalid-rule">
-                                                <i class='bx bx-x-circle'></i>
-                                                Mengandung minimal 1 angka
-                                            </small>
-
-                                            <small id="rule-confirm" class="invalid-rule">
-                                                <i class='bx bx-x-circle'></i>
-                                                Password dan konfirmasi harus sama
-                                            </small>
-
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-4">
-                                        <label class="form-label">
-                                            Konfirmasi Password
-                                        </label>
-
-                                        <input type="password" name="password_confirmation"
-                                            id="password_confirmation" class="form-control" placeholder="******">
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn-register">
-                                    <i class='bx bx-user-plus'></i>
-                                    Daftar Sekarang
-                                </button>
-                            </div>
-                        </form>
-
-                        <div class="text-center mt-4">
-                            Sudah punya akun?
-                            <a href="{{ route('login.form') }}">
-                                Login
-                            </a>
+                    <div class="ring-wrap">
+                        <div class="ring"><span class="mono">82%</span></div>
+                        <div class="ring-label">
+                            Capaian keseluruhan
+                            <strong>Semester genap 2026</strong>
                         </div>
                     </div>
+
+                    <div class="bar-row">
+                        <span>Akademik</span>
+                        <div class="track"><i style="width:84%"></i></div>
+                        <span class="pct">84%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span>Non Akademik</span>
+                        <div class="track"><i style="width:81%"></i></div>
+                        <span class="pct">81%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span>Keagamaan</span>
+                        <div class="track"><i style="width:92%"></i></div>
+                        <span class="pct">92%</span>
+                    </div>
+                </div>
+
+                <div class="chip-float chip-1"><i class='bx bxs-trophy'></i> Juara 1 Nasional</div>
+                <div class="chip-float chip-2"><i class='bx bxs-check-shield'></i> Data terverifikasi</div>
+            </div>
+
+            <div class="aside-foot">
+                <div><strong>120+</strong> madrasah aktif</div>
+                <div><strong>98%</strong> tingkat kepuasan</div>
+                <div><strong>24/7</strong> dukungan</div>
+            </div>
+        </div>
+
+        {{-- ============================== FORM ============================== --}}
+        <div class="auth-main">
+            <div class="auth-card">
+
+                <div class="card-head">
+                    <span class="step-tag">Jakarta Madrasah Awards | Account</span>
+                    <h2>Buat akun baru</h2>
+                    <p>Pilih jenis akun, lalu lengkapi data di bawah ini</p>
+                </div>
+
+                @if (session('success'))
+                    <div class="toast-alert alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                @if (session('error'))
+                    <div class="toast-alert alert alert-danger">{{ session('error') }}</div>
+                @endif
+
+                <form action="{{ route('register') }}" method="POST" id="registerForm">
+                    @csrf
+
+                    <div id="roleError" class="text-danger text-center mb-2 d-none">
+                        Silakan pilih role terlebih dahulu
+                    </div>
+
+                    <span class="section-label">Jenis akun</span>
+                    <div class="role-container">
+                        @foreach ($roles->where('nama', 'Madrasah') as $role)
+                            <label class="role-card">
+                                <input type="radio" name="role_id" value="{{ $role->id }}" class="role-radio"
+                                    data-role="madrasah">
+
+                                <div class="role-body">
+                                    <div class="role-icon"><i class='bx bxs-school'></i></div>
+                                    <div>
+                                        <h5>{{ $role->nama }}</h5>
+                                        <small>Admin Madrasah</small>
+                                    </div>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <div id="dynamicForm" class="dynamic-form">
+
+                        <div id="madrasahFields" class="role-fields d-none">
+                            <div class="field-group">
+                                <label class="form-label">Nama Madrasah</label>
+                                <div class="search-select">
+                                    <input type="text" id="madrasahSearch" class="form-control"
+                                        placeholder="Cari nama madrasah atau NPSN..." autocomplete="off">
+                                    <input type="hidden" name="madrasah_id" id="madrasahValue"
+                                        value="{{ old('madrasah_id') }}">
+                                    <div class="search-dropdown" id="madrasahDropdown">
+                                        @foreach ($madrasahs as $madrasah)
+                                            <div class="dropdown-item-custom" data-id="{{ $madrasah->id }}">
+                                                {{ $madrasah->nama_madrasah }} - {{ $madrasah->npsn }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="pengawasFields" class="role-fields d-none">
+                            <div class="field-group">
+                                <label class="form-label">Wilayah Pengawas</label>
+                                <select class="form-select" name="wilayah_pengawas_id">
+                                    <option value="">-- Pilih Wilayah --</option>
+                                    <option value="1">Jakarta Pusat</option>
+                                    <option value="2">Jakarta Utara</option>
+                                    <option value="3">Jakarta Barat</option>
+                                    <option value="4">Jakarta Timur</option>
+                                    <option value="5">Jakarta Selatan</option>
+                                    <option value="6">Kepulauan Seribu</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <span class="section-label">Data akun</span>
+                        <div class="form-row">
+                            <div class="field-group">
+                                <label class="form-label">Nama Lengkap</label>
+                                <input type="text" name="nama" class="form-control"
+                                    value="{{ old('nama') }}" placeholder="Masukkan nama">
+                            </div>
+
+                            <div class="field-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control"
+                                    value="{{ old('email') }}" placeholder="email@gmail.com">
+                            </div>
+
+                            <div class="field-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" name="username" class="form-control"
+                                    value="{{ old('username') }}" placeholder="Username">
+                            </div>
+
+                            <div class="field-group">
+                                <label class="form-label">No. HP</label>
+                                <input type="number" name="no_hp" class="form-control"
+                                    value="{{ old('no_hp') }}" placeholder="08xxxxxxxxxx">
+                            </div>
+
+                            <div class="field-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" name="password" id="password" class="form-control"
+                                    placeholder="******">
+
+                                <div class="password-check">
+                                    <small id="rule-length" class="invalid-rule">
+                                        <i class='bx bx-x-circle'></i> Minimal 8 karakter
+                                    </small>
+                                    <small id="rule-number" class="invalid-rule">
+                                        <i class='bx bx-x-circle'></i> Mengandung minimal 1 angka
+                                    </small>
+                                    <small id="rule-confirm" class="invalid-rule">
+                                        <i class='bx bx-x-circle'></i> Password dan konfirmasi harus sama
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label class="form-label">Konfirmasi Password</label>
+                                <input type="password" name="password_confirmation" id="password_confirmation"
+                                    class="form-control" placeholder="******">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-register">
+                            <i class='bx bx-user-plus'></i>
+                            Buat Akun
+                        </button>
+                    </div>
+                </form>
+
+                <div class="footer-link">
+                    Sudah punya akun?
+                    <a href="{{ route('login.form') }}">Masuk di sini</a>
                 </div>
             </div>
         </div>
@@ -346,36 +227,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const radios = document.querySelectorAll(".role-radio");
+        document.querySelectorAll(".toast-alert").forEach(toast => {
+            setTimeout(() => toast.remove(), 4300);
+        });
 
+        const radios = document.querySelectorAll(".role-radio");
         const madrasah = document.getElementById("madrasahFields");
         const pengawas = document.getElementById("pengawasFields");
-
         const form = document.getElementById("registerForm");
         const roleError = document.getElementById("roleError");
 
         form.addEventListener("submit", function(e) {
-
             const roleChecked = document.querySelector('input[name="role_id"]:checked');
 
             if (!roleChecked) {
                 e.preventDefault();
-
                 roleError.classList.remove("d-none");
-
                 document.querySelector(".role-container")
                     .scrollIntoView({
                         behavior: "smooth",
                         block: "center"
                     });
-
                 return false;
             }
-
         });
-        // ============================
-        // FUNCTION: set required
-        // ============================
+
         function setRequired(container, status) {
             container.querySelectorAll("input, select").forEach(el => {
                 if (status) {
@@ -387,61 +263,41 @@
             });
         }
 
-        // ============================
-        // ROLE CHANGE HANDLER
-        // ============================
         radios.forEach(r => {
             r.addEventListener("change", function() {
-
-                // hide semua dulu
                 madrasah.classList.add("d-none");
                 pengawas.classList.add("d-none");
-
-                // remove required semua dulu
                 setRequired(madrasah, false);
                 setRequired(pengawas, false);
 
-                // MADRASAH
                 if (this.dataset.role === "madrasah") {
                     madrasah.classList.remove("d-none");
                     setRequired(madrasah, true);
                 }
 
-                // PENGAWAS
                 if (this.dataset.role === "pengawas") {
                     pengawas.classList.remove("d-none");
                     setRequired(pengawas, true);
                 }
-
             });
         });
 
-        // ============================
-        // MADRASAH SEARCH SELECT
-        // ============================
         const search = document.getElementById("madrasahSearch");
         const dropdown = document.getElementById("madrasahDropdown");
         const hidden = document.getElementById("madrasahValue");
 
         if (search) {
-
-            // show dropdown
             search.addEventListener("focus", () => {
                 dropdown.style.display = "block";
             });
 
-            // filter search
             search.addEventListener("keyup", () => {
                 const keyword = search.value.toLowerCase();
-
                 document.querySelectorAll(".dropdown-item-custom").forEach(item => {
-                    item.style.display = item.innerText.toLowerCase().includes(keyword) ?
-                        "block" :
-                        "none";
+                    item.style.display = item.innerText.toLowerCase().includes(keyword) ? "block" : "none";
                 });
             });
 
-            // click item
             document.querySelectorAll(".dropdown-item-custom").forEach(item => {
                 item.addEventListener("click", () => {
                     search.value = item.innerText;
@@ -450,7 +306,6 @@
                 });
             });
 
-            // close when outside click
             document.addEventListener("click", function(e) {
                 if (!e.target.closest(".search-select")) {
                     dropdown.style.display = "none";
@@ -459,61 +314,31 @@
         }
 
         const password = document.getElementById("password");
-
         const confirmPassword = document.getElementById("password_confirmation");
-
         const ruleLength = document.getElementById("rule-length");
-
         const ruleNumber = document.getElementById("rule-number");
-
         const ruleConfirm = document.getElementById("rule-confirm");
+        const passwordCheck = document.querySelector(".password-check");
 
         function setRule(element, valid) {
-
-            if (valid) {
-
-                element.classList.remove("invalid-rule");
-                element.classList.add("valid-rule");
-
-                element.innerHTML =
-                    "<i class='bx bx-check-circle'></i>" +
-                    element.textContent.trim();
-
-            } else {
-
-                element.classList.remove("valid-rule");
-                element.classList.add("invalid-rule");
-
-                element.innerHTML =
-                    "<i class='bx bx-x-circle'></i>" +
-                    element.textContent.trim();
-
-            }
-
+            element.classList.remove(valid ? "invalid-rule" : "valid-rule");
+            element.classList.add(valid ? "valid-rule" : "invalid-rule");
+            element.innerHTML = (valid ? "<i class='bx bx-check-circle'></i> " : "<i class='bx bx-x-circle'></i> ") +
+                element.textContent.trim();
         }
 
         function validatePassword() {
-
             const pass = password.value;
-
             const confirm = confirmPassword.value;
 
-            // minimal 8 karakter
+            passwordCheck.classList.toggle("show", pass.length > 0 || confirm.length > 0);
+
             setRule(ruleLength, pass.length >= 8);
-
-            // mengandung angka
             setRule(ruleNumber, /\d/.test(pass));
-
-            // konfirmasi password
-            setRule(
-                ruleConfirm,
-                confirm.length > 0 && pass === confirm
-            );
-
+            setRule(ruleConfirm, confirm.length > 0 && pass === confirm);
         }
 
         password.addEventListener("input", validatePassword);
-
         confirmPassword.addEventListener("input", validatePassword);
     </script>
 </body>

@@ -66,7 +66,7 @@ class RegisterController extends Controller
             ]);
 
             ActivityLogger::log(
-                event: 'register',
+                event: 'create',
                 description: "Register user baru: {$user->nama} ({$user->email})"
             );
 

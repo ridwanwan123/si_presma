@@ -57,9 +57,9 @@
                             @endif
                         </div>
 
-                        <!-- Username / Email -->
+                        <!-- Username -->
                         <div class="mb-4">
-                            <label class="form-label">Username / Email</label>
+                            <label class="form-label">Username</label>
 
                             <div class="input-group custom-input">
                                 <span class="input-group-text">
@@ -67,7 +67,7 @@
                                 </span>
 
                                 <input type="text" name="login" class="form-control"
-                                    placeholder="Masukkan username atau email" required>
+                                    placeholder="Masukkan username " required>
                             </div>
                         </div>
 
@@ -113,6 +113,18 @@
     </div>
 
     <!-- PASSWORD TOGGLE -->
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#198754',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
     <script>
         const togglePassword = document.getElementById("togglePassword");
 
