@@ -10,7 +10,7 @@ class MadrasahSeeder extends Seeder
 {
   public function run(): void
   {
-      $path = database_path('seeders/data/madrasah.sql');
+      $path = database_path('seeders/data/madrasahs2.sql');
 
       if (!File::exists($path)) {
           throw new \Exception("File SQL tidak ditemukan: $path");

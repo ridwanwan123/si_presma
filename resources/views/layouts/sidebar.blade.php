@@ -48,6 +48,13 @@
             </a>
         @endif
 
+        @if ($user->hasRole('Administrator'))
+            <a href="#" class="menu-item">
+                <i class="bi bi-send-plus"></i>
+                <span>Assign To</span>
+            </a>
+        @endif
+
         <!-- Bidang Prestasi -->
         <div class="menu-title">Bidang Prestasi</div>
 
@@ -110,6 +117,12 @@
             <i class="bi bi-key"></i>
             <span>Ubah Password</span>
         </a>
+        @if ($user->hasRole('Administrator'))
+            <a href="#" class="menu-item">
+                <i class="bi bi-person-gear"></i>
+                <span>Management Akun</span>
+            </a>
+        @endif
 
         <!-- SYSTEM -->
         <div class="menu-title">SYSTEM</div>

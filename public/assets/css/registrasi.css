@@ -11,10 +11,10 @@
     --surface: #ffffff;
     --border: #e2e8e4;
 
-    --brand: #0e7a4d;
-    --brand-dark: #0a5c3a;
-    --brand-darker: #073d27;
-    --brand-soft: #e3f3ea;
+    --brand: #15803d;
+    --brand-dark: #166534;
+    --brand-darker: #14532d;
+    --brand-soft: #dcfce7;
 
     --gold: #c9971f;
     --gold-soft: #faf1dc;
@@ -28,9 +28,9 @@
     --field-h: 48px;
     --btn-h: 52px;
 
-    --shadow-sm: 0 4px 14px rgba(13, 27, 22, 0.06);
-    --shadow-md: 0 14px 34px rgba(13, 27, 22, 0.12);
-    --shadow-lg: 0 24px 60px rgba(7, 61, 39, 0.35);
+    --shadow-sm: 0 4px 14px rgba(21, 128, 61, 0.08);
+    --shadow-md: 0 14px 34px rgba(22, 101, 52, 0.15);
+    --shadow-lg: 0 24px 60px rgba(20, 83, 45, 0.3);
 }
 
 * {

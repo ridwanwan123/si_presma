@@ -16,6 +16,7 @@
         href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap"
         rel="stylesheet">
 
+    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('assets/css/registrasi.css') }}">
 </head>
 
@@ -28,13 +29,13 @@
 
             <div class="aside-brand">
                 <div class="mark"><i class='bx bxs-graduation'></i></div>
-                <span>PRESMA</span>
+                <span>PRESMA | JMA 2027</span>
             </div>
 
             <div class="aside-copy">
                 <span class="eyebrow"><i class='bx bxs-certification'></i> Sistem Prestasi Madrasah</span>
-                <h1>Satu dashboard untuk <em>seluruh capaian</em> madrasah Anda.</h1>
-                <p>Pantau akademik, non-akademik, dan keagamaan secara real-time — dari satu akun terverifikasi.</p>
+                <h1>Masuk untuk melihat <em>data prestasi</em></h1>
+                <p>Semua data prestasi sudah menunggu di dashboard.</p>
             </div>
 
             <div class="mock-stage">
@@ -66,6 +67,16 @@
                         <span>Keagamaan</span>
                         <div class="track"><i style="width:92%"></i></div>
                         <span class="pct">92%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span>GTK</span>
+                        <div class="track"><i style="width:88%"></i></div>
+                        <span class="pct">88%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span>Kelembagaan</span>
+                        <div class="track"><i style="width:79%"></i></div>
+                        <span class="pct">79%</span>
                     </div>
                 </div>
 
