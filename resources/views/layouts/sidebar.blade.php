@@ -118,9 +118,10 @@
             <span>Ubah Password</span>
         </a>
         @if ($user->hasRole('Administrator'))
-            <a href="#" class="menu-item">
+            <a href="{{ route('user-management.index') }}"
+                class="menu-item {{ request()->routeIs('user-management.*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i>
-                <span>Management Akun</span>
+                <span>Manajamen Akun</span>
             </a>
         @endif
 

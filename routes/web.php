@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MadrasahController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\PrestasiController;
+use App\Http\Controllers\UserManagementController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -86,6 +87,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('madrasah', MadrasahController::class);
     
     Route::resource('activity', ActivityController::class);
+
+    Route::resource('user-management', UserManagementController::class);
 
 
     /*

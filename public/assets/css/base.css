@@ -72,30 +72,18 @@ GLOW BACKGROUND
     pointer-events: none;
 }
 
+/* Hanya satu titik glow yang tersisa, statis (tanpa animasi) dan lebih
+   samar, supaya tidak bersaing dengan pola bg-ornament di belakangnya.
+   .glow-2 di base.blade.php boleh dihapus dari markup, tapi rule di
+   bawah tetap aman kalau elemennya masih ada. */
 .glow-1 {
-    background: rgba(16, 185, 129, 0.18);
+    background: rgba(16, 185, 129, 0.1);
     top: -100px;
     left: -100px;
-    animation: floatGlow 12s ease-in-out infinite;
 }
 
 .glow-2 {
-    background: rgba(245, 158, 11, 0.12);
-    right: -100px;
-    bottom: -100px;
-    animation: floatGlow 16s ease-in-out infinite reverse;
-}
-
-@keyframes floatGlow {
-    0% {
-        transform: translate(0, 0) scale(1);
-    }
-    50% {
-        transform: translate(40px, 30px) scale(1.05);
-    }
-    100% {
-        transform: translate(0, 0) scale(1);
-    }
+    display: none;
 }
 
 /* =========================
@@ -290,12 +278,6 @@ SIDEBAR
     flex-shrink: 0;
 }
 
-.menu-item:hover {
-    background: linear-gradient(90deg, #0d7a3a, #0f8a43);
-    color: #fff;
-    transform: translateX(4px);
-}
-
 .menu-item.active {
     background: #0f8a43;
     color: #fff;
@@ -332,7 +314,6 @@ SIDEBAR
 .menu-item:hover {
     background: rgba(15, 138, 67, 0.08);
     color: #0f8a43;
-    transform: translateX(3px);
 }
 
 /* =========================
@@ -464,16 +445,6 @@ SIDEBAR
     color: #6b7280;
 }
 
-/* accent kecil */
-.profile-card::before {
-    content: "";
-    width: 3px;
-    height: 70%;
-    background: #0f8a43;
-    border-radius: 10px;
-    margin-right: 10px;
-}
-
 /* =========================
 FIX CHEVRON ICON (PRESTASI)
 ========================= */
@@ -501,10 +472,6 @@ SIDEBAR PROFILE CARD FIX COLLAPSE
 
 .sidebar.collapsed .profile-info {
     display: none; /* sembunyikan text */
-}
-
-.sidebar.collapsed .profile-card::before {
-    display: none; /* hilangkan accent */
 }
 
 /* =========================
@@ -543,7 +510,7 @@ BACKGROUND
     background-size: 600px;
     background-repeat: repeat;
 
-    opacity: 0.5;
+    opacity: 0.05;
     pointer-events: none;
 
     z-index: 0;
@@ -572,15 +539,10 @@ APP TITLE (NAVBAR BRAND)
 }
 
 .app-name {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-
-    background: linear-gradient(90deg, #0f8a43, #16a34a);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    transition: 0.3s ease;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #0f8a43;
 }
 
 .app-region {
