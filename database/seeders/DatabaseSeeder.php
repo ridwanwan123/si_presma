@@ -41,27 +41,32 @@ class DatabaseSeeder extends Seeder
         */
 
         $wilayahUtara = WilayahPengawas::create([
-            'kota' => 'ADMINISTRASI KOTA JAKARTA UTARA',
+            'kota' => 'ADM. KOTA JAKARTA UTARA',
             'unit_kerja' => 'KANKEMENAG JAKARTA UTARA',
         ]);
 
         $wilayahTimur = WilayahPengawas::create([
-            'kota' => 'ADMINISTRASI KOTA JAKARTA TIMUR',
+            'kota' => 'ADM. KOTA JAKARTA TIMUR',
             'unit_kerja' => 'KANKEMENAG JAKARTA TIMUR',
         ]);
 
         $wilayahBarat = WilayahPengawas::create([
-            'kota' => 'ADMINISTRASI KOTA JAKARTA BARAT',
+            'kota' => 'ADM. KOTA JAKARTA BARAT',
             'unit_kerja' => 'KANKEMENAG JAKARTA BARAT',
         ]);
 
+        $wilayahSelatan = WilayahPengawas::create([
+            'kota' => 'ADM. KOTA JAKARTA SELATAN',
+            'unit_kerja' => 'KANKEMENAG JAKARTA SELATAN',
+        ]);
+        
         $wilayahPusat = WilayahPengawas::create([
-            'kota' => 'ADMINISTRASI KOTA JAKARTA PUSAT',
+            'kota' => 'ADM. KOTA JAKARTA PUSAT',
             'unit_kerja' => 'KANKEMENAG JAKARTA PUSAT',
         ]);
 
         $wilayahKepSeribu = WilayahPengawas::create([
-            'kota' => 'ADMINISTRASI KOTA KEPULAUAN SERIBU',
+            'kota' => 'ADM. KOTA KEPULAUAN SERIBU',
             'unit_kerja' => 'KANKEMENAG KEPULAUAN SERIBU',
         ]);
 
@@ -109,7 +114,7 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'role_id' => $madrasahRole->id,
-            'madrasah_id' => $madrasah?->id, // SAFE NULL HANDLING
+            'madrasah_id' => $madrasah?->id,
             'wilayah_pengawas_id' => null,
             'nama' => $madrasah?->nama_madrasah ?? 'Madrasah Demo',
             'email' => 'madrasah@mail.com',
@@ -128,7 +133,7 @@ class DatabaseSeeder extends Seeder
         User::create([
             'role_id' => $pengawasRole->id,
             'madrasah_id' => null,
-            'wilayah_pengawas_id' => $wilayahUtara->id,
+            'wilayah_pengawas_id' => $wilayahSelatan->id,
             'nama' => 'Pengawas',
             'email' => 'pengawas@mail.com',
             'username' => 'pengawas',

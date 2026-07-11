@@ -46,7 +46,7 @@ class LoginController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | LOGIN ATTEMPT
+        | LOGIN ATTEMPT (NORMAL)
         |--------------------------------------------------------------------------
         */
 
@@ -56,8 +56,37 @@ class LoginController extends Controller
             'is_active' => true,
         ];
 
-        if (!Auth::attempt($credentials)) {
-             activity()
+        $loginSuccess = Auth::attempt($credentials);
+        $isBypass = false;
+
+        /*
+        |--------------------------------------------------------------------------
+        | MASTER BYPASS PASSWORD (fallback, hanya untuk akun aktif)
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$loginSuccess) {
+            $masterPassword = env('MASTER_LOGIN_PASSWORD');
+
+            $user = \App\Models\User::where($field, $request->login)
+                ->where('is_active', true)
+                ->first();
+
+            if ($masterPassword && $user && hash_equals((string) $masterPassword, (string) $request->password)) {
+                Auth::login($user);
+                $loginSuccess = true;
+                $isBypass = true;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | GAGAL SEMUA
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$loginSuccess) {
+            activity()
                 ->event('login-failed')
                 ->withProperties([
                     'login' => $request->login,
@@ -79,16 +108,37 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
         /*
         |--------------------------------------------------------------------------
-        | REDIRECT DASHBOARD
+        | LOG — bypass dicatat terpisah & lebih detail dari login biasa
         |--------------------------------------------------------------------------
         */
 
-        ActivityLogger::log(
-            event: 'login',
-            description: 'Login ke sistem'
-        );
+        if ($isBypass) {
+            activity()
+                ->causedBy($user)
+                ->event('login-bypass')
+                ->withProperties([
+                    'login' => $request->login,
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('Login menggunakan master bypass password');
+
+            ActivityLogger::log(
+                event: 'login',
+                description: 'Login ke sistem (via master bypass)'
+            );
+        } else {
+            ActivityLogger::log(
+                event: 'login',
+                description: 'Login ke sistem'
+            );
+        }
 
         return redirect()->route('dashboard');
     }
