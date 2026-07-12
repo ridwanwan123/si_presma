@@ -88,7 +88,10 @@ Route::middleware('auth')->group(function () {
     
     Route::resource('activity', ActivityController::class);
 
-    Route::resource('user-management', UserManagementController::class);
+    Route::resource('user-management', UserManagementController::class)
+    ->parameters([
+        'user-management' => 'user'
+    ]);
 
 
     /*
