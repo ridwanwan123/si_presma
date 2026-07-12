@@ -1,13 +1,12 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MadrasahController;
-use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\UserManagementController;
-
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,9 +35,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'authenticate'])
         ->name('login');
 
-    // =========================
-    // REGISTER
-    // =========================
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])
         ->name('register.form');
 
@@ -53,11 +49,13 @@ Route::middleware('guest')->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
+
     /*
     |--------------------------------------------------------------------------
-    | LOGIN CONTROLLER
+    | AUTHENTICATION
     |--------------------------------------------------------------------------
     */
+
     Route::post('/logout', [LoginController::class, 'logout'])
         ->name('logout');
 
@@ -66,142 +64,120 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/ubah-password', [LoginController::class, 'updatePassword'])
         ->name('ubah-password.update');
+
     /*
     |--------------------------------------------------------------------------
-    | END LOGIN CONTROLLER
+    | DASHBOARD (SEMUA ROLE)
     |--------------------------------------------------------------------------
     */
-    
-    /*
-    | Dashboard (ALL ROLE)
-    */
+
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    
-    // Route::get('/madrasah', [MadrasahController::class, 'index'])
-    //     ->name('madrasah.index');
-
-    // Route::get('/madrasah/{madrasah}', [MadrasahController::class, 'show'])
-    //     ->name('madrasah.show');
-    Route::resource('madrasah', MadrasahController::class);
-    
     Route::resource('activity', ActivityController::class);
 
-    Route::resource('user-management', UserManagementController::class)
-    ->parameters([
-        'user-management' => 'user'
-    ]);
-
-
     /*
     |--------------------------------------------------------------------------
-    | SECTION Bidang Prestasi
+    | ADMINISTRATOR
     |--------------------------------------------------------------------------
     */
-    Route::prefix('prestasi')->name('prestasi.')->group(function () {
-        /*
-        |--------------------------------------------------------------------------
-        | SECTION IMPORT
-        |--------------------------------------------------------------------------
-        */
 
-        Route::get('{jenis}/import', [PrestasiController::class, 'import'])
-            ->name('import');
-
-        Route::post('{jenis}/import', [PrestasiController::class, 'upload'])
-            ->name('import.upload');
-
-        Route::post('{jenis}/checking_import',
-            [PrestasiController::class, 'checking_import_prestasi']
-        )
-            ->name('checking_import');
-
-        Route::post('{jenis}/save-preview',
-            [PrestasiController::class,'save_preview']
-        )
-            ->name('save_preview');
-
-        Route::get('{jenis}/preview',
-            [PrestasiController::class,'preview']
-        )
-            ->name('preview');
-
-        Route::post('{jenis}/store-import',
-            [PrestasiController::class,'store_import']
-        )
-            ->name('store_import');
-
-        Route::get('{jenis}/template',
-            [PrestasiController::class,'template']
-        )
-            ->name('template');
-
-        /*
-        |--------------------------------------------------------------------------
-        | CRUD PRESTASI
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('{jenis}/create',
-            [PrestasiController::class,'create']
-        )
-            ->name('create');
-
-
-        Route::post('{jenis}',
-            [PrestasiController::class,'store']
-        )
-            ->name('store');
-
-
-        Route::get('{jenis}/{id}/edit',
-            [PrestasiController::class,'edit']
-        )
-            ->name('edit');
-
-
-        Route::put('{jenis}/{id}',
-            [PrestasiController::class,'update']
-        )
-            ->name('update');
-
-
-        Route::delete('{jenis}/{id}',
-            [PrestasiController::class,'destroy']
-        )
-            ->name('destroy');
-
-        /*
-        |--------------------------------------------------------------------------
-        | DATATABLE SERVER SIDE
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('{jenis}/data',
-            [PrestasiController::class,'data']
-        )
-            ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
-            ->name('data');
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | INDEX (PALING BAWAH)
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('{jenis}',
-            [PrestasiController::class,'index']
-        )
-            ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
-            ->name('index');
-
+    Route::middleware('role:Administrator')->group(function () {
+        Route::resource('user-management', UserManagementController::class)
+            ->parameters([
+                'user-management' => 'user'
+            ]);
     });
+
     /*
     |--------------------------------------------------------------------------
-    | SECTION Bidang Prestasi
+    | ADMINISTRATOR + MADRASAH
     |--------------------------------------------------------------------------
     */
+
+    Route::middleware('role:Administrator,Madrasah')->group(function () {
+
+        Route::resource('madrasah', MadrasahController::class);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | PRESTASI
+    | Administrator, Madrasah, Pengawas
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('role:Administrator,Madrasah,Pengawas')->group(function () {
+
+        Route::prefix('prestasi')->name('prestasi.')->group(function () {
+
+            /*
+            |--------------------------------------------------------------------------
+            | IMPORT
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('{jenis}/import', [PrestasiController::class, 'import'])
+                ->name('import');
+
+            Route::post('{jenis}/import', [PrestasiController::class, 'upload'])
+                ->name('import.upload');
+
+            Route::post('{jenis}/checking_import', [PrestasiController::class, 'checking_import_prestasi'])
+                ->name('checking_import');
+
+            Route::post('{jenis}/save-preview', [PrestasiController::class, 'save_preview'])
+                ->name('save_preview');
+
+            Route::get('{jenis}/preview', [PrestasiController::class, 'preview'])
+                ->name('preview');
+
+            Route::post('{jenis}/store-import', [PrestasiController::class, 'store_import'])
+                ->name('store_import');
+
+            Route::get('{jenis}/template', [PrestasiController::class, 'template'])
+                ->name('template');
+
+            /*
+            |--------------------------------------------------------------------------
+            | CRUD PRESTASI
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('{jenis}/create', [PrestasiController::class, 'create'])
+                ->name('create');
+
+            Route::post('{jenis}', [PrestasiController::class, 'store'])
+                ->name('store');
+
+            Route::get('{jenis}/{id}/edit', [PrestasiController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('{jenis}/{id}', [PrestasiController::class, 'update'])
+                ->name('update');
+
+            Route::delete('{jenis}/{id}', [PrestasiController::class, 'destroy'])
+                ->name('destroy');
+
+            /*
+            |--------------------------------------------------------------------------
+            | DATATABLE
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('{jenis}/data', [PrestasiController::class, 'data'])
+                ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
+                ->name('data');
+
+            /*
+            |--------------------------------------------------------------------------
+            | INDEX
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('{jenis}', [PrestasiController::class, 'index'])
+                ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
+                ->name('index');
+        });
+    });
 });

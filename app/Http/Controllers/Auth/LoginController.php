@@ -39,21 +39,46 @@ class LoginController extends Controller
         | DETECT LOGIN FIELD
         |--------------------------------------------------------------------------
         */
-
         $field = filter_var($request->login, FILTER_VALIDATE_EMAIL)
             ? 'email'
             : 'username';
 
         /*
         |--------------------------------------------------------------------------
-        | LOGIN ATTEMPT (NORMAL)
+        | GET USER
         |--------------------------------------------------------------------------
         */
+        $user = \App\Models\User::where($field, $request->login)->first();
 
+        /*
+        |--------------------------------------------------------------------------
+        | USER EXISTS BUT ACCOUNT IS DISABLED
+        |--------------------------------------------------------------------------
+        */
+        if ($user && !$user->is_active) {
+            activity()
+                ->event('login-disabled')
+                ->withProperties([
+                    'login' => $request->login,
+                    'user_id' => $user->id,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('Percobaan login pada akun nonaktif');
+
+            return back()
+                ->withInput()
+                ->with('error', 'Akun Anda telah dinonaktifkan. Silakan hubungi Administrator.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOGIN NORMAL
+        |--------------------------------------------------------------------------
+        */
         $credentials = [
             $field => $request->login,
             'password' => $request->password,
-            'is_active' => true,
         ];
 
         $loginSuccess = Auth::attempt($credentials);
@@ -61,18 +86,17 @@ class LoginController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | MASTER BYPASS PASSWORD (fallback, hanya untuk akun aktif)
+        | MASTER BYPASS PASSWORD
         |--------------------------------------------------------------------------
         */
-
         if (!$loginSuccess) {
             $masterPassword = env('MASTER_LOGIN_PASSWORD');
 
-            $user = \App\Models\User::where($field, $request->login)
-                ->where('is_active', true)
-                ->first();
-
-            if ($masterPassword && $user && hash_equals((string) $masterPassword, (string) $request->password)) {
+            if (
+                $masterPassword &&
+                $user &&
+                hash_equals((string) $masterPassword, (string) $request->password)
+            ) {
                 Auth::login($user);
                 $loginSuccess = true;
                 $isBypass = true;
@@ -81,10 +105,9 @@ class LoginController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | GAGAL SEMUA
+        | LOGIN FAILED
         |--------------------------------------------------------------------------
         */
-
         if (!$loginSuccess) {
             activity()
                 ->event('login-failed')
@@ -105,17 +128,15 @@ class LoginController extends Controller
         | REGENERATE SESSION
         |--------------------------------------------------------------------------
         */
-
         $request->session()->regenerate();
 
         $user = Auth::user();
 
         /*
         |--------------------------------------------------------------------------
-        | LOG — bypass dicatat terpisah & lebih detail dari login biasa
+        | LOGIN LOG
         |--------------------------------------------------------------------------
         */
-
         if ($isBypass) {
             activity()
                 ->causedBy($user)

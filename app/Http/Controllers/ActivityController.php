@@ -52,7 +52,7 @@ class ActivityController extends Controller
 
         $activities = $query
             ->latest()
-            ->paginate(5)
+            ->paginate(20)
             ->withQueryString();
 
         // =========================
