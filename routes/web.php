@@ -7,6 +7,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MadrasahController;
 use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\AssignAsesorController;
+use App\Http\Controllers\AsesorController;
+// use App\Http\Controllers\WilayahPengawasController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -83,10 +87,37 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::middleware('role:Administrator')->group(function () {
+
         Route::resource('user-management', UserManagementController::class)
             ->parameters([
                 'user-management' => 'user'
             ]);
+
+        Route::get(
+            'assign-asesor/export-pdf',
+            [AssignAsesorController::class, 'exportPdf']
+        )->name('assign-asesor.export-pdf');
+
+        Route::resource('assign-asesor', AssignAsesorController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+
+    });
+    
+    /*
+    |--------------------------------------------------------------------------
+    | PENGAWAS / ASESOR
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('role:Pengawas')->group(function () {
+
+        Route::resource('asesor', AsesorController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+
+        Route::get('asesor/{madrasah}', [AsesorController::class, 'show'])->name('asesor.show');
+
+        Route::post('/asesor/madrasah/{madrasah}/prestasi/{prestasi}/nilai', [AsesorController::class, 'simpanNilai'])
+            ->name('asesor.nilai.store');
     });
 
     /*

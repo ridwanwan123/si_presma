@@ -41,6 +41,11 @@ class PrestasiSiswa extends Model
         return $this->belongsTo(Madrasah::class);
     }
 
+    public function penilaianPrestasi()
+    {
+        return $this->hasOne(PenilaianPrestasi::class);
+    }
+
      /*
     |--------------------------------------------------------------------------
     | Scopes
@@ -62,15 +67,26 @@ class PrestasiSiswa extends Model
             );
         }
 
-        if ($user->isPengawas()) {
-            return $query->whereHas('madrasah', function ($q) use ($user) {
+        // if ($user->isPengawas()) {
+        //     return $query->whereHas('madrasah', function ($q) use ($user) {
 
+        //         $q->where(
+        //             'wilayah_pengawas_id',
+        //             $user->wilayah_pengawas_id
+        //         );
+
+        //     });
+        // }
+
+        if ($user->isPengawas()) {
+            return $query->whereHas('madrasah.assignAsesor', function ($q) use ($user) {
                 $q->where(
-                    'wilayah_pengawas_id',
-                    $user->wilayah_pengawas_id
+                    'asesor_id',
+                    $user->id
                 );
 
             });
+
         }
 
         return $query;

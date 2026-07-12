@@ -23,6 +23,103 @@
     gap: 0.5rem;
 }
 
+/* HEADER BUTTONS (tema hijau, satu aksen solid + satu outline netral) */
+.btn-brand-fill {
+    background: #0f8a43;
+    border: 1px solid #0f8a43;
+    color: #fff;
+}
+
+.btn-brand-fill:hover {
+    background: #0d7a3a;
+    border-color: #0d7a3a;
+    color: #fff;
+}
+
+.btn-brand-outline {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+.btn-brand-outline:hover {
+    border-color: #0f8a43;
+    color: #0f8a43;
+    background: rgba(15, 138, 67, 0.06);
+}
+
+.btn-brand-fill,
+.btn-brand-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    border-radius: 10px;
+}
+
+/* SUMMARY ICON VARIANTS (dua warna saja: aksen hijau & netral) */
+.summary-icon.icon-brand {
+    background: rgba(15, 138, 67, 0.1);
+    color: #0f8a43;
+}
+
+.summary-icon.icon-neutral {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* DISTRIBUSI TINGKAT: grid dengan kolom label lebar tetap supaya
+   label, bar, dan angka selalu sejajar rapi terlepas dari panjang teks */
+.distribusi-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.distribusi-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 44px;
+    align-items: center;
+    gap: 16px;
+}
+
+.distribusi-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.distribusi-bar-track {
+    height: 10px;
+    border-radius: 50px;
+    background: #eef3f7;
+    overflow: hidden;
+}
+
+.distribusi-bar-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: #0f8a43;
+    transition: width 0.4s ease;
+}
+
+.distribusi-value {
+    text-align: right;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #111827;
+}
+
+@media (max-width: 576px) {
+    .distribusi-row {
+        grid-template-columns: 92px 1fr 36px;
+        gap: 10px;
+    }
+}
+
 /* CARD */
 .content-card {
     margin: 0 1rem 1rem;
@@ -70,6 +167,7 @@
     border: 1px solid #edf1f7;
     transition: all 0.2s ease;
     width: 100%;
+    height: 100%;
 }
 
 .summary-card:hover {
@@ -120,8 +218,8 @@
    =========================================================== */
 
 :root {
-    --presma-primary: #2563eb;
-    --presma-primary-soft: #eff6ff;
+    --presma-primary: #0f8a43;
+    --presma-primary-soft: #eaf6ef;
 
     --presma-success: #16a34a;
     --presma-danger: #dc2626;
@@ -314,7 +412,7 @@
 .dataTables_length select:focus {
     border-color: var(--presma-primary);
 
-    box-shadow: 0 0 0 0.18rem rgba(37, 99, 235, 0.12);
+    box-shadow: 0 0 0 0.18rem rgba(15, 138, 67, 0.12);
 }
 
 /* ===========================================================
@@ -374,7 +472,7 @@
 
     background: #fff;
 
-    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+    box-shadow: 0 0 0 0.2rem rgba(15, 138, 67, 0.12);
 }
 
 /* ===========================================================
@@ -432,7 +530,7 @@
 .page-item .page-link:hover {
     background: var(--presma-primary-soft);
 
-    border-color: #bfdbfe;
+    border-color: #bfe3cd;
 
     color: var(--presma-primary);
 }
@@ -900,96 +998,77 @@ table.dataTable thead .sorting_desc {
    BIDANG PRESTASI
    =========================================================== */
 
-.badge-akademik {
-    background: #eef4ff;
+.badge-soft {
+    background: #f3f4f6;
 
-    color: #2563eb;
+    color: #374151;
 
-    border-color: #dbeafe;
+    border-color: #e5e7eb;
 }
 
-.badge-non {
-    background: #f8fafc;
+.badge-soft::before {
+    content: "";
 
-    color: #475569;
+    width: 6px;
 
-    border-color: #e2e8f0;
+    height: 6px;
+
+    border-radius: 50%;
+
+    flex-shrink: 0;
 }
 
-.badge-keagamaan {
-    background: #ecfdf5;
-
-    color: #15803d;
-
-    border-color: #bbf7d0;
+.badge-akademik::before {
+    background: #2563eb;
 }
 
-.badge-gtk {
-    background: #fff7ed;
-
-    color: #c2410c;
-
-    border-color: #fed7aa;
+.badge-non::before {
+    background: #64748b;
 }
 
-.badge-lembaga {
-    background: #f5f3ff;
+.badge-keagamaan::before {
+    background: #0f8a43;
+}
 
-    color: #7c3aed;
+.badge-gtk::before {
+    background: #d97706;
+}
 
-    border-color: #ddd6fe;
+.badge-lembaga::before {
+    background: #7c3aed;
 }
 
 /* ===========================================================
    TINGKAT
    =========================================================== */
 
-.tingkat-sekolah {
-    background: #f8fafc;
-
-    color: #475569;
-
-    border: 1px solid #e2e8f0;
-}
-
-.tingkat-kecamatan {
-    background: #eff6ff;
-
-    color: #2563eb;
-
-    border: 1px solid #bfdbfe;
-}
-
+.tingkat-sekolah,
+.tingkat-kecamatan,
 .tingkat-kabupaten {
-    background: #ecfeff;
+    background: #f3f4f6;
 
-    color: #0891b2;
+    color: #4b5563;
 
-    border: 1px solid #bae6fd;
+    border: 1px solid #e5e7eb;
 }
 
 .tingkat-provinsi {
-    background: #ecfdf5;
+    background: #f3f4f6;
 
-    color: #15803d;
+    color: #374151;
 
-    border: 1px solid #bbf7d0;
+    border: 1px solid #e5e7eb;
+    font-weight: 700;
 }
 
-.tingkat-nasional {
-    background: #fff1f2;
-
-    color: #e11d48;
-
-    border: 1px solid #fecdd3;
-}
-
+.tingkat-nasional,
 .tingkat-internasional {
-    background: #faf5ff;
+    background: rgba(15, 138, 67, 0.1);
 
-    color: #9333ea;
+    color: #0f8a43;
 
-    border: 1px solid #e9d5ff;
+    border: 1px solid rgba(15, 138, 67, 0.18);
+    font-weight: 700;
 }
 
 /* ===========================================================
@@ -1047,11 +1126,11 @@ table.dataTable thead .sorting_desc {
 
     border-radius: 10px;
 
-    border: 1px solid #dbeafe;
+    border: 1px solid rgba(15, 138, 67, 0.18);
 
-    background: #eff6ff;
+    background: rgba(15, 138, 67, 0.08);
 
-    color: #2563eb;
+    color: #0f8a43;
 
     font-size: 0.76rem;
 
@@ -1063,11 +1142,11 @@ table.dataTable thead .sorting_desc {
 }
 
 .btn-drive:hover {
-    background: #2563eb;
+    background: #0f8a43;
 
     color: #fff;
 
-    border-color: #2563eb;
+    border-color: #0f8a43;
 }
 
 /* ===========================================================
@@ -1143,7 +1222,7 @@ table.dataTable thead .sorting_desc {
 }
 
 #tablePrestasi a:not(.btn):hover {
-    color: #2563eb;
+    color: #0f8a43;
 }
 
 /* ===========================================================

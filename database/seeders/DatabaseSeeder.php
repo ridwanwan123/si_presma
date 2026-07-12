@@ -108,38 +108,52 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | USER MADRASAH
+        | USER MADRASAH (5 AKUN)
         |--------------------------------------------------------------------------
         */
 
-        User::create([
-            'role_id' => $madrasahRole->id,
-            'madrasah_id' => $madrasah?->id,
-            'wilayah_pengawas_id' => null,
-            'nama' => $madrasah?->nama_madrasah ?? 'Madrasah Demo',
-            'email' => 'madrasah@mail.com',
-            'username' => 'madrasah',
-            'password' => Hash::make('penmad123'),
-            'no_hp' => '082222222222',
-            'is_active' => true,
-        ]);
+        $madrasahList = Madrasah::limit(5)->get();
+
+        foreach ($madrasahList as $index => $madrasah) {
+
+            User::create([
+                'role_id' => $madrasahRole->id,
+                'madrasah_id' => $madrasah->id,
+                'wilayah_pengawas_id' => null,
+                'nama' => $madrasah->nama_madrasah,
+                'email' => 'madrasah' . ($index + 1) . '@mail.com',
+                'username' => 'madrasah' . ($index + 1),
+                'password' => Hash::make('penmad123'),
+                'no_hp' => '08222222222' . ($index + 1),
+                'is_active' => true,
+            ]);
+        }
+
 
         /*
         |--------------------------------------------------------------------------
-        | USER PENGAWAS
+        | USER PENGAWAS (2 AKUN)
         |--------------------------------------------------------------------------
         */
 
-        User::create([
-            'role_id' => $pengawasRole->id,
-            'madrasah_id' => null,
-            'wilayah_pengawas_id' => $wilayahSelatan->id,
-            'nama' => 'Pengawas',
-            'email' => 'pengawas@mail.com',
-            'username' => 'pengawas',
-            'password' => Hash::make('penmad123'),
-            'no_hp' => '083333333333',
-            'is_active' => true,
-        ]);
+        $wilayahList = [
+            $wilayahSelatan,
+            $wilayahTimur
+        ];
+
+        foreach ($wilayahList as $index => $wilayah) {
+
+            User::create([
+                'role_id' => $pengawasRole->id,
+                'madrasah_id' => null,
+                'wilayah_pengawas_id' => $wilayah->id,
+                'nama' => 'Pengawas ' . ($index + 1),
+                'email' => 'pengawas' . ($index + 1) . '@mail.com',
+                'username' => 'pengawas' . ($index + 1),
+                'password' => Hash::make('penmad123'),
+                'no_hp' => '08333333333' . ($index + 1),
+                'is_active' => true,
+            ]);
+        }
     }
 }

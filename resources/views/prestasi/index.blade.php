@@ -11,24 +11,24 @@
             </div>
             <div class="action-group">
                 <a href="{{ route('prestasi.create', $jenis) }}"
-                    class="btn btn-success btn-sm {{ request()->routeIs('prestasi.create') ? 'active' : '' }}"">
-                    <i class="bi bi-plus"></i>
+                    class="btn btn-brand-fill btn-sm {{ request()->routeIs('prestasi.create') ? 'active' : '' }}">
+                    <i class="bi bi-plus-lg"></i>
                     Tambah
                 </a>
                 <a href="{{ route('prestasi.import', $jenis) }}"
-                    class="btn btn-primary btn-sm {{ request()->routeIs('prestasi.import') ? 'active' : '' }}"">
+                    class="btn btn-brand-outline btn-sm {{ request()->routeIs('prestasi.import') ? 'active' : '' }}">
                     <i class="bi bi-upload"></i>
                     Import
                 </a>
             </div>
         </div>
         {{-- SUMMARY --}}
-        <div class="row g-3 mb-4">
+        <div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
 
             {{-- Total Prestasi --}}
-            <div class="col-xl-3">
+            <div class="col">
                 <div class="summary-card">
-                    <div class="summary-icon bg-warning-subtle text-warning">
+                    <div class="summary-icon icon-neutral">
                         <i class="bi bi-trophy"></i>
                     </div>
 
@@ -52,9 +52,9 @@
                 $topJumlah = max($tingkat);
             @endphp
 
-            <div class="col-xl-3">
+            <div class="col">
                 <div class="summary-card">
-                    <div class="summary-icon bg-primary-subtle text-primary">
+                    <div class="summary-icon icon-brand">
                         <i class="bi bi-award"></i>
                     </div>
 
@@ -66,9 +66,9 @@
             </div>
 
             {{-- Luring --}}
-            <div class="col-xl-3">
+            <div class="col">
                 <div class="summary-card">
-                    <div class="summary-icon bg-success-subtle text-success">
+                    <div class="summary-icon icon-brand">
                         <i class="bi bi-building"></i>
                     </div>
 
@@ -80,9 +80,9 @@
             </div>
 
             {{-- Daring --}}
-            <div class="col-xl-3">
+            <div class="col">
                 <div class="summary-card">
-                    <div class="summary-icon bg-info-subtle text-info">
+                    <div class="summary-icon icon-neutral">
                         <i class="bi bi-globe2"></i>
                     </div>
 
@@ -100,7 +100,7 @@
         <div class="content-card p-4 mb-4">
 
             <div class="d-flex align-items-center mb-4">
-                <div class="summary-icon bg-success-subtle text-success me-3">
+                <div class="summary-icon icon-brand me-3">
                     <i class="bi bi-bar-chart"></i>
                 </div>
 
@@ -126,25 +126,23 @@
                 $max = max($levels) ?: 1;
             @endphp
 
-            @foreach ($levels as $label => $value)
-                @php
-                    $percent = ($value / $max) * 100;
-                @endphp
+            <div class="distribusi-list">
+                @foreach ($levels as $label => $value)
+                    @php
+                        $percent = $value > 0 ? max(($value / $max) * 100, 3) : 0;
+                    @endphp
 
-                <div class="mb-3">
+                    <div class="distribusi-row">
+                        <div class="distribusi-label">{{ $label }}</div>
 
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>{{ $label }}</span>
-                        <strong>{{ $value }}</strong>
-                    </div>
-
-                    <div class="progress custom-progress">
-                        <div class="progress-bar bg-success" style="width: {{ $percent }}%">
+                        <div class="distribusi-bar-track">
+                            <div class="distribusi-bar-fill" style="width: {{ $percent }}%"></div>
                         </div>
-                    </div>
 
-                </div>
-            @endforeach
+                        <div class="distribusi-value">{{ $value }}</div>
+                    </div>
+                @endforeach
+            </div>
 
         </div>
 
@@ -484,7 +482,7 @@
                             if (data.skor_daring) {
 
                                 html.push(`
-                                    <span class="badge bg-primary-subtle text-primary border">
+                                    <span class="badge bg-secondary-subtle text-secondary border">
                                         D ${data.skor_daring}
                                     </span>
                                 `);

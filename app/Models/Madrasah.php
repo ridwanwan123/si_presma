@@ -51,4 +51,9 @@ class Madrasah extends Model
     {
         return $this->hasMany(PrestasiSiswa::class);
     }
+
+    public function assignAsesor()
+    {
+        return $this->hasOne(AssignAsesor::class);
+    }
 }

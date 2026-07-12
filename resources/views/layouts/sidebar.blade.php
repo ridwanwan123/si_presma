@@ -49,7 +49,8 @@
         @endif
 
         @if ($user->hasRole('Administrator'))
-            <a href="#" class="menu-item">
+            <a href="{{ route('assign-asesor.index') }}"
+                class="menu-item {{ request()->routeIs('assign-asesor.index') ? 'active' : '' }}">
                 <i class="bi bi-send-plus"></i>
                 <span>Assign To</span>
             </a>
@@ -96,12 +97,12 @@
         </div>
 
         <!-- LAINNYA -->
-        @if ($user->hasRole(['Administrator', 'Pengawas']))
+        @if ($user->hasRole(['Pengawas']))
             <div class="menu-title">LAINNYA</div>
 
-            <a href="#" class="menu-item">
+            <a href="{{ route('asesor.index') }}" class="menu-item {{ request()->routeIs('asesor.index') ? 'active' : '' }}">
                 <i class="bi bi-check2-circle"></i>
-                <span>Verifikasi</span>
+                <span>Asesor</span>
             </a>
 
             <a href="#" class="menu-item">
