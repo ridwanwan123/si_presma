@@ -14,6 +14,8 @@ class AssignAsesor extends Model
         'madrasah_id',
         'assigned_by',
         'assigned_at',
+        'status',
+        'catatan'
     ];
 
     protected $casts = [

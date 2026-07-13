@@ -7,6 +7,7 @@ use App\Models\Madrasah;
 use App\Models\PenilaianPrestasi;
 use App\Models\PrestasiSiswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AsesorController extends Controller
@@ -17,6 +18,69 @@ class AsesorController extends Controller
     |--------------------------------------------------------------------------
     */
     private const OPSI_PERSENTASE = [0, 5, 70, 80, 85, 90, 95, 100];
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS PENILAIAN — satu-satunya sumber kebenaran pemetaan status.
+    |--------------------------------------------------------------------------
+    | Dipakai di index() (badge & progress bar tabel) maupun show() (badge
+    | header), supaya label/warna status tidak dihitung ulang di Blade dan
+    | selalu konsisten mengikuti assign_asesors.status.
+    |
+    | assigned / not_assigned / null -> belum   (Belum Dinilai)
+    | in_progress                    -> proses  (Sedang Dinilai)
+    | completed                      -> selesai (Selesai)
+    */
+    private function statusPenilaianInfo(?string $statusAssignment): array
+    {
+        return match ($statusAssignment) {
+            'completed' => [
+                'key' => 'selesai',
+                'label' => 'Selesai',
+                'badge' => 'badge-selesai',
+                'bar' => 'bg-selesai',
+            ],
+            'in_progress' => [
+                'key' => 'proses',
+                'label' => 'Sedang Dinilai',
+                'badge' => 'badge-proses',
+                'bar' => 'bg-proses',
+            ],
+            default => [
+                'key' => 'belum',
+                'label' => 'Belum Dinilai',
+                'badge' => 'badge-belum',
+                'bar' => 'bg-belum',
+            ],
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AKSI TABEL "MADRASAH YANG DINILAI" — label/class/icon tombol Aksi,
+    | mengikuti status penilaian yang sama (bukan dihitung lagi di Blade).
+    |--------------------------------------------------------------------------
+    */
+    private function aksiPenilaianInfo(string $statusKey): array
+    {
+        return match ($statusKey) {
+            'selesai' => [
+                'label' => 'Lihat Hasil',
+                'class' => 'btn-hasil',
+                'icon' => 'bi-eye',
+            ],
+            'proses' => [
+                'label' => 'Lanjutkan',
+                'class' => 'btn-lanjutkan',
+                'icon' => 'bi-pencil',
+            ],
+            default => [
+                'label' => 'Mulai Menilai',
+                'class' => 'btn-mulai',
+                'icon' => 'bi-play-fill',
+            ],
+        };
+    }
 
     public function index()
     {
@@ -69,24 +133,14 @@ class AsesorController extends Controller
             |--------------------------------------------------------------------------
             | Status Penilaian
             |--------------------------------------------------------------------------
-            |
-            | belum
-            |   = belum ada satupun penilaian
-            |
-            | proses
-            |   = sudah mulai menilai, tetapi assignment belum difinalisasi
-            |
-            | selesai
-            |   = assignment sudah completed
-            |
+            | Status murni mengikuti assign_asesors.status (bukan dihitung dari
+            | jumlah penilaian), supaya selalu konsisten dengan hasil finalisasi.
+            | Label, class badge, dan class progress bar sekaligus disiapkan di
+            | sini lewat statusPenilaianInfo() supaya Blade tidak perlu menghitung
+            | ulang apa pun — Blade hanya menampilkan.
             */
-            if ($dinilai == 0) {
-                $status = 'belum';
-            } elseif ($assignment->status === 'completed') {
-                $status = 'selesai';
-            } else {
-                $status = 'proses';
-            }
+            $statusInfo = $this->statusPenilaianInfo($assignment->status);
+            $aksiInfo = $this->aksiPenilaianInfo($statusInfo['key']);
 
             return [
                 'id' => $madrasah->id,
@@ -95,8 +149,14 @@ class AsesorController extends Controller
                 'jenjang' => $madrasah->jenjang_madrasah,
                 'wilayah' => $madrasah->kota,
                 'prestasi' => $totalPrestasi,
-                'status' => $status,
+                'status' => $statusInfo['key'],
+                'status_label' => $statusInfo['label'],
+                'status_badge' => $statusInfo['badge'],
+                'status_bar' => $statusInfo['bar'],
                 'progress' => $progress,
+                'aksi_label' => $aksiInfo['label'],
+                'aksi_class' => $aksiInfo['class'],
+                'aksi_icon' => $aksiInfo['icon'],
             ];
         });
 
@@ -362,6 +422,8 @@ class AsesorController extends Controller
                 'asesor' => auth()->user()->nama,
             ],
             'inisialAsesor' => $inisialAsesor,
+            'statusAssignment' => $assignment->status,
+            'statusLabel' => $this->statusPenilaianInfo($assignment->status)['label'],
             'progresPenilaian' => $progresPenilaian,
             'opsiPersentase' => self::OPSI_PERSENTASE,
             'daftarPrestasi' => $daftarPrestasi,
@@ -381,17 +443,24 @@ class AsesorController extends Controller
     |--------------------------------------------------------------------------
     | PROSES "BERI NILAI" — Insert kalau belum ada, Update kalau sudah ada.
     |--------------------------------------------------------------------------
-    | Dipanggil dari modal "Beri Nilai" di halaman show(). Status selalu
-    | disimpan sebagai 'draft' pada tahap ini — finalisasi ke 'completed'
-    | adalah fitur terpisah di tahap berikutnya (di luar scope ini).
+    | Dipanggil dari modal "Beri Nilai" di halaman show(). Status penilaian
+    | selalu disimpan sebagai 'draft' pada tahap ini — finalisasi ke
+    | 'completed' dilakukan lewat finalisasi(). Assignment otomatis
+    | berpindah dari 'assigned' ke 'in_progress' begitu penilaian pertama
+    | disimpan (lihat DB::transaction di bawah).
     */
 
-    public function simpanNilai(Request $request, Madrasah $madrasah, PrestasiSiswa $prestasi)
-    {
+    public function simpanNilai(Request $request, Madrasah $madrasah, PrestasiSiswa $prestasi){
         // Security: asesor hanya boleh menilai madrasah yang memang
         // menjadi assignment aktifnya. Divalidasi ke tabel assign_asesors,
         // bukan cuma mengandalkan middleware role.
         $assignment = $this->assignmentAtauGagal($madrasah);
+
+        // Setelah finalisasi (completed), seluruh nilai terkunci — asesor
+        // tidak boleh mengubah nilai lagi lewat request langsung ke endpoint ini.
+        if ($assignment->status === 'completed') {
+            abort(403, 'Penilaian untuk madrasah ini sudah difinalisasi dan tidak dapat diubah.');
+        }
 
         // Security tambahan: pastikan prestasi yang dinilai benar-benar
         // milik madrasah yang sedang dibuka, supaya asesor tidak bisa
@@ -410,22 +479,83 @@ class AsesorController extends Controller
 
         $nilaiAkhir = round($skorAwal * $data['persentase'] / 100, 2);
 
-        // updateOrCreate dikunci ke prestasi_siswa_id saja (relasi hasOne di
-        // PrestasiSiswa), bukan ke assign_asesor_id. Kalau madrasah pernah
-        // dipindah ke asesor lain oleh admin, assign_asesor_id pada baris
-        // yang sudah ada ikut diperbarui ke assignment yang aktif sekarang —
-        // supaya catatan penilaian tidak "nyangkut" ke assignment lama.
-        PenilaianPrestasi::updateOrCreate(
-            ['prestasi_siswa_id' => $prestasi->id],
-            [
-                'assign_asesor_id' => $assignment->id,
-                'persentase' => $data['persentase'],
-                'nilai_akhir' => $nilaiAkhir,
-                'status' => 'draft',
-            ]
-        );
+        DB::transaction(function () use ($assignment, $prestasi, $data, $nilaiAkhir) {
+            // updateOrCreate dikunci ke prestasi_siswa_id saja (relasi hasOne di
+            // PrestasiSiswa), bukan ke assign_asesor_id. Kalau madrasah pernah
+            // dipindah ke asesor lain oleh admin, assign_asesor_id pada baris
+            // yang sudah ada ikut diperbarui ke assignment yang aktif sekarang —
+            // supaya catatan penilaian tidak "nyangkut" ke assignment lama.
+            PenilaianPrestasi::updateOrCreate(
+                ['prestasi_siswa_id' => $prestasi->id],
+                [
+                    'assign_asesor_id' => $assignment->id,
+                    'persentase' => $data['persentase'],
+                    'nilai_akhir' => $nilaiAkhir,
+                    'status' => 'draft',
+                ]
+            );
+
+            // Begitu asesor mulai menilai, assignment otomatis berpindah dari
+            // "assigned" ke "in_progress". Kalau sudah in_progress (atau
+            // completed — tapi itu sudah ditolak di atas), tidak diubah lagi.
+            if ($assignment->status === 'assigned') {
+                $assignment->update(['status' => 'in_progress']);
+            }
+        });
 
         return back()->with('success', 'Nilai prestasi berhasil disimpan.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROSES "KUMPULKAN PENILAIAN" — Finalisasi seluruh penilaian madrasah.
+    |--------------------------------------------------------------------------
+    | Hanya boleh dijalankan kalau:
+    | 1) Assignment memang milik asesor yang login (assignmentAtauGagal).
+    | 2) Assignment belum completed (tidak bisa difinalisasi dua kali).
+    | 3) Seluruh prestasi madrasah sudah punya record penilaian.
+    |
+    | Update status draft -> completed dilakukan lewat DB transaction supaya
+    | penilaian_prestasis dan assign_asesors konsisten sama-sama berubah,
+    | atau sama-sama batal kalau salah satu gagal.
+    */
+
+    public function finalisasi(Request $request, Madrasah $madrasah){
+        // Security: sama seperti show() & simpanNilai(), validasi kepemilikan
+        // assignment berbasis data assign_asesors, bukan cuma middleware.
+        $assignment = $this->assignmentAtauGagal($madrasah);
+
+        if ($assignment->status === 'completed') {
+            abort(403, 'Penilaian untuk madrasah ini sudah difinalisasi sebelumnya.');
+        }
+
+        $totalPrestasi = $madrasah->prestasis()->count();
+
+        $sudahDinilai = $madrasah->prestasis()
+            ->whereHas('penilaianPrestasi')
+            ->count();
+
+        // Validasi progress 100% di server (jangan percaya state tombol di UI).
+        if ($totalPrestasi === 0 || $sudahDinilai < $totalPrestasi) {
+            return back()->with('error', 'Masih terdapat prestasi yang belum dinilai. Selesaikan seluruh penilaian sebelum mengumpulkan.');
+        }
+
+        DB::transaction(function () use ($assignment) {
+            PenilaianPrestasi::where('assign_asesor_id', $assignment->id)
+                ->where('status', 'draft')
+                ->update([
+                    'status' => 'completed',
+                    'dinilai_pada' => now(),
+                ]);
+
+            $assignment->update([
+                'status' => 'completed',
+            ]);
+        });
+
+        return redirect()
+            ->route('asesor.index')
+            ->with('success', 'Penilaian berhasil dikumpulkan dan difinalisasi.');
     }
 
     /*

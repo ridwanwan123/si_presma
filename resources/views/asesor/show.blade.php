@@ -774,7 +774,7 @@
                 <div class="page-title">
                     {{ $madrasah['nama'] }}
                     <span class="badge-status-header">
-                        <i class="bi bi-pencil-square"></i> Sedang Dinilai
+                        <i class="bi bi-pencil-square"></i> {{ $statusLabel }}
                     </span>
                 </div>
                 <p class="page-subtitle">Silakan lakukan penilaian setiap prestasi satu per satu sesuai bukti yang telah
@@ -789,9 +789,13 @@
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" style="width: {{ $progresPenilaian }}%"></div>
                 </div>
-                <button type="button" class="btn btn-kumpulkan">
-                    <i class="bi bi-send-check-fill me-1"></i> Kumpulkan Penilaian
-                </button>
+                @if ($statusAssignment !== 'completed')
+                    <button type="button" class="btn btn-kumpulkan"
+                        @if ($progresPenilaian < 100) disabled title="Selesaikan seluruh penilaian terlebih dahulu"
+                        @else data-bs-toggle="modal" data-bs-target="#modalFinalisasi" @endif>
+                        <i class="bi bi-send-check-fill me-1"></i> Kumpulkan Penilaian
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -1022,13 +1026,15 @@
                                                         title="Lihat Bukti" data-bs-toggle="tooltip" target="_blank">
                                                         <i class="bi bi-file-earmark-pdf"></i>
                                                     </a>
-                                                    <button type="button"
-                                                        class="btn-nilai {{ $sudah ? 'btn-ubah-nilai' : 'btn-beri-nilai' }}"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#modalNilai{{ $index }}">
-                                                        <i class="bi {{ $sudah ? 'bi-pencil' : 'bi-star-fill' }}"></i>
-                                                        {{ $sudah ? 'Ubah Nilai' : 'Beri Nilai' }}
-                                                    </button>
+                                                    @if ($statusAssignment !== 'completed')
+                                                        <button type="button"
+                                                            class="btn-nilai {{ $sudah ? 'btn-ubah-nilai' : 'btn-beri-nilai' }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalNilai{{ $index }}">
+                                                            <i class="bi {{ $sudah ? 'bi-pencil' : 'bi-star-fill' }}"></i>
+                                                            {{ $sudah ? 'Ubah Nilai' : 'Beri Nilai' }}
+                                                        </button>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1093,6 +1099,37 @@
 @endsection
 
 {{-- ================================================================
+         MODAL FINALISASI - konfirmasi Kumpulkan Penilaian
+    ================================================================= --}}
+@if ($statusAssignment !== 'completed')
+    <div class="modal fade" id="modalFinalisasi" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Finalisasi Penilaian</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Anda akan mengumpulkan seluruh hasil penilaian untuk madrasah ini.
+                        Setelah finalisasi dilakukan, seluruh nilai akan dikunci dan tidak dapat diubah kembali.
+                        Pastikan seluruh penilaian sudah benar.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
+                    <form method="POST"
+                        action="{{ route('asesor.finalisasi', ['madrasah' => $madrasah['id']]) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-kumpulkan">Ya, Kumpulkan Penilaian</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+{{-- ================================================================
          MODAL NILAI - satu modal per prestasi
     ================================================================= --}}
 @foreach ($daftarPrestasi as $index => $prestasi)
@@ -1121,7 +1158,8 @@
                         id="formNilai{{ $index }}">
                         @csrf
                         <label class="form-label">Persentase Nilai</label>
-                        <select class="form-select" name="persentase" required>
+                        <select class="form-select" name="persentase" required
+                            {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>
                             <option value="" disabled {{ $sudah ? '' : 'selected' }}>-- Pilih Persentase --
                             </option>
                             @foreach ($opsiPersentase as $opsi)
@@ -1151,9 +1189,13 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" form="formNilai{{ $index }}" class="btn btn-modal-save">Simpan
-                        Nilai</button>
+                    @if ($statusAssignment === 'completed')
+                        <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Tutup</button>
+                    @else
+                        <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" form="formNilai{{ $index }}" class="btn btn-modal-save">Simpan
+                            Nilai</button>
+                    @endif
                 </div>
             </div>
         </div>

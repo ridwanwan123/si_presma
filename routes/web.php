@@ -114,10 +114,38 @@ Route::middleware('auth')->group(function () {
         Route::resource('asesor', AsesorController::class)
             ->only(['index', 'store', 'update', 'destroy']);
 
-        Route::get('asesor/{madrasah}', [AsesorController::class, 'show'])->name('asesor.show');
+        /*
+        |--------------------------------------------------------------------------
+        | SHOW PENILAIAN MADRASAH
+        |--------------------------------------------------------------------------
+        */
 
-        Route::post('/asesor/madrasah/{madrasah}/prestasi/{prestasi}/nilai', [AsesorController::class, 'simpanNilai'])
-            ->name('asesor.nilai.store');
+        Route::get(
+            'asesor/{madrasah}',
+            [AsesorController::class, 'show']
+        )->name('asesor.show');
+
+        /*
+        |--------------------------------------------------------------------------
+        | SIMPAN NILAI PRESTASI
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            'asesor/madrasah/{madrasah}/prestasi/{prestasi}/nilai',
+            [AsesorController::class, 'simpanNilai']
+        )->name('asesor.nilai.store');
+
+        /*
+        |--------------------------------------------------------------------------
+        | FINALISASI PENILAIAN
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            'asesor/madrasah/{madrasah}/finalisasi',
+            [AsesorController::class, 'finalisasi']
+        )->name('asesor.finalisasi');
     });
 
     /*

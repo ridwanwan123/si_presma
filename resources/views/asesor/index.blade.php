@@ -398,20 +398,6 @@
 @section('content')
     <main class="content" style="background-color: #f5f7fb;">
 
-        @php
-            // Helper label & class status (presentasional saja)
-            if (!function_exists('statusInfo')) {
-                function statusInfo($status)
-                {
-                    return match ($status) {
-                        'belum' => ['label' => 'Belum Dinilai', 'badge' => 'badge-belum', 'bar' => 'bg-belum'],
-                        'proses' => ['label' => 'Sedang Dinilai', 'badge' => 'badge-proses', 'bar' => 'bg-proses'],
-                        'selesai' => ['label' => 'Selesai', 'badge' => 'badge-selesai', 'bar' => 'bg-selesai'],
-                        default => ['label' => '-', 'badge' => '', 'bar' => ''],
-                    };
-                }
-            }
-        @endphp
 
         {{-- ================================================================
          HEADER
@@ -546,7 +532,6 @@
                     </thead>
                     <tbody>
                         @foreach ($daftarMadrasah as $index => $madrasah)
-                            @php $info = statusInfo($madrasah['status']); @endphp
                             <tr>
                                 <td><span class="row-number">{{ $index + 1 }}</span></td>
                                 <td>
@@ -561,37 +546,25 @@
                                     <span class="prestasi-count">{{ $madrasah['prestasi'] }}</span>
                                 </td>
                                 <td>
-                                    <span class="badge-status {{ $info['badge'] }}">
-                                        {{ $info['label'] }}
+                                    <span class="badge-status {{ $madrasah['status_badge'] }}">
+                                        {{ $madrasah['status_label'] }}
                                     </span>
                                 </td>
                                 <td>
                                     <div class="progress-status">
                                         <div class="progress">
-                                            <div class="progress-bar {{ $info['bar'] }}" role="progressbar"
+                                            <div class="progress-bar {{ $madrasah['status_bar'] }}" role="progressbar"
                                                 style="width: {{ $madrasah['progress'] }}%"></div>
                                         </div>
                                         <span class="progress-percent">{{ $madrasah['progress'] }}%</span>
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    @if ($madrasah['status'] === 'belum')
-                                        <a href="{{ route('asesor.show', $madrasah['id']) }}" class="action-btn btn-mulai">
-                                            <i class="bi bi-play-fill"></i>
-                                            Mulai Menilai
-                                        </a>
-                                    @elseif ($madrasah['status'] === 'proses')
-                                        <a href="{{ route('asesor.show', $madrasah['id']) }}"
-                                            class="action-btn btn-lanjutkan">
-                                            <i class="bi bi-pencil"></i>
-                                            Lanjutkan
-                                        </a>
-                                    @else
-                                        <a href="{{ route('asesor.show', $madrasah['id']) }}" class="action-btn btn-hasil">
-                                            <i class="bi bi-eye"></i>
-                                            Lihat Hasil
-                                        </a>
-                                    @endif
+                                    <a href="{{ route('asesor.show', $madrasah['id']) }}"
+                                        class="action-btn {{ $madrasah['aksi_class'] }}">
+                                        <i class="bi {{ $madrasah['aksi_icon'] }}"></i>
+                                        {{ $madrasah['aksi_label'] }}
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
