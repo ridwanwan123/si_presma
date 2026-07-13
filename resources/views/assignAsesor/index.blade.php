@@ -624,10 +624,6 @@
                     class="btn btn-jma-outline me-2">
                     <i class="bi bi-file-earmark-pdf-fill me-1"></i> Export PDF
                 </a>
-                <button type="button" class="btn btn-jma-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalAssignMassal">
-                    <i class="bi bi-plus-lg me-1"></i> Assign Massal
-                </button>
             </div>
         </div>
 
@@ -768,9 +764,6 @@
                 <button type="button" class="btn btn-toolbar-assign" data-bs-toggle="modal"
                     data-bs-target="#modalAssignMassal">
                     <i class="bi bi-person-check-fill me-1"></i> Assign Asesor
-                </button>
-                <button type="button" class="btn btn-toolbar-export">
-                    <i class="bi bi-download me-1"></i> Export
                 </button>
             </div>
         </div>

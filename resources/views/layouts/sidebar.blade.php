@@ -65,35 +65,36 @@
             <i class="bi bi-chevron-down ms-auto"></i>
         </a>
 
-        <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
-
+       <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
             <a href="{{ route('prestasi.index', 'akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
-
                 <i class="bi bi-mortarboard"></i>
-
                 <span>Akademik</span>
-
             </a>
 
             <a href="{{ route('prestasi.index', 'non-akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'non-akademik' ? 'active' : '' }}">
-
                 <i class="bi bi-award"></i>
-
                 <span>Non-Akademik</span>
-
             </a>
 
             <a href="{{ route('prestasi.index', 'keagamaan') }}"
                 class="menu-item {{ request()->route('jenis') == 'keagamaan' ? 'active' : '' }}">
-
                 <i class="bi bi-book"></i>
-
                 <span>Keagamaan</span>
-
             </a>
 
+            <a href="{{ route('prestasi.index', 'gtk') }}"
+                class="menu-item {{ request()->route('jenis') == 'gtk' ? 'active' : '' }}">
+                <i class="bi bi-people"></i>
+                <span>GTK</span>
+            </a>
+
+            <a href="{{ route('prestasi.index', 'lembaga') }}"
+                class="menu-item {{ request()->route('jenis') == 'lembaga' ? 'active' : '' }}">
+                <i class="bi bi-building"></i>
+                <span>Lembaga</span>
+            </a>
         </div>
 
         <!-- LAINNYA -->

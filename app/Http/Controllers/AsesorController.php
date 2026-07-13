@@ -16,64 +16,85 @@ class AsesorController extends Controller
     | OPSI PERSENTASE NILAI (rubrik penilaian tetap, bukan dari database)
     |--------------------------------------------------------------------------
     */
-    private const OPSI_PERSENTASE = [5, 70, 80, 85, 90, 95, 100];
+    private const OPSI_PERSENTASE = [0, 5, 70, 80, 85, 90, 95, 100];
 
     public function index()
     {
         /*
         |--------------------------------------------------------------------------
-        | DATA UTAMA — assignment milik asesor yang sedang login
+        | DATA UTAMA — Assignment milik asesor yang sedang login
         |--------------------------------------------------------------------------
-        | JANGAN ambil seluruh madrasah. Sumber utama adalah assign_asesors,
-        | difilter berdasarkan asesor yang login, baru load relasi madrasah
-        | & hitung progress penilaiannya.
         */
 
         $assignments = AssignAsesor::query()
             ->where('asesor_id', auth()->id())
-            ->with(['madrasah' => function ($query) {
-                $query->withCount('prestasis');
-            }])
-            ->withCount(['penilaianPrestasis as dinilai_count' => function ($query) {
-                $query->where('status', 'completed');
-            }])
+            ->with([
+                'madrasah' => function ($query) {
+                    $query->withCount('prestasis');
+                }
+            ])
+            ->withCount('penilaianPrestasis')
+            ->orderByDesc('assigned_at')
             ->get();
 
         /*
         |--------------------------------------------------------------------------
-        | MAPPING KE BENTUK YANG DIBUTUHKAN BLADE
+        | MAPPING DATA
         |--------------------------------------------------------------------------
-        | Bentuk array & key-nya sengaja dibuat identik dengan data dummy
-        | sebelumnya ('nama', 'npsn', 'jenjang', dst) supaya Blade tidak
-        | perlu diubah sama sekali.
         */
 
         $daftarMadrasah = $assignments->map(function (AssignAsesor $assignment) {
             $madrasah = $assignment->madrasah;
-
             $totalPrestasi = $madrasah->prestasis_count ?? 0;
-            $dinilai = $assignment->dinilai_count ?? 0;
 
-            $status = match (true) {
-                $dinilai === 0 => 'belum',
-                $dinilai < $totalPrestasi => 'proses',
-                default => 'selesai',
-            };
+            /*
+            |--------------------------------------------------------------------------
+            | Sudah Dinilai
+            |--------------------------------------------------------------------------
+            | Menghitung seluruh prestasi yang sudah mempunyai record penilaian,
+            | baik draft maupun completed.
+            */
+            $dinilai = $assignment->penilaian_prestasis_count ?? 0;
 
+            /*
+            |--------------------------------------------------------------------------
+            | Progress
+            |--------------------------------------------------------------------------
+            */
             $progress = $totalPrestasi > 0
                 ? (int) round(($dinilai / $totalPrestasi) * 100)
                 : 0;
 
+            /*
+            |--------------------------------------------------------------------------
+            | Status Penilaian
+            |--------------------------------------------------------------------------
+            |
+            | belum
+            |   = belum ada satupun penilaian
+            |
+            | proses
+            |   = sudah mulai menilai, tetapi assignment belum difinalisasi
+            |
+            | selesai
+            |   = assignment sudah completed
+            |
+            */
+            if ($dinilai == 0) {
+                $status = 'belum';
+            } elseif ($assignment->status === 'completed') {
+                $status = 'selesai';
+            } else {
+                $status = 'proses';
+            }
+
             return [
                 'id' => $madrasah->id,
-
                 'nama' => $madrasah->nama_madrasah,
                 'npsn' => $madrasah->npsn,
                 'jenjang' => $madrasah->jenjang_madrasah,
                 'wilayah' => $madrasah->kota,
-
                 'prestasi' => $totalPrestasi,
-
                 'status' => $status,
                 'progress' => $progress,
             ];
@@ -83,22 +104,40 @@ class AsesorController extends Controller
         |--------------------------------------------------------------------------
         | SUMMARY
         |--------------------------------------------------------------------------
-        | Dihitung otomatis dari hasil mapping di atas — bukan query terpisah,
-        | supaya angkanya selalu konsisten dengan isi tabel.
         */
 
         $totalMadrasah = $daftarMadrasah->count();
-        $belumDinilai = $daftarMadrasah->where('status', 'belum')->count();
-        $sedangDinilai = $daftarMadrasah->where('status', 'proses')->count();
-        $selesaiDinilai = $daftarMadrasah->where('status', 'selesai')->count();
 
-        return view('asesor.index', [
-            'daftarMadrasah' => $daftarMadrasah,
-            'totalMadrasah' => $totalMadrasah,
-            'belumDinilai' => $belumDinilai,
-            'sedangDinilai' => $sedangDinilai,
-            'selesaiDinilai' => $selesaiDinilai,
+        $belumDinilai = $daftarMadrasah
+            ->where('status', 'belum')
+            ->count();
+
+        $sedangDinilai = $daftarMadrasah
+            ->where('status', 'proses')
+            ->count();
+
+        $selesaiDinilai = $daftarMadrasah
+            ->where('status', 'selesai')
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | BREADCRUMB
+        |--------------------------------------------------------------------------
+        */
+
+        $breadcrumb = breadcrumb([
+            'Madrasah yang Dinilai'
         ]);
+
+        return view('asesor.index', compact(
+            'breadcrumb',
+            'daftarMadrasah',
+            'totalMadrasah',
+            'belumDinilai',
+            'sedangDinilai',
+            'selesaiDinilai'
+        ));
     }
 
     /*
@@ -110,7 +149,7 @@ class AsesorController extends Controller
     | BUKAN cuma mengandalkan middleware role.
     */
 
-    public function show(Madrasah $madrasah)
+    public function show(Request $request, Madrasah $madrasah)
     {
         $assignment = $this->assignmentAtauGagal($madrasah);
 
@@ -122,21 +161,50 @@ class AsesorController extends Controller
         | $daftarPrestasi TIDAK BOLEH lagi dipakai untuk menghitung total/rata-rata,
         | karena isinya cuma 20 baris per halaman. Statistik berikut sengaja
         | di-query terpisah supaya tetap merefleksikan SELURUH prestasi madrasah,
-        | bukan cuma yang tampil di halaman saat ini.
+        | bukan cuma yang tampil di halaman saat ini — statistik ini juga
+        | SENGAJA tidak ikut terpengaruh filter Status Penilaian di bawah.
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATISTIK
+        |--------------------------------------------------------------------------
         */
 
         $totalPrestasi = $madrasah->prestasis()->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | SUDAH DINILAI
+        |--------------------------------------------------------------------------
+        | Sudah Dinilai = sudah memiliki record pada tabel penilaian_prestasis,
+        | baik status draft maupun completed.
+        */
+
         $sudahDinilai = $madrasah->prestasis()
-            ->whereHas('penilaianPrestasi', function ($query) {
-                $query->where('status', 'completed');
-            })
+            ->whereHas('penilaianPrestasi')
             ->count();
 
-        $belumDinilai = $totalPrestasi - $sudahDinilai;
+        /*
+        |--------------------------------------------------------------------------
+        | BELUM DINILAI
+        |--------------------------------------------------------------------------
+        | Belum Dinilai = belum memiliki record sama sekali pada tabel
+        | penilaian_prestasis.
+        */
+
+        $belumDinilai = $madrasah->prestasis()
+            ->whereDoesntHave('penilaianPrestasi')
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | PROGRESS
+        |--------------------------------------------------------------------------
+        */
 
         $progresPenilaian = $totalPrestasi > 0
-            ? (int) round(($sudahDinilai / $totalPrestasi) * 100)
+            ? round(($sudahDinilai / $totalPrestasi) * 100)
             : 0;
 
         // Total & rata-rata nilai akhir: langsung agregasi di database (SUM/AVG),
@@ -166,6 +234,50 @@ class AsesorController extends Controller
         | lewat sorting di PHP kalau datanya sudah di-paginate.
         */
 
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER: Status Penilaian (query string, divalidasi whitelist di server)
+        |--------------------------------------------------------------------------
+        | belum = BELUM ADA record penilaian sama sekali (penilaian_prestasis.id NULL)
+        | sudah = SUDAH ADA record penilaian, apapun statusnya — draft maupun
+        |         completed tetap dianggap "sudah dinilai" karena asesor sudah
+        |         pernah memberi nilai. Filter ini HANYA soal eksistensi record,
+        |         BUKAN soal status final-nya (itu urusan card Ringkasan Nilai).
+        | Difilter langsung di level query (leftJoin penilaian_prestasis di
+        | bawah), BUKAN filter Collection, supaya tetap konsisten dengan
+        | pagination (count & data sama-sama kena filter).
+        */
+
+        // Opsi filter (dropdown Tingkat & Penyelenggara) sengaja diambil dari
+        // SELURUH prestasi madrasah (bukan dari 20 baris yang tampil di halaman
+        // ini), supaya daftar pilihannya tetap lengkap di setiap halaman.
+        $daftarTingkat = $madrasah->prestasis()
+            ->whereNotNull('tingkat')
+            ->distinct()
+            ->orderBy('tingkat')
+            ->pluck('tingkat');
+        
+        $daftarBidang = $madrasah->prestasis()
+            ->whereNotNull('bidang_prestasi')
+            ->distinct()
+            ->orderBy('bidang_prestasi')
+            ->pluck('bidang_prestasi');
+
+        $daftarPenyelenggara = $madrasah->prestasis()
+            ->whereNotNull('lembaga_penyelenggara')
+            ->distinct()
+            ->orderBy('lembaga_penyelenggara')
+            ->pluck('lembaga_penyelenggara');
+
+        $statusPenilaian = $request->query('status_penilaian');
+        if (! in_array($statusPenilaian, ['belum', 'sudah'], true)) {
+            $statusPenilaian = null;
+        }
+
+        $bidang = $request->query('bidang');
+        $tingkat = $request->query('tingkat');
+        $penyelenggara = $request->query('penyelenggara');
+
         $prestasiPaginator = $madrasah->prestasis()
             ->select('prestasi_siswas.*')
             ->leftJoin('penilaian_prestasis', 'penilaian_prestasis.prestasi_siswa_id', '=', 'prestasi_siswas.id')
@@ -177,6 +289,21 @@ class AsesorController extends Controller
                     ELSE 3
                 END as urutan_status
             ")
+            ->when($bidang, function ($query, $bidang) {
+                $query->where('prestasi_siswas.bidang_prestasi', $bidang);
+            })
+            ->when($tingkat, function ($query, $tingkat) {
+                $query->where('prestasi_siswas.tingkat', $tingkat);
+            })
+            ->when($penyelenggara, function ($query, $penyelenggara) {
+                $query->where('prestasi_siswas.lembaga_penyelenggara', $penyelenggara);
+            })
+            ->when($statusPenilaian === 'belum', function ($query) {
+                $query->whereNull('penilaian_prestasis.id');
+            })
+            ->when($statusPenilaian === 'sudah', function ($query) {
+                $query->whereNotNull('penilaian_prestasis.id');
+            })
             ->with('penilaianPrestasi')
             ->orderBy('urutan_status')
             ->orderByDesc('prestasi_siswas.waktu_kegiatan')
@@ -207,27 +334,16 @@ class AsesorController extends Controller
                 'tingkat' => $prestasi->tingkat,
                 'tahun' => optional($prestasi->waktu_kegiatan)->format('Y'),
                 'penyelenggara' => $prestasi->lembaga_penyelenggara,
+                // ASUMSI nama kolom: juara, kategori_penyelenggara.
+                // Kalau nama kolom di tabel prestasi_siswas beda, ganti di sini saja.
+                'juara' => $prestasi->juara,
+                'kategori_penyelenggara' => $prestasi->kategori_penyelenggara,
                 'bobot' => $skorAwal,
                 'nilai' => $penilaian->persentase ?? null,
                 'nilai_akhir' => $penilaian->nilai_akhir ?? null,
                 'ada_penilaian' => $penilaian !== null,
             ];
         });
-
-        // Opsi filter (dropdown Tingkat & Penyelenggara) sengaja diambil dari
-        // SELURUH prestasi madrasah (bukan dari 20 baris yang tampil di halaman
-        // ini), supaya daftar pilihannya tetap lengkap di setiap halaman.
-        $daftarTingkat = $madrasah->prestasis()
-            ->whereNotNull('tingkat')
-            ->distinct()
-            ->orderBy('tingkat')
-            ->pluck('tingkat');
-
-        $daftarPenyelenggara = $madrasah->prestasis()
-            ->whereNotNull('lembaga_penyelenggara')
-            ->distinct()
-            ->orderBy('lembaga_penyelenggara')
-            ->pluck('lembaga_penyelenggara');
 
         // Inisial avatar asesor, dari nama user yang login (dulu hardcode "RA").
         $inisialAsesor = collect(explode(' ', trim(auth()->user()->nama)))
@@ -255,7 +371,9 @@ class AsesorController extends Controller
             'rataRata' => $rataRata,
             'totalNilaiAkhir' => $totalNilaiAkhir,
             'daftarTingkat' => $daftarTingkat,
+            'daftarBidang' => $daftarBidang,
             'daftarPenyelenggara' => $daftarPenyelenggara,
+            'statusPenilaian' => $statusPenilaian,
         ]);
     }
 

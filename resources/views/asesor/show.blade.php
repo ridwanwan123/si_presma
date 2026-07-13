@@ -746,14 +746,21 @@
 
         @php
             // Helper label & class kategori (presentasional saja)
+            // Nilai kategori berasal dari kolom prestasi_siswas.bidang_prestasi,
+            // enum-nya: Akademik, Non Akademik, Keagamaan, GTK, Lembaga
+            // (lihat migration create_prestasi_siswas_table). GTK & Lembaga
+            // sementara memakai warna badge yang sudah ada (reuse, bukan CSS
+            // baru) — beri tahu kalau butuh warna khusus untuk keduanya.
             if (!function_exists('kategoriInfo')) {
                 function kategoriInfo($kategori)
                 {
                     return match ($kategori) {
-                        'akademik' => ['label' => 'Akademik', 'class' => 'cat-akademik'],
-                        'nonakademik' => ['label' => 'Non Akademik', 'class' => 'cat-nonakademik'],
-                        'keagamaan' => ['label' => 'Keagamaan', 'class' => 'cat-keagamaan'],
-                        default => ['label' => '-', 'class' => ''],
+                        'Akademik' => ['label' => 'Akademik', 'class' => 'cat-akademik'],
+                        'Non Akademik' => ['label' => 'Non Akademik', 'class' => 'cat-nonakademik'],
+                        'Keagamaan' => ['label' => 'Keagamaan', 'class' => 'cat-keagamaan'],
+                        'GTK' => ['label' => 'GTK', 'class' => 'cat-akademik'],
+                        'Lembaga' => ['label' => 'Lembaga', 'class' => 'cat-nonakademik'],
+                        default => ['label' => $kategori ?? '-', 'class' => ''],
                     };
                 }
             }
@@ -878,33 +885,49 @@
 
                 {{-- Filter --}}
                 <div class="filter-card">
-                    <form>
+                    <form method="GET">
                         <div class="row g-3 align-items-end">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label class="form-label">Kategori Prestasi</label>
-                                <select class="form-select">
-                                    <option selected>Semua Kategori</option>
-                                    <option>Akademik</option>
-                                    <option>Non Akademik</option>
-                                    <option>Keagamaan</option>
+                                <select class="form-select" name="bidang">
+                                    <option value="">Semua Kategori</option>
+                                    @foreach ($daftarBidang as $item)
+                                        <option value="{{ $item }}" {{ request('bidang') == $item ? 'selected' : '' }}>
+                                            {{ $item }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">Tingkat</label>
+                                <select class="form-select" name="tingkat">
+                                    <option value="">Semua Tingkat</option>
+                                    @foreach ($daftarTingkat as $item)
+                                        <option value="{{ $item }}" {{ request('tingkat') == $item ? 'selected' : '' }}>
+                                            {{ $item }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Penyelenggara</label>
+                                <select class="form-select" name="penyelenggara">
+                                    <option value="">Semua Penyelenggara</option>
+                                    @foreach ($daftarPenyelenggara as $item)
+                                        <option value="{{ $item }}" {{ request('penyelenggara') == $item ? 'selected' : '' }}>
+                                            {{ $item }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Tingkat</label>
-                                <select class="form-select">
-                                    <option selected>Semua Tingkat</option>
-                                    @foreach ($daftarTingkat as $tingkat)
-                                        <option>{{ $tingkat }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Penyelenggara</label>
-                                <select class="form-select">
-                                    <option selected>Semua Penyelenggara</option>
-                                    @foreach ($daftarPenyelenggara as $penyelenggara)
-                                        <option>{{ $penyelenggara }}</option>
-                                    @endforeach
+                                <label class="form-label">Status Penilaian</label>
+                                <select class="form-select" name="status_penilaian">
+                                    <option value="" {{ !$statusPenilaian ? 'selected' : '' }}>Semua</option>
+                                    <option value="belum" {{ $statusPenilaian === 'belum' ? 'selected' : '' }}>Belum Dinilai</option>
+                                    <option value="sudah" {{ $statusPenilaian === 'sudah' ? 'selected' : '' }}>Sudah Dinilai</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -912,9 +935,9 @@
                                     <button type="submit" class="btn btn-filter flex-fill">
                                         <i class="bi bi-funnel-fill me-1"></i> Filter
                                     </button>
-                                    <button type="reset" class="btn btn-reset">
+                                    <a href="{{ url()->current() }}" class="btn btn-reset">
                                         <i class="bi bi-arrow-counterclockwise"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -964,7 +987,11 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
+                                                     @if ($prestasi['juara'])
+                                                        <div class="text-success fst-bold fst-italic">Juara {{ $prestasi['juara'] }}</div>
+                                                    @endif
                                                     <div class="prestasi-name">{{ $prestasi['nama'] }}</div>
+                                                   
                                                 </td>
                                                 <td>
                                                     <span
@@ -974,9 +1001,14 @@
                                                     {{ $prestasi['tingkat'] }}
                                                     <div class="prestasi-meta">{{ $prestasi['tahun'] }}</div>
                                                 </td>
-                                                <td>{{ $prestasi['penyelenggara'] }}</td>
+                                                <td>
+                                                    {{ $prestasi['penyelenggara'] }}
+                                                    @if ($prestasi['kategori_penyelenggara'])
+                                                        <div class="prestasi-meta">{{ $prestasi['kategori_penyelenggara'] }}</div>
+                                                    @endif
+                                                </td>
                                                 <td class="text-center">
-                                                    <span class="bobot-value">{{ $prestasi['bobot'] }}%</span>
+                                                    <span class="bobot-value text-success">{{ $prestasi['bobot'] }}%</span>
                                                 </td>
                                                 <td class="text-center">
                                                     @if ($sudah)
