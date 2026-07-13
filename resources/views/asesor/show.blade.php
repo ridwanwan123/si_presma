@@ -3,15 +3,15 @@
 @push('styles')
     <style>
         /* ==========================================================
-                                                   GENERAL
-                                                ========================================================== */
+                                                                       GENERAL
+                                                                    ========================================================== */
         .content {
             background-color: #f5f7fb;
         }
 
         /* ==========================================================
-                                                   PAGE HEADER
-                                                ========================================================== */
+                                                                       PAGE HEADER
+                                                                    ========================================================== */
         .page-header {
             display: flex;
             align-items: flex-start;
@@ -111,8 +111,8 @@
         }
 
         /* ==========================================================
-                                                   INFO CARD (KOLOM KIRI) - sticky
-                                                ========================================================== */
+                                                                       INFO CARD (KOLOM KIRI) - sticky
+                                                                    ========================================================== */
         .info-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -211,8 +211,8 @@
         }
 
         /* ==========================================================
-                                                   QUICK STATS STRIP
-                                                ========================================================== */
+                                                                       QUICK STATS STRIP
+                                                                    ========================================================== */
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -254,8 +254,8 @@
         }
 
         /* ==========================================================
-                                                   FILTER CARD
-                                                ========================================================== */
+                                                                       FILTER CARD
+                                                                    ========================================================== */
         .filter-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -316,8 +316,8 @@
         }
 
         /* ==========================================================
-                                                   PANDUAN PENILAIAN - inline alert bar
-                                                ========================================================== */
+                                                                       PANDUAN PENILAIAN - inline alert bar
+                                                                    ========================================================== */
         .panduan-bar {
             display: flex;
             align-items: center;
@@ -361,8 +361,8 @@
         }
 
         /* ==========================================================
-                                                   ASSESSMENT CARD (KOLOM KANAN)
-                                                ========================================================== */
+                                                                       ASSESSMENT CARD (KOLOM KANAN)
+                                                                    ========================================================== */
         .assessment-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -559,8 +559,8 @@
         }
 
         /* ==========================================================
-                                                   MODAL NILAI PRESTASI
-                                                ========================================================== */
+                                                                       MODAL NILAI PRESTASI
+                                                                    ========================================================== */
         .nilai-modal .modal-content {
             border-radius: 20px;
             border: none;
@@ -896,7 +896,8 @@
                                 <select class="form-select" name="bidang">
                                     <option value="">Semua Kategori</option>
                                     @foreach ($daftarBidang as $item)
-                                        <option value="{{ $item }}" {{ request('bidang') == $item ? 'selected' : '' }}>
+                                        <option value="{{ $item }}"
+                                            {{ request('bidang') == $item ? 'selected' : '' }}>
                                             {{ $item }}
                                         </option>
                                     @endforeach
@@ -908,7 +909,8 @@
                                 <select class="form-select" name="tingkat">
                                     <option value="">Semua Tingkat</option>
                                     @foreach ($daftarTingkat as $item)
-                                        <option value="{{ $item }}" {{ request('tingkat') == $item ? 'selected' : '' }}>
+                                        <option value="{{ $item }}"
+                                            {{ request('tingkat') == $item ? 'selected' : '' }}>
                                             {{ $item }}
                                         </option>
                                     @endforeach
@@ -920,7 +922,8 @@
                                 <select class="form-select" name="penyelenggara">
                                     <option value="">Semua Penyelenggara</option>
                                     @foreach ($daftarPenyelenggara as $item)
-                                        <option value="{{ $item }}" {{ request('penyelenggara') == $item ? 'selected' : '' }}>
+                                        <option value="{{ $item }}"
+                                            {{ request('penyelenggara') == $item ? 'selected' : '' }}>
                                             {{ $item }}
                                         </option>
                                     @endforeach
@@ -930,8 +933,10 @@
                                 <label class="form-label">Status Penilaian</label>
                                 <select class="form-select" name="status_penilaian">
                                     <option value="" {{ !$statusPenilaian ? 'selected' : '' }}>Semua</option>
-                                    <option value="belum" {{ $statusPenilaian === 'belum' ? 'selected' : '' }}>Belum Dinilai</option>
-                                    <option value="sudah" {{ $statusPenilaian === 'sudah' ? 'selected' : '' }}>Sudah Dinilai</option>
+                                    <option value="belum" {{ $statusPenilaian === 'belum' ? 'selected' : '' }}>Belum
+                                        Dinilai</option>
+                                    <option value="sudah" {{ $statusPenilaian === 'sudah' ? 'selected' : '' }}>Sudah
+                                        Dinilai</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -978,7 +983,10 @@
                                             <th>Penyelenggara</th>
                                             <th class="text-center">Skor Dasar</th>
                                             <th class="text-center">Nilai Akhir</th>
-                                            <th class="text-center">Aksi</th>
+                                            <th class="text-center">Link</th>
+                                            @if ($statusAssignment !== 'completed')
+                                                <th class="text-center">Aksi</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -991,11 +999,12 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
-                                                     @if ($prestasi['juara'])
-                                                        <div class="text-success fw-bold fst-italic">Juara {{ $prestasi['juara'] }}</div>
+                                                    @if ($prestasi['juara'])
+                                                        <div class="text-success fw-bold fst-italic">Juara
+                                                            {{ $prestasi['juara'] }}</div>
                                                     @endif
                                                     <div class="prestasi-name">{{ $prestasi['nama'] }}</div>
-                                                   
+
                                                 </td>
                                                 <td>
                                                     <span
@@ -1003,17 +1012,20 @@
                                                 </td>
                                                 <td>
                                                     {{ $prestasi['tingkat'] }}
-                                                    <div class="text-success fw-bold fst-italic">{{ $prestasi['tahun'] }}</div>
+                                                    <div class="text-success fw-bold fst-italic">{{ $prestasi['tahun'] }}
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     {{ $prestasi['penyelenggara'] }}
                                                     @if ($prestasi['kategori_penyelenggara'])
-                                                        <div class="text-success fw-bold fst-italic">{{ $prestasi['kategori_penyelenggara'] }}</div>
+                                                        <div class="text-success fw-bold fst-italic">
+                                                            {{ $prestasi['kategori_penyelenggara'] }}</div>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="prestasi-meta text-danger">
-                                                        <i class="bi {{ $prestasi['sumber_skor'] === 'Luring' ? 'bi-building' : 'bi-wifi' }}"></i>
+                                                        <i
+                                                            class="bi {{ $prestasi['sumber_skor'] === 'Luring' ? 'bi-building' : 'bi-wifi' }}"></i>
                                                         {{ $prestasi['sumber_skor'] }}
                                                     </div>
                                                     <span class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
@@ -1030,7 +1042,9 @@
                                                         title="Lihat Bukti" data-bs-toggle="tooltip" target="_blank">
                                                         <i class="bi bi-file-earmark-pdf text-danger"></i>
                                                     </a>
-                                                    @if ($statusAssignment !== 'completed')
+                                                </td>
+                                                @if ($statusAssignment !== 'completed')
+                                                    <td class="text-center text-nowrap">
                                                         <button type="button"
                                                             class="btn-nilai {{ $sudah ? 'btn-ubah-nilai' : 'btn-beri-nilai' }}"
                                                             data-bs-toggle="modal"
@@ -1038,8 +1052,8 @@
                                                             <i class="bi {{ $sudah ? 'bi-pencil' : 'bi-star-fill' }}"></i>
                                                             {{ $sudah ? 'Ubah Nilai' : 'Beri Nilai' }}
                                                         </button>
-                                                    @endif
-                                                </td>
+                                                    </td>
+                                                @endif
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -1122,8 +1136,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                    <form method="POST"
-                        action="{{ route('asesor.finalisasi', ['madrasah' => $madrasah['id']]) }}">
+                    <form method="POST" action="{{ route('asesor.finalisasi', ['madrasah' => $madrasah['id']]) }}">
                         @csrf
                         <button type="submit" class="btn btn-kumpulkan">Ya, Kumpulkan Penilaian</button>
                     </form>

@@ -3,8 +3,8 @@
 @push('styles')
     <style>
         /* ==========================================================
-                                           PAGE HEADER
-                                        ========================================================== */
+                                                       PAGE HEADER
+                                                    ========================================================== */
         .page-header {
             display: flex;
             align-items: flex-start;
@@ -29,8 +29,8 @@
         }
 
         /* ==========================================================
-                                           SUMMARY CARDS
-                                        ========================================================== */
+                                                       SUMMARY CARDS
+                                                    ========================================================== */
         .summary-row {
             margin-bottom: 24px;
         }
@@ -99,8 +99,8 @@
         }
 
         /* ==========================================================
-                                           FILTER CARD
-                                        ========================================================== */
+                                                       FILTER CARD
+                                                    ========================================================== */
         .filter-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -163,8 +163,8 @@
         }
 
         /* ==========================================================
-                                           TABLE
-                                        ========================================================== */
+                                                       TABLE
+                                                    ========================================================== */
         .assign-table-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -242,8 +242,8 @@
         }
 
         /* ==========================================================
-                                           STATUS BADGE
-                                        ========================================================== */
+                                                       STATUS BADGE
+                                                    ========================================================== */
         .badge-status {
             display: inline-flex;
             align-items: center;
@@ -271,8 +271,8 @@
         }
 
         /* ==========================================================
-                                           PROGRESS STATUS
-                                        ========================================================== */
+                                                       PROGRESS STATUS
+                                                    ========================================================== */
         .progress-status {
             display: flex;
             align-items: center;
@@ -312,8 +312,8 @@
         }
 
         /* ==========================================================
-                                           ACTION BUTTON
-                                        ========================================================== */
+                                                       ACTION BUTTON
+                                                    ========================================================== */
         .action-btn {
             display: inline-flex;
             align-items: center;
@@ -362,8 +362,8 @@
         }
 
         /* ==========================================================
-                                           TABLE FOOTER / PAGINATION
-                                        ========================================================== */
+                                                       TABLE FOOTER / PAGINATION
+                                                    ========================================================== */
         .table-footer {
             display: flex;
             align-items: center;
@@ -463,51 +463,66 @@
          FILTER
     ================================================================= --}}
         <div class="filter-card">
-            <form>
+            <form method="GET" action="{{ route('asesor.index') }}">
                 <div class="row g-3 align-items-end">
+
                     <div class="col-md-3">
                         <label class="form-label">Cari Madrasah</label>
-                        <input type="text" class="form-control" placeholder="Nama madrasah / NPSN">
+                        <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                            placeholder="Nama madrasah / NPSN">
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">Jenjang</label>
-                        <select class="form-select">
-                            <option selected>Semua</option>
-                            <option>MI</option>
-                            <option>MTs</option>
-                            <option>MA</option>
+                        <select name="jenjang" class="form-select">
+                            <option value="">Semua</option>
+
+                            @foreach ($daftarJenjang as $jenjang)
+                                <option value="{{ $jenjang }}" {{ request('jenjang') == $jenjang ? 'selected' : '' }}>
+                                    {{ $jenjang }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-3">
                         <label class="form-label">Wilayah</label>
-                        <select class="form-select">
-                            <option selected>Semua Wilayah</option>
-                            <option>Jakarta Pusat</option>
-                            <option>Jakarta Utara</option>
-                            <option>Jakarta Barat</option>
-                            <option>Jakarta Selatan</option>
-                            <option>Jakarta Timur</option>
+                        <select name="wilayah" class="form-select">
+                            <option value="">Semua Wilayah</option>
+
+                            @foreach ($daftarWilayah as $wilayah)
+                                <option value="{{ $wilayah }}" {{ request('wilayah') == $wilayah ? 'selected' : '' }}>
+                                    {{ $wilayah }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">Status Penilaian</label>
-                        <select class="form-select">
-                            <option selected>Semua</option>
-                            <option>Belum Dinilai</option>
-                            <option>Sedang Dinilai</option>
-                            <option>Selesai</option>
+                        <select name="status" class="form-select">
+                            <option value="">Semua</option>
+                            <option value="assigned" {{ request('status') == 'assigned' ? 'selected' : '' }}>Belum Dinilai
+                            </option>
+                            <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>Sedang
+                                Dinilai</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai
+                            </option>
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-filter flex-fill">
+                            <button class="btn btn-filter flex-fill">
                                 <i class="bi bi-funnel-fill me-1"></i> Filter
                             </button>
-                            <button type="reset" class="btn btn-reset">
+
+                            <a href="{{ route('asesor.index') }}" class="btn btn-reset">
                                 <i class="bi bi-arrow-counterclockwise"></i>
-                            </button>
+                            </a>
                         </div>
                     </div>
+
                 </div>
             </form>
         </div>
