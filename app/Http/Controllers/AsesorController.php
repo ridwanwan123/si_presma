@@ -399,6 +399,7 @@ class AsesorController extends Controller
                 'juara' => $prestasi->juara,
                 'kategori_penyelenggara' => $prestasi->kategori_penyelenggara,
                 'bobot' => $skorAwal,
+                'sumber_skor' => $prestasi->skor_luring > 0 ? 'Luring' : 'Daring',
                 'nilai' => $penilaian->persentase ?? null,
                 'nilai_akhir' => $penilaian->nilai_akhir ?? null,
                 'ada_penilaian' => $penilaian !== null,

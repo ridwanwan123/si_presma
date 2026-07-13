@@ -976,7 +976,7 @@
                                             <th>Kategori</th>
                                             <th>Tingkat / Tahun</th>
                                             <th>Penyelenggara</th>
-                                            <th class="text-center">Bobot</th>
+                                            <th class="text-center">Skor Dasar</th>
                                             <th class="text-center">Nilai Akhir</th>
                                             <th class="text-center">Aksi</th>
                                         </tr>
@@ -992,7 +992,7 @@
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
                                                      @if ($prestasi['juara'])
-                                                        <div class="text-success fst-bold fst-italic">Juara {{ $prestasi['juara'] }}</div>
+                                                        <div class="text-success fw-bold fst-italic">Juara {{ $prestasi['juara'] }}</div>
                                                     @endif
                                                     <div class="prestasi-name">{{ $prestasi['nama'] }}</div>
                                                    
@@ -1003,16 +1003,20 @@
                                                 </td>
                                                 <td>
                                                     {{ $prestasi['tingkat'] }}
-                                                    <div class="prestasi-meta">{{ $prestasi['tahun'] }}</div>
+                                                    <div class="text-success fw-bold fst-italic">{{ $prestasi['tahun'] }}</div>
                                                 </td>
                                                 <td>
                                                     {{ $prestasi['penyelenggara'] }}
                                                     @if ($prestasi['kategori_penyelenggara'])
-                                                        <div class="prestasi-meta">{{ $prestasi['kategori_penyelenggara'] }}</div>
+                                                        <div class="text-success fw-bold fst-italic">{{ $prestasi['kategori_penyelenggara'] }}</div>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="bobot-value text-success">{{ $prestasi['bobot'] }}%</span>
+                                                    <div class="prestasi-meta text-danger">
+                                                        <i class="bi {{ $prestasi['sumber_skor'] === 'Luring' ? 'bi-building' : 'bi-wifi' }}"></i>
+                                                        {{ $prestasi['sumber_skor'] }}
+                                                    </div>
+                                                    <span class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
                                                 </td>
                                                 <td class="text-center">
                                                     @if ($sudah)
@@ -1024,7 +1028,7 @@
                                                 <td class="text-center text-nowrap">
                                                     <a href="{{ $prestasi['link_drive'] }}" class="action-icon-btn"
                                                         title="Lihat Bukti" data-bs-toggle="tooltip" target="_blank">
-                                                        <i class="bi bi-file-earmark-pdf"></i>
+                                                        <i class="bi bi-file-earmark-pdf text-danger"></i>
                                                     </a>
                                                     @if ($statusAssignment !== 'completed')
                                                         <button type="button"
@@ -1174,7 +1178,7 @@
                     <div class="bobot-preview">
                         <div class="preview-item">
                             <div class="preview-value">{{ $prestasi['bobot'] }}%</div>
-                            <div class="preview-label">Bobot</div>
+                            <div class="preview-label">Skor Dasar &middot; {{ $prestasi['sumber_skor'] }}</div>
                         </div>
                         <div class="preview-divider"></div>
                         <div class="preview-item">
