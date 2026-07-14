@@ -120,39 +120,12 @@
     }
 }
 
-/* CARD */
-.content-card {
-    margin: 0 1rem 1rem;
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
-
 /* FILTER */
 .filter-box {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     padding: 0.75rem;
     border-radius: 12px;
-}
-
-/* ITEM ROW */
-.prestasi-item {
-    border-bottom: 1px solid #f1f5f9;
-    padding: 1rem;
-    transition: 0.2s;
-}
-
-.prestasi-item:hover {
-    background: #f8fafc;
-}
-
-.title {
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #0f172a;
 }
 
 .summary-card {
@@ -1229,11 +1202,26 @@ table.dataTable thead .sorting_desc {
    FOCUS
    =========================================================== */
 
+/* ===========================================================
+   FOCUS (AKSESIBILITAS)
+   Dulu outline dihapus total tanpa pengganti — sekarang
+   pakai :focus-visible supaya klik mouse tetap bersih, tapi
+   navigasi keyboard (Tab) tetap terlihat jelas.
+   =========================================================== */
+
 #tablePrestasi button:focus,
 #tablePrestasi a:focus,
 .dataTables_wrapper input:focus,
 .dataTables_wrapper select:focus {
     outline: none;
+}
+
+#tablePrestasi button:focus-visible,
+#tablePrestasi a:focus-visible,
+.dataTables_wrapper input:focus-visible,
+.dataTables_wrapper select:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.18rem rgba(15, 138, 67, 0.28);
 }
 
 /* ===========================================================
@@ -1356,4 +1344,152 @@ table.dataTable.no-footer {
 
 .content-card:hover {
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+/* ===========================================================
+   SIKLUS STATUS BANNER
+   Dipindahkan dari inline <style> sementara di index.blade.php
+   setelah tahap redesign index.css ini.
+   =========================================================== */
+
+.siklus-banner {
+    margin: 0 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--siklus-border, var(--presma-border-dark));
+    background: var(--siklus-bg, var(--presma-bg-soft));
+    padding: 18px 20px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.siklus-banner-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 1.1rem;
+
+    background: var(--siklus-icon-bg, #e5e7eb);
+    color: var(--siklus-icon-color, #4b5563);
+}
+
+.siklus-banner-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.siklus-banner-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--presma-text);
+    margin-bottom: 4px;
+}
+
+.siklus-banner-title .badge-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--siklus-icon-bg, #e5e7eb);
+    color: var(--siklus-icon-color, #4b5563);
+}
+
+.siklus-banner-desc {
+    font-size: 0.85rem;
+    color: var(--presma-text-light);
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+
+/* STEPPER */
+.siklus-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+}
+
+.siklus-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.siklus-step .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    flex-shrink: 0;
+}
+
+.siklus-step.is-done {
+    color: var(--presma-success);
+}
+
+.siklus-step.is-done .dot {
+    background: var(--presma-success);
+}
+
+.siklus-step.is-current {
+    color: var(--siklus-icon-color, #4b5563);
+}
+
+.siklus-step.is-current .dot {
+    background: var(--siklus-icon-color, #4b5563);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--siklus-icon-color, #4b5563) 20%, transparent);
+}
+
+.siklus-step-line {
+    width: 20px;
+    height: 1px;
+    background: var(--presma-border);
+    margin: 0 8px;
+}
+
+.siklus-step.is-done + .siklus-step-line {
+    background: #86efac;
+}
+
+/* TOMBOL TERKUNCI STATUS SIKLUS */
+.action-group .btn[aria-disabled="true"] {
+    pointer-events: none;
+    opacity: 0.55;
+    background: var(--presma-bg-soft);
+    border-color: var(--presma-border);
+    color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+    .siklus-banner {
+        margin-left: 0;
+        margin-right: 0;
+        flex-direction: column;
+    }
+
+    .siklus-steps {
+        gap: 4px;
+    }
+
+    .siklus-step-line {
+        width: 12px;
+        margin: 0 4px;
+    }
 }

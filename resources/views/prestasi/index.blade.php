@@ -10,18 +10,131 @@
                 <p>Data lomba & hasil verifikasi assessor</p>
             </div>
             <div class="action-group">
-                <a href="{{ route('prestasi.create', $jenis) }}"
-                    class="btn btn-brand-fill btn-sm {{ request()->routeIs('prestasi.create') ? 'active' : '' }}">
+                @php
+                    $canInput = $siklus->canInput();
+
+                    $lockedReason = 'Tidak dapat menambah data karena periode ' . $siklus->periode . ' berstatus ' . $siklus->status . '.';
+                @endphp
+
+                <a href="{{ $canInput ? route('prestasi.create', $jenis) : '#' }}"
+                    class="btn btn-brand-fill btn-sm {{ request()->routeIs('prestasi.create') ? 'active' : '' }}"
+                    @if (!$canInput) aria-disabled="true" tabindex="-1" title="{{ $lockedReason }}" @endif
+                    data-bs-toggle="tooltip">
                     <i class="bi bi-plus-lg"></i>
                     Tambah
                 </a>
-                <a href="{{ route('prestasi.import', $jenis) }}"
-                    class="btn btn-brand-outline btn-sm {{ request()->routeIs('prestasi.import') ? 'active' : '' }}">
+                <a href="{{ $canInput ? route('prestasi.import', $jenis) : '#' }}"
+                    class="btn btn-brand-outline btn-sm {{ request()->routeIs('prestasi.import') ? 'active' : '' }}"
+                    @if (!$canInput) aria-disabled="true" tabindex="-1" title="{{ $lockedReason }}" @endif
+                    data-bs-toggle="tooltip">
                     <i class="bi bi-upload"></i>
                     Import
                 </a>
             </div>
         </div>
+
+        {{-- STATUS SIKLUS --}}
+        @php
+            $siklusMap = [
+                'OPEN' => [
+                    'label' => 'Terbuka untuk Pengisian',
+                    'icon' => 'bi-unlock-fill',
+                    'desc' => 'Operator dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' . $siklus->periode . '.',
+                    'border' => '#bbf7d0',
+                    'bg' => '#f0fdf4',
+                    'icon_bg' => '#dcfce7',
+                    'icon_color' => '#15803d',
+                ],
+                'SUBMITTED' => [
+                    'label' => 'Menunggu Penugasan Asesor',
+                    'icon' => 'bi-send-check-fill',
+                    'desc' => 'Data periode ' . $siklus->periode . ' telah diserahkan dan menunggu penugasan asesor. Data tidak dapat diubah.',
+                    'border' => '#bfdbfe',
+                    'bg' => '#eff6ff',
+                    'icon_bg' => '#dbeafe',
+                    'icon_color' => '#1d4ed8',
+                ],
+                'LOCKED' => [
+                    'label' => 'Dikunci untuk Penilaian',
+                    'icon' => 'bi-lock-fill',
+                    'desc' => 'Data periode ' . $siklus->periode . ' sedang dikunci untuk persiapan penilaian. Data tidak dapat diubah.',
+                    'border' => '#fde68a',
+                    'bg' => '#fffbeb',
+                    'icon_bg' => '#fef3c7',
+                    'icon_color' => '#b45309',
+                ],
+                'ASSESSMENT' => [
+                    'label' => 'Sedang Dinilai Asesor',
+                    'icon' => 'bi-clipboard-data-fill',
+                    'desc' => 'Asesor sedang menilai data periode ' . $siklus->periode . '. Data tidak dapat diubah sampai penilaian selesai.',
+                    'border' => '#ddd6fe',
+                    'bg' => '#f5f3ff',
+                    'icon_bg' => '#ede9fe',
+                    'icon_color' => '#6d28d9',
+                ],
+                'FINISHED' => [
+                    'label' => 'Penilaian Selesai',
+                    'icon' => 'bi-check-circle-fill',
+                    'desc' => 'Penilaian periode ' . $siklus->periode . ' telah selesai. Data periode ini sudah final.',
+                    'border' => '#e2e8f0',
+                    'bg' => '#f8fafc',
+                    'icon_bg' => '#e2e8f0',
+                    'icon_color' => '#334155',
+                ],
+            ];
+
+            $steps = [
+                'OPEN' => 'Pengisian',
+                'SUBMITTED' => 'Diserahkan',
+                'LOCKED' => 'Dikunci',
+                'ASSESSMENT' => 'Penilaian',
+                'FINISHED' => 'Selesai',
+            ];
+
+            $stepKeys = array_keys($steps);
+            $currentIndex = array_search($siklus->status, $stepKeys);
+            $current = $siklusMap[$siklus->status] ?? $siklusMap['OPEN'];
+        @endphp
+
+        <div class="siklus-banner" style="--siklus-border: {{ $current['border'] }}; --siklus-bg: {{ $current['bg'] }}; --siklus-icon-bg: {{ $current['icon_bg'] }}; --siklus-icon-color: {{ $current['icon_color'] }};">
+
+            <div class="siklus-banner-icon">
+                <i class="bi {{ $current['icon'] }}"></i>
+            </div>
+
+            <div class="siklus-banner-body">
+
+                <div class="siklus-banner-title">
+                    Periode {{ $siklus->periode }}
+                    <span class="badge-status">{{ $current['label'] }}</span>
+                </div>
+
+                <div class="siklus-banner-desc">
+                    {{ $current['desc'] }}
+                </div>
+
+                <div class="siklus-steps">
+                    @foreach ($steps as $key => $label)
+                        @php
+                            $index = array_search($key, $stepKeys);
+                            $state = $index < $currentIndex ? 'is-done' : ($index === $currentIndex ? 'is-current' : '');
+                        @endphp
+
+                        <div class="siklus-step {{ $state }}">
+                            <span class="dot"></span>
+                            {{ $label }}
+                        </div>
+
+                        @if (!$loop->last)
+                            <div class="siklus-step-line"></div>
+                        @endif
+                    @endforeach
+                </div>
+
+            </div>
+
+        </div>
+
         {{-- SUMMARY --}}
         <div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
 
@@ -126,64 +239,31 @@
                 $max = max($levels) ?: 1;
             @endphp
 
-            <div class="distribusi-list">
-                @foreach ($levels as $label => $value)
-                    @php
-                        $percent = $value > 0 ? max(($value / $max) * 100, 3) : 0;
-                    @endphp
+            @if (($summary->total_prestasi ?? 0) > 0)
+                <div class="distribusi-list">
+                    @foreach ($levels as $label => $value)
+                        @php
+                            $percent = $value > 0 ? max(($value / $max) * 100, 3) : 0;
+                        @endphp
 
-                    <div class="distribusi-row">
-                        <div class="distribusi-label">{{ $label }}</div>
+                        <div class="distribusi-row">
+                            <div class="distribusi-label">{{ $label }}</div>
 
-                        <div class="distribusi-bar-track">
-                            <div class="distribusi-bar-fill" style="width: {{ $percent }}%"></div>
-                        </div>
+                            <div class="distribusi-bar-track">
+                                <div class="distribusi-bar-fill" style="width: {{ $percent }}%"></div>
+                            </div>
 
-                        <div class="distribusi-value">{{ $value }}</div>
-                    </div>
-                @endforeach
-            </div>
-
-        </div>
-
-
-        {{-- FILTER --}}
-        <div class="content-card" hidden>
-            <div style="padding:1rem">
-                <div class="filter-box">
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control form-control-sm"
-                                placeholder="Cari kegiatan / lembaga">
+                            <div class="distribusi-value">{{ $value }}</div>
                         </div>
-                        <div class="col-md-2">
-                            <select class="form-select form-select-sm">
-                                <option>Tingkat</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-select form-select-sm">
-                                <option>Juara</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-select form-select-sm">
-                                <option>Lembaga</option>
-                            </select>
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-primary btn-sm w-100">
-                                <i class="bi bi-funnel"></i>
-                            </button>
-                        </div>
-                        <div class="col-md-1">
-                            <a href="" class="btn btn-light border btn-sm w-100">
-                                <i class="bi bi-arrow-clockwise"></i>
-                            </a>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
-            </div>
+            @else
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-bar-chart-line" style="font-size:1.8rem;"></i>
+                    <div class="small mt-2">Belum ada data untuk ditampilkan pada periode ini.</div>
+                </div>
+            @endif
+
         </div>
 
         <div class="content-card">
@@ -262,6 +342,12 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script>
         $(function() {
+
+            // Aktifkan tooltip Bootstrap untuk tombol yang terkunci status siklus
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+                new bootstrap.Tooltip(el);
+            });
+
             if ($.fn.DataTable.isDataTable('#tablePrestasi')) {
                 return;
             }

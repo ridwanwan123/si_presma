@@ -81,4 +81,13 @@ class User extends Authenticatable
 
         return in_array($this->role?->nama, $roles);
     }
+
+    public function prestasiSiklusAktif()
+    {
+        if (!$this->isOperator() || !$this->madrasah) {
+            return null;
+        }
+
+        return $this->madrasah->prestasiSiklusAktif();
+    }
 }

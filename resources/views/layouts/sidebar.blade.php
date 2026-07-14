@@ -3,69 +3,62 @@
 @endphp
 
 <aside class="sidebar" id="sidebar">
-    <!-- BRAND -->
+
+    {{-- ===================== BRAND ===================== --}}
     <div class="sidebar-brand">
-        <img src="{{ asset('assets/images/logo p.png') }}" alt="logo" />
+        <img src="{{ asset('assets/images/logo p.png') }}" alt="Logo">
         <span class="brand-text">PRESMA</span>
     </div>
 
-    <!-- MENU -->
+    {{-- ===================== MENU ===================== --}}
     <div class="sidebar-menu">
 
-        <!-- DASHBOARD -->
-        <a href="{{ route('dashboard') }}" class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        {{-- Dashboard --}}
+        <a href="{{ route('dashboard') }}"
+            class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
 
-        <!-- MASTER DATA -->
+        {{-- =========================================================
+            MASTER DATA
+        ========================================================== --}}
         @if ($user->hasRole(['Administrator', 'Madrasah', 'Pengawas']))
             <div class="menu-title">MASTER DATA</div>
         @endif
 
-        {{-- MADRASAH --}}
+        {{-- Madrasah --}}
         @if ($user->hasRole(['Administrator', 'Madrasah']))
             <a href="{{ route('madrasah.index') }}"
-                class="menu-item {{ request()->routeIs('madrasah.index') ? 'active' : '' }}">
+                class="menu-item {{ request()->routeIs('madrasah.*') ? 'active' : '' }}">
                 <i class="bi bi-building"></i>
                 <span>Madrasah</span>
             </a>
         @endif
 
-        {{-- PENYELENGGARA --}}
-        @if ($user->hasRole(['Administrator', 'Madrasah']))
-            <a href="#" class="menu-item">
-                <i class="bi bi-briefcase"></i>
-                <span>Penyelenggara</span>
-            </a>
-        @endif
-
-        {{-- PENGAWAS --}}
-        @if ($user->hasRole(['Administrator', 'Pengawas']))
-            <a href="#" class="menu-item">
-                <i class="bi bi-people"></i>
-                <span>Pengawas</span>
-            </a>
-        @endif
-
+        {{-- Assign Asesor --}}
         @if ($user->hasRole('Administrator'))
             <a href="{{ route('assign-asesor.index') }}"
-                class="menu-item {{ request()->routeIs('assign-asesor.index') ? 'active' : '' }}">
+                class="menu-item {{ request()->routeIs('assign-asesor.*') ? 'active' : '' }}">
                 <i class="bi bi-send-plus"></i>
                 <span>Assign To</span>
             </a>
         @endif
 
-        <!-- Bidang Prestasi -->
-        <div class="menu-title">Bidang Prestasi</div>
+        {{-- =========================================================
+            BIDANG PRESTASI
+        ========================================================== --}}
+        <div class="menu-title">BIDANG PRESTASI</div>
 
-        <a href="#" class="menu-item has-submenu {{ request()->routeIs('prestasi.*') ? 'open' : '' }}">
+        <a href="#"
+            class="menu-item has-submenu {{ request()->routeIs('prestasi.*') ? 'open' : '' }}">
             <i class="bi bi-trophy"></i>
             <span>Prestasi</span>
             <i class="bi bi-chevron-down ms-auto"></i>
         </a>
 
-       <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
+        <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
+
             <a href="{{ route('prestasi.index', 'akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
                 <i class="bi bi-mortarboard"></i>
@@ -75,7 +68,7 @@
             <a href="{{ route('prestasi.index', 'non-akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'non-akademik' ? 'active' : '' }}">
                 <i class="bi bi-award"></i>
-                <span>Non-Akademik</span>
+                <span>Non Akademik</span>
             </a>
 
             <a href="{{ route('prestasi.index', 'keagamaan') }}"
@@ -95,65 +88,75 @@
                 <i class="bi bi-building"></i>
                 <span>Lembaga</span>
             </a>
+
         </div>
 
-        <!-- LAINNYA -->
-        @if ($user->hasRole(['Pengawas']))
-            <div class="menu-title">LAINNYA</div>
+        {{-- =========================================================
+            PENGAWAS
+        ========================================================== --}}
+        @if ($user->hasRole('Pengawas'))
 
-            <a href="{{ route('asesor.index') }}" class="menu-item {{ request()->routeIs('asesor.index') ? 'active' : '' }}">
+            <div class="menu-title">PENGAWAS</div>
+
+            <a href="{{ route('asesor.index') }}"
+                class="menu-item {{ request()->routeIs('asesor.*') ? 'active' : '' }}">
                 <i class="bi bi-check2-circle"></i>
                 <span>Asesor</span>
             </a>
 
-            <a href="#" class="menu-item">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-                <span>Laporan</span>
-            </a>
         @endif
 
-        <!-- UBAH PASSWORD -->
+        {{-- =========================================================
+            AKUN
+        ========================================================== --}}
         <div class="menu-title">AKUN</div>
+
         <a href="{{ route('ubah-password') }}"
             class="menu-item {{ request()->routeIs('ubah-password') ? 'active' : '' }}">
             <i class="bi bi-key"></i>
             <span>Ubah Password</span>
         </a>
+
         @if ($user->hasRole('Administrator'))
             <a href="{{ route('user-management.index') }}"
                 class="menu-item {{ request()->routeIs('user-management.*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i>
-                <span>Manajamen Akun</span>
+                <span>Manajemen Akun</span>
             </a>
         @endif
 
-        <!-- SYSTEM -->
+        {{-- =========================================================
+            SYSTEM
+        ========================================================== --}}
         <div class="menu-title">SYSTEM</div>
 
         <a href="{{ route('activity.index') }}"
-            class="menu-item {{ request()->routeIs('activity.index') ? 'active' : '' }}">
+            class="menu-item {{ request()->routeIs('activity.*') ? 'active' : '' }}">
             <i class="bi bi-clock-history"></i>
             <span>Activity Log</span>
         </a>
 
     </div>
 
-    <!-- PROFILE -->
+    {{-- ===================== PROFILE ===================== --}}
     <div class="sidebar-footer">
         <div class="profile-card">
+
             <div class="profile-avatar">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="admin" />
+                <img src="{{ asset('assets/images/logo.png') }}" alt="Profile">
             </div>
 
             <div class="profile-info">
                 <div class="profile-name">
-                    {{ auth()->user()->nama }}
+                    {{ $user->nama }}
                 </div>
 
                 <div class="profile-role">
-                    {{ auth()->user()->role->nama }}
+                    {{ $user->role->nama }}
                 </div>
             </div>
+
         </div>
     </div>
+
 </aside>

@@ -26,6 +26,107 @@
             padding: 1rem;
         }
 
+        /* ===========================
+           WARNING CALLOUT
+        =========================== */
+
+        .preview-warning {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+
+            margin: 0 1rem 1rem;
+            padding: 14px 16px;
+
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 14px;
+        }
+
+        .preview-warning-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 1rem;
+        }
+
+        .preview-warning-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #92400e;
+            margin-bottom: 2px;
+        }
+
+        .preview-warning-text {
+            font-size: 0.82rem;
+            color: #a16207;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* ===========================
+           SUMMARY CARD (berikon)
+        =========================== */
+
+        .preview-summary-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+        }
+
+        .preview-summary-icon {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.05rem;
+
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .preview-summary-icon.accent {
+            background: rgba(15, 138, 67, 0.1);
+            color: #0f8a43;
+        }
+
+        .preview-summary-body {
+            min-width: 0;
+        }
+
+        .preview-summary-label {
+            font-size: 0.76rem;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ===========================
+           TABLE — COMPACT
+        =========================== */
+
         .preview-table {
             margin-bottom: 0;
             white-space: nowrap;
@@ -38,28 +139,25 @@
             overflow: auto;
         }
 
-        /* ===========================
-           HEADER
-        =========================== */
-
         .preview-table thead th {
             position: sticky;
             top: 0;
             background: #f8fafc;
             z-index: 20;
-            font-size: .82rem;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 2px solid #dee2e6;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #64748b;
+            padding: 10px 12px;
+            border-bottom: 2px solid #e2e8f0;
         }
 
-        /* ===========================
-           BODY
-        =========================== */
-
         .preview-table tbody td {
-            font-size: .85rem;
+            font-size: .82rem;
             vertical-align: middle;
+            padding: 8px 12px;
+            color: #334155;
         }
 
         /* Zebra */
@@ -81,26 +179,23 @@
             z-index: 10;
         }
 
-        /* Header sticky lebih tinggi */
         .preview-table thead th.sticky-col {
             z-index: 30;
+            background: #f8fafc;
         }
 
-        /* Kolom No */
         .preview-table .sticky-no {
             left: 0;
-            width: 70px;
-            min-width: 70px;
-            max-width: 70px;
+            width: 56px;
+            min-width: 56px;
+            max-width: 56px;
         }
 
-        /* Kolom Nama */
         .preview-table .sticky-nama {
-            left: 70px;
-            min-width: 350px;
+            left: 56px;
+            min-width: 300px;
         }
 
-        /* Background mengikuti zebra */
         .preview-table tbody tr:nth-child(odd) td.sticky-col {
             background: #fff;
         }
@@ -113,38 +208,68 @@
             background: #eef7ff;
         }
 
-        /* Header sticky */
-        .preview-table thead th.sticky-col {
-            background: #f8fafc;
-        }
-
-        /* Garis pembatas freeze */
         .preview-table .sticky-no,
         .preview-table .sticky-nama {
             border-right: 1px solid #dee2e6;
             box-shadow: 3px 0 8px rgba(0, 0, 0, .05);
         }
 
-        /* Lebar kolom */
         .col-kegiatan {
-            min-width: 350px;
+            min-width: 300px;
         }
 
         .col-lembaga {
-            min-width: 220px;
+            min-width: 190px;
         }
 
-        .col-kegiatan {
-            min-width: 350px;
-        }
+        /* ===========================
+           BADGE JUARA (selaras dengan halaman Daftar Prestasi)
+        =========================== */
 
-        .col-lembaga {
-            min-width: 220px;
-        }
-
-        .summary-value {
+        .badge-juara {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: .72rem;
             font-weight: 600;
-            color: #111827;
+            white-space: nowrap;
+        }
+
+        .badge-juara-gold {
+            background: #fff8db;
+            color: #a16207;
+            border: 1px solid #fde68a;
+        }
+
+        .badge-juara-silver {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #dbe4ee;
+        }
+
+        .badge-juara-bronze {
+            background: #fef2e8;
+            color: #b45309;
+            border: 1px solid #fed7aa;
+        }
+
+        .badge-juara-default {
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        .badge-tingkat-tinggi {
+            background: rgba(15, 138, 67, 0.1);
+            color: #0f8a43;
+            border: 1px solid rgba(15, 138, 67, 0.18);
+            font-weight: 700;
+        }
+
+        .badge-tingkat-biasa {
+            background: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
         }
 
         @media(max-width:768px) {
@@ -153,27 +278,17 @@
                 padding: 0;
             }
 
-            .content-card {
+            .content-card,
+            .preview-warning {
                 margin-left: 0;
                 margin-right: 0;
             }
 
         }
 
-        .simpan-loading {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, .85);
-            z-index: 9999;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loading-content {
-            text-align: center;
-        }
+        /* ===========================
+           LOADING OVERLAY
+        =========================== */
 
         .simpan-loading {
             position: fixed;
@@ -190,26 +305,17 @@
 
         .loading-card {
             width: 320px;
-
             background: white;
-
             border-radius: 20px;
-
             padding: 30px;
-
             text-align: center;
-
-            box-shadow:
-                0 10px 30px rgba(0, 0, 0, .08);
-
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
             border: 1px solid #e5e7eb;
         }
 
         .loading-icon {
-
             width: 70px;
             height: 70px;
-
             margin: auto;
 
             display: flex;
@@ -217,15 +323,12 @@
             justify-content: center;
 
             background: #ecfdf5;
-
             border-radius: 50%;
         }
 
         .loading-icon .spinner-border {
-
             width: 2.8rem;
             height: 2.8rem;
-
         }
     </style>
 @endpush
@@ -245,70 +348,101 @@
         </div>
 
 
+        {{-- WARNING --}}
+        <div class="preview-warning">
+
+            <div class="preview-warning-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+
+            <div>
+                <div class="preview-warning-title">
+                    Periksa kembali sebelum menyimpan
+                </div>
+
+                <p class="preview-warning-text">
+                    Pastikan nama kegiatan, tingkat, juara, dan skor pada tabel di bawah sudah benar.
+                    Setelah <strong>Simpan Data</strong> diklik, seluruh data akan langsung masuk ke database.
+                    Anda tetap bisa mengedit atau menghapus data satu per satu setelah tersimpan melalui halaman Daftar Prestasi.
+                </p>
+            </div>
+
+        </div>
+
+
         {{-- SUMMARY --}}
         <div class="row g-3 mb-3">
 
-            <div class="col-md-3">
-                <div class="content-card">
-                    <div class="content-card-body">
+            <div class="col-6 col-md-3">
+                <div class="content-card mb-0 h-100">
+                    <div class="preview-summary-card">
 
-                        <div class="small text-muted">
-                            Madrasah
+                        <div class="preview-summary-icon">
+                            <i class="bi bi-building"></i>
                         </div>
 
-                        <div class="summary-value">
-                            {{ auth()->user()->madrasah->nama_madrasah }}
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="col-md-3">
-                <div class="content-card">
-                    <div class="content-card-body">
-
-                        <div class="small text-muted">
-                            Bidang Prestasi
-                        </div>
-
-                        <div class="summary-value">
-                            {{ $data[0]['bidang_prestasi'] }}
+                        <div class="preview-summary-body">
+                            <div class="preview-summary-label">Madrasah</div>
+                            <div class="summary-value" title="{{ auth()->user()->madrasah->nama_madrasah }}">
+                                {{ auth()->user()->madrasah->nama_madrasah }}
+                            </div>
                         </div>
 
                     </div>
                 </div>
             </div>
 
+            <div class="col-6 col-md-3">
+                <div class="content-card mb-0 h-100">
+                    <div class="preview-summary-card">
 
-            <div class="col-md-3">
-                <div class="content-card">
-                    <div class="content-card-body">
-
-                        <div class="small text-muted">
-                            Submitter
+                        <div class="preview-summary-icon">
+                            <i class="bi bi-trophy"></i>
                         </div>
 
-                        <div class="summary-value">
-                            {{ $data[0]['submitter'] }}
+                        <div class="preview-summary-body">
+                            <div class="preview-summary-label">Bidang Prestasi</div>
+                            <div class="summary-value">
+                                {{ $data[0]['bidang_prestasi'] }}
+                            </div>
                         </div>
 
                     </div>
                 </div>
             </div>
 
+            <div class="col-6 col-md-3">
+                <div class="content-card mb-0 h-100">
+                    <div class="preview-summary-card">
 
-            <div class="col-md-3">
-                <div class="content-card">
-                    <div class="content-card-body">
-
-                        <div class="small text-muted">
-                            Total Data
+                        <div class="preview-summary-icon">
+                            <i class="bi bi-person-badge"></i>
                         </div>
 
-                        <div class="summary-value text-success fs-5">
-                            {{ count($data) }}
+                        <div class="preview-summary-body">
+                            <div class="preview-summary-label">Submitter</div>
+                            <div class="summary-value" title="{{ $data[0]['submitter'] }}">
+                                {{ $data[0]['submitter'] }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="content-card mb-0 h-100">
+                    <div class="preview-summary-card">
+
+                        <div class="preview-summary-icon accent">
+                            <i class="bi bi-database-fill-check"></i>
+                        </div>
+
+                        <div class="preview-summary-body">
+                            <div class="preview-summary-label">Total Data</div>
+                            <div class="summary-value" style="color:#0f8a43">
+                                {{ count($data) }}
+                            </div>
                         </div>
 
                     </div>
@@ -349,7 +483,7 @@
 
                 <div class="table-responsive">
 
-                    <table class="table table-hover preview-table align-middle">
+                    <table class="table table-hover table-sm preview-table align-middle">
 
                         <thead>
 
@@ -371,20 +505,36 @@
                         <tbody>
 
                             @forelse($data as $item)
+                                @php
+                                    $juara = $item['juara'] ?? '';
+
+                                    $juaraClass = 'badge-juara-default';
+
+                                    if (str_contains($juara, '1')) {
+                                        $juaraClass = 'badge-juara-gold';
+                                    } elseif (str_contains($juara, '2')) {
+                                        $juaraClass = 'badge-juara-silver';
+                                    } elseif (str_contains($juara, '3')) {
+                                        $juaraClass = 'badge-juara-bronze';
+                                    }
+
+                                    $tingkatTinggi = in_array($item['tingkat'] ?? '', ['Nasional', 'Internasional']);
+                                @endphp
+
                                 <tr>
 
                                     <td class="sticky-col sticky-no text-center">
                                         {{ $loop->iteration }}
                                     </td>
 
-                                    <td class="sticky-col sticky-nama">
+                                    <td class="sticky-col sticky-nama col-kegiatan">
                                         {{ $item['nama_kegiatan'] }}
                                     </td>
 
                                     <td>
-
-                                        {{ $item['tingkat'] }}
-
+                                        <span class="badge-juara {{ $tingkatTinggi ? 'badge-tingkat-tinggi' : 'badge-tingkat-biasa' }}">
+                                            {{ $item['tingkat'] }}
+                                        </span>
                                     </td>
 
                                     <td>
@@ -395,7 +545,7 @@
 
                                     <td>
 
-                                        <span class="badge bg-success">
+                                        <span class="badge-juara {{ $juaraClass }}">
 
                                             {{ $item['juara'] }}
 
@@ -509,6 +659,8 @@
     <script>
         $('#btnImport').click(function() {
 
+            const $btn = $(this);
+
             Swal.fire({
                 title: 'Simpan Data?',
                 text: 'Data akan dimasukkan ke database PRESMA',
@@ -519,6 +671,8 @@
             }).then((result) => {
 
                 if (result.isConfirmed) {
+
+                    $btn.prop('disabled', true);
 
                     $('#loading').show();
 
@@ -552,6 +706,8 @@
                         error: function(xhr) {
 
                             $('#loading').hide();
+
+                            $btn.prop('disabled', false);
 
                             Swal.fire({
                                 icon: 'error',

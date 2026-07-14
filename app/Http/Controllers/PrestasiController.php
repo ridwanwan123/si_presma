@@ -14,72 +14,32 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PrestasiController extends Controller
 {
-    // UNTUK TAMPILAN CARD
-    // public function index($jenis)
-    // {
-    //     $mapping = [
-    //         'akademik' => 'Akademik',
-    //         'non-akademik' => 'Non Akademik',
-    //         'keagamaan' => 'Keagamaan',
-    //         'gtk' => 'GTK',
-    //         'lembaga' => 'Lembaga',
-    //     ];
 
-    //     $query = PrestasiSiswa::visible()
-    //         ->where(
-    //             'bidang_prestasi',
-    //             $mapping[$jenis]
-    //         );
+    /*
+    |--------------------------------------------------------------------------
+    | CEK AKSES SIKLUS PRESTASI
+    |--------------------------------------------------------------------------
+    */
+    private function cekAksesSiklus()
+    {
+        $siklus = auth()->user()->madrasah->prestasiSiklusAktif();
 
-    //     $user = auth()->user();
+        if (!$siklus->canInput()) {
 
-    //     if ($user->isOperator()) {
+            $message = 'Data prestasi tidak dapat diubah karena proses penilaian telah dimulai.';
 
-    //         $query->where(
-    //             'madrasah_id',
-    //             $user->madrasah_id
-    //         );
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 422);
+            }
 
-    //     }
+            return redirect()->back()->with('error', $message);
+        }
 
-    //     $prestasi = (clone $query)
-    //         ->latest()
-    //         ->paginate(10);
-
-    //     $summary = (clone $query)
-    //         ->selectRaw("
-    //             COUNT(*) as total,
-    //             SUM(status_verifikasi = 'verified') as verified,
-    //             SUM(status_verifikasi = 'pending') as pending,
-    //             SUM(status_verifikasi = 'rejected') as rejected
-    //         ")
-    //         ->first();
-
-    //     $breadcrumb = breadcrumb([
-    //         'Prestasi ' => route('prestasi.index', $jenis),
-    //         $mapping[$jenis]
-    //     ]);
-
-    //     return view(
-    //         'prestasi.index',
-    //         compact(
-    //             'jenis',
-    //             'prestasi',
-    //             'summary',
-    //             'breadcrumb'
-    //         )
-    //     );
-    // }
-    
-    // public function data($jenis)
-    // {
-    //     return response()->json([
-    //         'data' => PrestasiSiswa::where(
-    //             'bidang_prestasi',
-    //             ucfirst($jenis)
-    //         )->get()
-    //     ]);
-    // }
+        return null;
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -95,41 +55,45 @@ class PrestasiController extends Controller
             'gtk' => 'GTK',
             'lembaga' => 'Lembaga',
         ];
-
+ 
         $query = PrestasiSiswa::visible()
             ->where(
                 'bidang_prestasi',
                 $mapping[$jenis]
             );
-
+ 
         $summary = (clone $query)
             ->selectRaw("
                 COUNT(*) as total_prestasi,
-
+ 
                 SUM(CASE WHEN tingkat = 'Kabupaten/Kota' THEN 1 ELSE 0 END) as kabupaten,
                 SUM(CASE WHEN tingkat = 'Provinsi' THEN 1 ELSE 0 END) as provinsi,
                 SUM(CASE WHEN tingkat = 'Nasional' THEN 1 ELSE 0 END) as nasional,
                 SUM(CASE WHEN tingkat = 'Internasional' THEN 1 ELSE 0 END) as internasional,
-
+ 
                 COALESCE(SUM(skor_luring), 0) as total_skor_luring,
                 COALESCE(SUM(skor_daring), 0) as total_skor_daring
             ")
             ->first();
-
+ 
         $breadcrumb = breadcrumb([
             'Prestasi' => route('prestasi.index', $jenis),
             $mapping[$jenis]
         ]);
-
+ 
+        $siklus = auth()->user()->madrasah->prestasiSiklusAktif();
+ 
         return view(
             'prestasi.index',
             compact(
                 'jenis',
                 'summary',
-                'breadcrumb'
+                'breadcrumb',
+                'siklus'
             )
         );
     }
+
     public function data($jenis)
     {
         $mapping = [
@@ -139,42 +103,42 @@ class PrestasiController extends Controller
             'gtk'          => 'GTK',
             'lembaga'      => 'Lembaga',
         ];
-
+ 
         $query = PrestasiSiswa::visible()
             ->where('bidang_prestasi', $mapping[$jenis])
             ->latest();
-
+ 
         return DataTables::of($query)
-
+ 
             ->addIndexColumn()
-
+ 
             ->editColumn('waktu_kegiatan', function ($item) {
                 return optional($item->waktu_kegiatan)
                     ->format('d M Y');
             })
-
+ 
             ->editColumn('skor_luring', function ($item) {
                 return $item->skor_luring !== null
                     ? number_format($item->skor_luring, 0, ',', '.')
                     : null;
             })
-
+ 
             ->editColumn('skor_daring', function ($item) {
                 return $item->skor_daring !== null
                     ? number_format($item->skor_daring, 0, ',', '.')
                     : null;
             })
-
+ 
             ->filter(function ($query) {
-
+ 
                 if (request()->has('search')) {
-
+ 
                     $keyword = request('search')['value'];
-
+ 
                     if (!empty($keyword)) {
-
+ 
                         $query->where(function ($q) use ($keyword) {
-
+ 
                             $q->where('nama_kegiatan', 'like', "%{$keyword}%")
                             ->orWhere('kategori_kegiatan', 'like', "%{$keyword}%")
                             ->orWhere('lembaga_penyelenggara', 'like', "%{$keyword}%")
@@ -186,7 +150,7 @@ class PrestasiController extends Controller
                     }
                 }
             })
-
+ 
             ->make(true);
     }
 
@@ -260,6 +224,10 @@ class PrestasiController extends Controller
 
     public function checking_import_prestasi(Request $request, $jenis)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $request->validate([
             'file_import' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
@@ -487,6 +455,10 @@ class PrestasiController extends Controller
 
     public function save_preview(Request $request,$jenis)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         session([
             "preview_prestasi_$jenis" =>
                 json_decode(
@@ -528,6 +500,10 @@ class PrestasiController extends Controller
 
     public function store_import($jenis)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $data = session("preview_prestasi_$jenis", []);
 
         if (empty($data)) {
@@ -622,6 +598,10 @@ class PrestasiController extends Controller
 
     public function store(Request $request, $jenis)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $validatedData = $request->validate([
             'bidang_prestasi' => 'required|in:Akademik,Non Akademik,Keagamaan,GTK,Lembaga',
             'nama_kegiatan' => 'required|string|max:255',
@@ -673,6 +653,10 @@ class PrestasiController extends Controller
 
     public function edit($jenis, $id)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $mapping = [
             'akademik' => 'Akademik',
             'non-akademik' => 'Non Akademik',
@@ -695,6 +679,10 @@ class PrestasiController extends Controller
 
     public function update(Request $request, $jenis, $id)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $validatedData = $request->validate([
             'bidang_prestasi' => 'required|in:Akademik,Non Akademik,Keagamaan,GTK,Lembaga',
             'nama_kegiatan' => 'required|string|max:255',
@@ -800,6 +788,10 @@ class PrestasiController extends Controller
 
     public function destroy($jenis, $id)
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         try {
             DB::beginTransaction();
 

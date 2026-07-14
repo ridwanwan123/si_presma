@@ -56,4 +56,25 @@ class Madrasah extends Model
     {
         return $this->hasOne(AssignAsesor::class);
     }
+
+    public function prestasiSiklus()
+    {
+        return $this->hasMany(PrestasiSiklus::class);
+    }
+
+    public function prestasiSiklusAktif()
+    {
+        if (!auth()->check() || !auth()->user()->hasRole('Madrasah')) {
+            return null;
+        }
+
+        return $this->prestasiSiklus()->firstOrCreate(
+            [
+                'periode' => now()->year,
+            ],
+            [
+                'status' => PrestasiSiklus::OPEN,
+            ]
+        );
+    }
 }
