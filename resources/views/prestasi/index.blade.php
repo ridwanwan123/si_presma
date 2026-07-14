@@ -9,28 +9,6 @@
                 <h2>Prestasi {{ ucfirst($jenis) }}</h2>
                 <p>Data lomba & hasil verifikasi assessor</p>
             </div>
-            <div class="action-group">
-                @php
-                    $canInput = $siklus->canInput();
-
-                    $lockedReason = 'Tidak dapat menambah data karena periode ' . $siklus->periode . ' berstatus ' . $siklus->status . '.';
-                @endphp
-
-                <a href="{{ $canInput ? route('prestasi.create', $jenis) : '#' }}"
-                    class="btn btn-brand-fill btn-sm {{ request()->routeIs('prestasi.create') ? 'active' : '' }}"
-                    @if (!$canInput) aria-disabled="true" tabindex="-1" title="{{ $lockedReason }}" @endif
-                    data-bs-toggle="tooltip">
-                    <i class="bi bi-plus-lg"></i>
-                    Tambah
-                </a>
-                <a href="{{ $canInput ? route('prestasi.import', $jenis) : '#' }}"
-                    class="btn btn-brand-outline btn-sm {{ request()->routeIs('prestasi.import') ? 'active' : '' }}"
-                    @if (!$canInput) aria-disabled="true" tabindex="-1" title="{{ $lockedReason }}" @endif
-                    data-bs-toggle="tooltip">
-                    <i class="bi bi-upload"></i>
-                    Import
-                </a>
-            </div>
         </div>
 
         {{-- STATUS SIKLUS --}}
@@ -39,7 +17,10 @@
                 'OPEN' => [
                     'label' => 'Terbuka untuk Pengisian',
                     'icon' => 'bi-unlock-fill',
-                    'desc' => 'Operator dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' . $siklus->periode . '.',
+                    'desc' =>
+                        'Operator dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' .
+                        $siklus->periode .
+                        '.',
                     'border' => '#bbf7d0',
                     'bg' => '#f0fdf4',
                     'icon_bg' => '#dcfce7',
@@ -48,7 +29,10 @@
                 'SUBMITTED' => [
                     'label' => 'Menunggu Penugasan Asesor',
                     'icon' => 'bi-send-check-fill',
-                    'desc' => 'Data periode ' . $siklus->periode . ' telah diserahkan dan menunggu penugasan asesor. Data tidak dapat diubah.',
+                    'desc' =>
+                        'Data periode ' .
+                        $siklus->periode .
+                        ' telah diserahkan dan menunggu penugasan asesor. Data tidak dapat diubah.',
                     'border' => '#bfdbfe',
                     'bg' => '#eff6ff',
                     'icon_bg' => '#dbeafe',
@@ -57,7 +41,10 @@
                 'LOCKED' => [
                     'label' => 'Dikunci untuk Penilaian',
                     'icon' => 'bi-lock-fill',
-                    'desc' => 'Data periode ' . $siklus->periode . ' sedang dikunci untuk persiapan penilaian. Data tidak dapat diubah.',
+                    'desc' =>
+                        'Data periode ' .
+                        $siklus->periode .
+                        ' sedang dikunci untuk persiapan penilaian. Data tidak dapat diubah.',
                     'border' => '#fde68a',
                     'bg' => '#fffbeb',
                     'icon_bg' => '#fef3c7',
@@ -66,7 +53,10 @@
                 'ASSESSMENT' => [
                     'label' => 'Sedang Dinilai Asesor',
                     'icon' => 'bi-clipboard-data-fill',
-                    'desc' => 'Asesor sedang menilai data periode ' . $siklus->periode . '. Data tidak dapat diubah sampai penilaian selesai.',
+                    'desc' =>
+                        'Asesor sedang menilai data periode ' .
+                        $siklus->periode .
+                        '. Data tidak dapat diubah sampai penilaian selesai.',
                     'border' => '#ddd6fe',
                     'bg' => '#f5f3ff',
                     'icon_bg' => '#ede9fe',
@@ -96,7 +86,8 @@
             $current = $siklusMap[$siklus->status] ?? $siklusMap['OPEN'];
         @endphp
 
-        <div class="siklus-banner" style="--siklus-border: {{ $current['border'] }}; --siklus-bg: {{ $current['bg'] }}; --siklus-icon-bg: {{ $current['icon_bg'] }}; --siklus-icon-color: {{ $current['icon_color'] }};">
+        <div class="siklus-banner"
+            style="--siklus-border: {{ $current['border'] }}; --siklus-bg: {{ $current['bg'] }}; --siklus-icon-bg: {{ $current['icon_bg'] }}; --siklus-icon-color: {{ $current['icon_color'] }};">
 
             <div class="siklus-banner-icon">
                 <i class="bi {{ $current['icon'] }}"></i>
@@ -117,7 +108,8 @@
                     @foreach ($steps as $key => $label)
                         @php
                             $index = array_search($key, $stepKeys);
-                            $state = $index < $currentIndex ? 'is-done' : ($index === $currentIndex ? 'is-current' : '');
+                            $state =
+                                $index < $currentIndex ? 'is-done' : ($index === $currentIndex ? 'is-current' : '');
                         @endphp
 
                         <div class="siklus-step {{ $state }}">
@@ -553,29 +545,17 @@
                         data: null,
                         render: function(data) {
 
-                            let html = [];
-
-                            if (data.skor_luring) {
-
-                                html.push(`
-                                    <span class="badge bg-success-subtle text-success border">
-                                        L ${data.skor_luring}
-                                    </span>
-                                `);
-
+                            if (data.skor === null || data.skor === undefined) {
+                                return '-';
                             }
 
-                            if (data.skor_daring) {
+                            const isLuring = data.metode_pelaksanaan === 'Luring';
 
-                                html.push(`
-                                    <span class="badge bg-secondary-subtle text-secondary border">
-                                        D ${data.skor_daring}
-                                    </span>
-                                `);
-
-                            }
-
-                            return html.join(' ');
+                            return `
+                                <span class="badge ${isLuring ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'} border">
+                                    ${isLuring ? 'L' : 'D'} ${data.skor}
+                                </span>
+                            `;
                         }
                     },
 

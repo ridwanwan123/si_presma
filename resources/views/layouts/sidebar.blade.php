@@ -14,8 +14,7 @@
     <div class="sidebar-menu">
 
         {{-- Dashboard --}}
-        <a href="{{ route('dashboard') }}"
-            class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <a href="{{ route('dashboard') }}" class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
@@ -50,14 +49,22 @@
         ========================================================== --}}
         <div class="menu-title">BIDANG PRESTASI</div>
 
+        {{-- Tambah Prestasi (entry point pilih metode) --}}
+        <a href="{{ route('prestasi.tambah') }}"
+            class="menu-item {{ request()->routeIs('prestasi.tambah', 'prestasi.create', 'prestasi.store', 'prestasi.import', 'prestasi.import.upload', 'prestasi.checking_import', 'prestasi.save_preview', 'prestasi.preview', 'prestasi.store_import', 'prestasi.template') ? 'active' : '' }}">
+            <i class="bi bi-plus-circle"></i>
+            <span>Tambah Prestasi</span>
+        </a>
+
         <a href="#"
-            class="menu-item has-submenu {{ request()->routeIs('prestasi.*') ? 'open' : '' }}">
+            class="menu-item has-submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'open' : '' }}">
             <i class="bi bi-trophy"></i>
             <span>Prestasi</span>
             <i class="bi bi-chevron-down ms-auto"></i>
         </a>
 
-        <div class="submenu {{ request()->routeIs('prestasi.*') ? 'show' : '' }}">
+        <div
+            class="submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'show' : '' }}">
 
             <a href="{{ route('prestasi.index', 'akademik') }}"
                 class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
@@ -95,7 +102,6 @@
             PENGAWAS
         ========================================================== --}}
         @if ($user->hasRole('Pengawas'))
-
             <div class="menu-title">PENGAWAS</div>
 
             <a href="{{ route('asesor.index') }}"
@@ -103,7 +109,6 @@
                 <i class="bi bi-check2-circle"></i>
                 <span>Asesor</span>
             </a>
-
         @endif
 
         {{-- =========================================================

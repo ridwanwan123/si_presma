@@ -55,34 +55,34 @@ class PrestasiController extends Controller
             'gtk' => 'GTK',
             'lembaga' => 'Lembaga',
         ];
- 
+
         $query = PrestasiSiswa::visible()
             ->where(
                 'bidang_prestasi',
                 $mapping[$jenis]
             );
- 
+
         $summary = (clone $query)
             ->selectRaw("
                 COUNT(*) as total_prestasi,
- 
+
                 SUM(CASE WHEN tingkat = 'Kabupaten/Kota' THEN 1 ELSE 0 END) as kabupaten,
                 SUM(CASE WHEN tingkat = 'Provinsi' THEN 1 ELSE 0 END) as provinsi,
                 SUM(CASE WHEN tingkat = 'Nasional' THEN 1 ELSE 0 END) as nasional,
                 SUM(CASE WHEN tingkat = 'Internasional' THEN 1 ELSE 0 END) as internasional,
- 
-                COALESCE(SUM(skor_luring), 0) as total_skor_luring,
-                COALESCE(SUM(skor_daring), 0) as total_skor_daring
+
+                COALESCE(SUM(CASE WHEN metode_pelaksanaan = 'Luring' THEN skor ELSE 0 END), 0) as total_skor_luring,
+                COALESCE(SUM(CASE WHEN metode_pelaksanaan = 'Daring' THEN skor ELSE 0 END), 0) as total_skor_daring
             ")
             ->first();
- 
+
         $breadcrumb = breadcrumb([
             'Prestasi' => route('prestasi.index', $jenis),
             $mapping[$jenis]
         ]);
- 
+
         $siklus = auth()->user()->madrasah->prestasiSiklusAktif();
- 
+
         return view(
             'prestasi.index',
             compact(
@@ -103,42 +103,36 @@ class PrestasiController extends Controller
             'gtk'          => 'GTK',
             'lembaga'      => 'Lembaga',
         ];
- 
+
         $query = PrestasiSiswa::visible()
             ->where('bidang_prestasi', $mapping[$jenis])
             ->latest();
- 
+
         return DataTables::of($query)
- 
+
             ->addIndexColumn()
- 
+
             ->editColumn('waktu_kegiatan', function ($item) {
                 return optional($item->waktu_kegiatan)
                     ->format('d M Y');
             })
- 
-            ->editColumn('skor_luring', function ($item) {
-                return $item->skor_luring !== null
-                    ? number_format($item->skor_luring, 0, ',', '.')
+
+            ->editColumn('skor', function ($item) {
+                return $item->skor !== null
+                    ? number_format($item->skor, 0, ',', '.')
                     : null;
             })
- 
-            ->editColumn('skor_daring', function ($item) {
-                return $item->skor_daring !== null
-                    ? number_format($item->skor_daring, 0, ',', '.')
-                    : null;
-            })
- 
+
             ->filter(function ($query) {
- 
+
                 if (request()->has('search')) {
- 
+
                     $keyword = request('search')['value'];
- 
+
                     if (!empty($keyword)) {
- 
+
                         $query->where(function ($q) use ($keyword) {
- 
+
                             $q->where('nama_kegiatan', 'like', "%{$keyword}%")
                             ->orWhere('kategori_kegiatan', 'like', "%{$keyword}%")
                             ->orWhere('lembaga_penyelenggara', 'like', "%{$keyword}%")
@@ -150,8 +144,22 @@ class PrestasiController extends Controller
                     }
                 }
             })
- 
+
             ->make(true);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PILIH METODE (ENTRY POINT "TAMBAH PRESTASI")
+    |--------------------------------------------------------------------------
+    */
+    public function pilihMetode()
+    {
+        $breadcrumb = breadcrumb([
+            'Tambah Prestasi'
+        ]);
+
+        return view('prestasi.create', compact('breadcrumb'));
     }
 
     /*
@@ -159,34 +167,25 @@ class PrestasiController extends Controller
     | FITUR IMPORT
     |--------------------------------------------------------------------------
     */
-    public function template($jenis)
+    public function template()
     {
         return Excel::download(
             new PrestasiTemplateExport,
-            'template-prestasi-' . $jenis . '.xlsx'
+            'template-prestasi.xlsx'
         );
     }
 
-    public function import($jenis)
+    public function import()
     {
-        $mapping = [
-            'akademik' => 'Akademik',
-            'non-akademik' => 'Non Akademik',
-            'keagamaan' => 'Keagamaan',
-            'gtk' => 'GTK',
-            'lembaga' => 'Lembaga',
-        ];
-
         $breadcrumb = breadcrumb([
-            'Prestasi ' => route('prestasi.index', $jenis),
-            $mapping[$jenis] => route('prestasi.index', $jenis),
-            'Import Prestasi '.$mapping[$jenis]
+            'Tambah Prestasi' => route('prestasi.tambah'),
+            'Import Excel'
         ]);
 
-        return view('prestasi.import', compact('jenis', 'breadcrumb'));
+        return view('prestasi.import', compact('breadcrumb'));
     }
 
-    public function upload(Request $request, $jenis)
+    public function upload(Request $request)
     {
         try {
 
@@ -222,7 +221,7 @@ class PrestasiController extends Controller
         return preg_replace('/[^a-z0-9]/', '', $value);
     }
 
-    public function checking_import_prestasi(Request $request, $jenis)
+    public function checking_import_prestasi(Request $request)
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
@@ -248,7 +247,6 @@ class PrestasiController extends Controller
 
         $madrasah_id = auth()->user()->madrasah_id;
         $submitter = auth()->user()->nama;
-        $bidang_prestasi = $mapping[$jenis];
         $periode = now()->year;
 
         $requiredFields = [
@@ -260,8 +258,8 @@ class PrestasiController extends Controller
             'lembaga_penyelenggara',
             'kategori_penyelenggara',
             'waktu_kegiatan',
-            'skor_luring',
-            'skor_daring',
+            'metode_pelaksanaan',
+            'skor',
             'link_drive_bukti',
         ];
 
@@ -275,6 +273,11 @@ class PrestasiController extends Controller
         $validKategoriKegiatan = [
             'individu' => 'Individu',
             'beregu' => 'Beregu',
+        ];
+
+        $validMetodePelaksanaan = [
+            'luring' => 'Luring',
+            'daring' => 'Daring',
         ];
 
         $errors = [];
@@ -324,7 +327,7 @@ class PrestasiController extends Controller
 
                 /*
                 |--------------------------------------------------------------------------
-                | Validasi Bidang Prestasi
+                | Validasi Bidang Prestasi (dibaca dari isi Excel, bukan dari halaman)
                 |--------------------------------------------------------------------------
                 */
 
@@ -344,19 +347,7 @@ class PrestasiController extends Controller
 
                 $excelBidang = $normalizedMapping[$bidang];
 
-                // apakah bidang sesuai halaman yang sedang dibuka?
-                if ($excelBidang !== $bidang_prestasi) {
-
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'column' => 'bidang_prestasi',
-                        'error' => "Halaman ini untuk import {$bidang_prestasi}, tetapi Excel berisi {$excelBidang}"
-                    ];
-
-                    continue;
-                }
-
-                // rapikan nilainya
+                // rapikan nilainya (tidak lagi dipaksa sesuai halaman/route)
                 $row['bidang_prestasi'] = $excelBidang;
 
                 /*
@@ -403,13 +394,51 @@ class PrestasiController extends Controller
 
                 /*
                 |--------------------------------------------------------------------------
+                | Validasi Metode Pelaksanaan
+                |--------------------------------------------------------------------------
+                */
+
+                $metode = $this->normalizeKey($row['metode_pelaksanaan']);
+
+                if (!isset($validMetodePelaksanaan[$metode])) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'metode_pelaksanaan',
+                        'error' => 'Metode pelaksanaan harus Luring atau Daring'
+                    ];
+
+                    continue;
+                }
+
+                $row['metode_pelaksanaan'] = $validMetodePelaksanaan[$metode];
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validasi Skor
+                |--------------------------------------------------------------------------
+                */
+
+                if (!is_numeric($row['skor'])) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'skor',
+                        'error' => 'Skor harus berupa angka'
+                    ];
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
                 | Data hasil
                 |--------------------------------------------------------------------------
                 */
 
                 $result[] = [
                     'madrasah_id' => $madrasah_id,
-                    'bidang_prestasi' => $bidang_prestasi,
+                    'bidang_prestasi' => $excelBidang,
                     'submitter' => $submitter,
                     'nama_kegiatan' => $row['nama_kegiatan'],
                     'tingkat' => $row['tingkat'],
@@ -418,8 +447,8 @@ class PrestasiController extends Controller
                     'lembaga_penyelenggara' => $row['lembaga_penyelenggara'],
                     'kategori_penyelenggara' => $row['kategori_penyelenggara'],
                     'waktu_kegiatan' => $row['waktu_kegiatan'],
-                    'skor_luring' => $row['skor_luring'],
-                    'skor_daring' => $row['skor_daring'],
+                    'metode_pelaksanaan' => $row['metode_pelaksanaan'],
+                    'skor' => $row['skor'],
                     'link_drive_bukti' => $row['link_drive_bukti'],
                     'keterangan' => $row['keterangan'] ?? null,
                     'periode' => $periode,
@@ -443,7 +472,7 @@ class PrestasiController extends Controller
                 'success' => true,
                 'data' => $result,
                 'errors' => $groupedErrors,
-                'redirect' => route('prestasi.preview', $jenis)
+                'redirect' => route('prestasi.preview')
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -453,14 +482,14 @@ class PrestasiController extends Controller
         }
     }
 
-    public function save_preview(Request $request,$jenis)
+    public function save_preview(Request $request)
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
         }
 
         session([
-            "preview_prestasi_$jenis" =>
+            'preview_prestasi' =>
                 json_decode(
                     $request->data,
                     true
@@ -472,39 +501,29 @@ class PrestasiController extends Controller
         ]);
     }
 
-    public function preview($jenis)
+    public function preview()
     {
-        $data = session(
-            "preview_prestasi_$jenis",
-            []
-        );
+        $data = session('preview_prestasi', []);
 
         if(empty($data)){
 
-            return redirect()
-                ->route(
-                    'prestasi.import',
-                    $jenis
-                );
+            return redirect()->route('prestasi.import');
 
         }
 
         return view(
             'prestasi.preview',
-            compact(
-                'jenis',
-                'data'
-            )
+            compact('data')
         );
     }
 
-    public function store_import($jenis)
+    public function store_import()
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
         }
 
-        $data = session("preview_prestasi_$jenis", []);
+        $data = session('preview_prestasi', []);
 
         if (empty($data)) {
             return response()->json([
@@ -512,6 +531,16 @@ class PrestasiController extends Controller
                 'message' => 'Tidak ada data preview.'
             ], 422);
         }
+
+        $bidangSlugMap = [
+            'Akademik' => 'akademik',
+            'Non Akademik' => 'non-akademik',
+            'Keagamaan' => 'keagamaan',
+            'GTK' => 'gtk',
+            'Lembaga' => 'lembaga',
+        ];
+
+        $bidangTersimpan = collect($data)->pluck('bidang_prestasi')->filter()->unique()->values();
 
         DB::beginTransaction();
 
@@ -526,7 +555,7 @@ class PrestasiController extends Controller
                 description: 'Import Data Prestasi',
                 subject: new PrestasiSiswa(),
                 properties: [
-                    'jenis' => $jenis,
+                    'bidang' => $bidangTersimpan->toArray(),
                     'jumlah_data' => count($data),
                     'madrasah_id' => auth()->user()->madrasah_id,
                     'nama_madrasah' => auth()->user()->madrasah->nama_madrasah,
@@ -535,10 +564,16 @@ class PrestasiController extends Controller
 
             DB::commit();
 
-            session()->forget("preview_prestasi_$jenis");
+            session()->forget('preview_prestasi');
+
+            // Arahkan ke daftar bidang dari baris pertama yang berhasil diimport
+            $jenisTujuan = $bidangSlugMap[$bidangTersimpan->first()] ?? null;
 
             return response()->json([
-                'success' => true
+                'success' => true,
+                'redirect' => $jenisTujuan
+                    ? route('prestasi.index', $jenisTujuan)
+                    : route('prestasi.tambah')
             ]);
 
         } catch (\Throwable $e) {
@@ -549,7 +584,6 @@ class PrestasiController extends Controller
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'jenis' => $jenis,
                 'jumlah_data' => count($data),
                 'madrasah_id' => auth()->user()->madrasah_id,
             ]);
@@ -568,26 +602,17 @@ class PrestasiController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create($jenis)
+    public function create()
     {
-        $mapping = [
-            'akademik' => 'Akademik',
-            'non-akademik' => 'Non Akademik',
-            'keagamaan' => 'Keagamaan',
-            'gtk' => 'GTK',
-            'lembaga' => 'Lembaga',
-        ];
-
         $breadcrumb = breadcrumb([
-            'Prestasi' => route('prestasi.index', $jenis),
-            $mapping[$jenis] => route('prestasi.index', $jenis),
-            'Tambah Prestasi '.$mapping[$jenis]
+            'Tambah Prestasi' => route('prestasi.tambah'),
+            'Input Manual'
         ]);
 
         return view(
             'prestasi.form',
             [
-                'jenis' => $jenis,
+                'jenis' => null,
                 'mode' => 'create',
                 'prestasi' => null,
                 'data' => null,
@@ -596,7 +621,7 @@ class PrestasiController extends Controller
         );
     }
 
-    public function store(Request $request, $jenis)
+    public function store(Request $request)
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
@@ -611,12 +636,19 @@ class PrestasiController extends Controller
             'lembaga_penyelenggara' => 'nullable|string|max:255',
             'kategori_penyelenggara' => 'nullable|string|max:255',
             'waktu_kegiatan' => 'required|date',
-            'skor_luring' => 'nullable|numeric',
-            'skor_daring' => 'nullable|numeric',
+            'metode_pelaksanaan' => 'required|in:Luring,Daring',
+            'skor' => 'nullable|numeric',
             'link_drive_bukti' => 'nullable|url',
             'keterangan' => 'nullable|string',
         ]);
 
+        $bidangSlugMap = [
+            'Akademik' => 'akademik',
+            'Non Akademik' => 'non-akademik',
+            'Keagamaan' => 'keagamaan',
+            'GTK' => 'gtk',
+            'Lembaga' => 'lembaga',
+        ];
 
         try {
             DB::beginTransaction();
@@ -636,7 +668,11 @@ class PrestasiController extends Controller
 
             DB::commit();
 
-            return redirect()->route('prestasi.index', $jenis)->with('success', 'Data prestasi berhasil ditambahkan.');
+            $jenisTujuan = $bidangSlugMap[$prestasi->bidang_prestasi] ?? null;
+
+            return redirect()
+                ->route('prestasi.index', $jenisTujuan ?? 'akademik')
+                ->with('success', 'Data prestasi berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -692,8 +728,8 @@ class PrestasiController extends Controller
             'lembaga_penyelenggara' => 'nullable|string|max:255',
             'kategori_penyelenggara' => 'nullable|string|max:255',
             'waktu_kegiatan' => 'required|date',
-            'skor_luring' => 'nullable|numeric',
-            'skor_daring' => 'nullable|numeric',
+            'metode_pelaksanaan' => 'required|in:Luring,Daring',
+            'skor' => 'nullable|numeric',
             'link_drive_bukti' => 'nullable|url',
             'keterangan' => 'nullable|string',
         ]);
@@ -717,8 +753,8 @@ class PrestasiController extends Controller
                 'lembaga_penyelenggara',
                 'kategori_penyelenggara',
                 'waktu_kegiatan',
-                'skor_luring',
-                'skor_daring',
+                'metode_pelaksanaan',
+                'skor',
                 'link_drive_bukti',
                 'keterangan',
             ]);
@@ -745,8 +781,8 @@ class PrestasiController extends Controller
                 'lembaga_penyelenggara',
                 'kategori_penyelenggara',
                 'waktu_kegiatan',
-                'skor_luring',
-                'skor_daring',
+                'metode_pelaksanaan',
+                'skor',
                 'link_drive_bukti',
                 'keterangan',
             ]);
@@ -813,8 +849,8 @@ class PrestasiController extends Controller
                 'lembaga_penyelenggara',
                 'kategori_penyelenggara',
                 'waktu_kegiatan',
-                'skor_luring',
-                'skor_daring',
+                'metode_pelaksanaan',
+                'skor',
                 'link_drive_bukti',
                 'keterangan',
             ]);

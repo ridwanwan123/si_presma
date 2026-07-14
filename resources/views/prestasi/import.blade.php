@@ -278,7 +278,7 @@
                         </small>
                     </div>
 
-                    <a href="{{ route('prestasi.template', $jenis) }}"
+                    <a href="{{ route('prestasi.template') }}"
                         class="btn btn-success btn-sm d-inline-flex align-items-center justify-content-center btn-template">
                         <span>Download Template</span>
                         <span class="mx-2 opacity-50">|</span>
@@ -295,7 +295,9 @@
                             <div class="col-12">
                                 <div class="alert alert-success border-0 mb-0">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Data Madrasah, Bidang Prestasi, dan Submitter diisi otomatis oleh sistem.
+                                    Data Madrasah dan Submitter diisi otomatis oleh sistem. Bidang Prestasi dibaca
+                                    otomatis dari isi Excel pada setiap baris, sehingga file boleh berisi campuran
+                                    Akademik, Non Akademik, Keagamaan, GTK, dan Lembaga sekaligus.
                                 </div>
                             </div>
 
@@ -315,14 +317,7 @@
                                 <input type="text" class="form-control" readonly value="{{ date('Y') }}">
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label mt-3">
-                                    Bidang Prestasi
-                                </label>
-                                <input type="text" class="form-control" readonly value="{{ ucfirst($jenis) }}">
-                            </div>
-
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <label class="form-label mt-3">
                                     Submitter
                                 </label>
@@ -368,7 +363,12 @@
             </div>
 
             {{-- FOOTER --}}
-            <div class="border-top p-3 d-flex justify-content-end">
+            <div class="border-top p-3 d-flex justify-content-between align-items-center">
+                <a href="{{ route('prestasi.tambah') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Kembali
+                </a>
+
                 <button id="btnPreview" class="btn btn-success d-inline-flex align-items-center">
                     <span class="fw-medium">Preview Data</span>
 
@@ -425,7 +425,7 @@
                 $('#loading').show();
 
                 $.ajax({
-                    url: "{{ route('prestasi.checking_import', $jenis) }}",
+                    url: "{{ route('prestasi.checking_import') }}",
                     type: 'POST',
                     data: formData,
                     processData: false,
@@ -498,7 +498,7 @@
                                 $('#loading').show();
 
                                 $.ajax({
-                                    url: "{{ route('prestasi.save_preview', $jenis) }}",
+                                    url: "{{ route('prestasi.save_preview') }}",
                                     type: 'POST',
                                     data: {
                                         data: JSON.stringify(response.data),
@@ -506,7 +506,7 @@
                                     },
                                     success: function() {
                                         window.location.href =
-                                            "{{ route('prestasi.preview', $jenis) }}";
+                                            "{{ route('prestasi.preview') }}";
 
                                     },
                                     error: function(xhr) {

@@ -42,8 +42,8 @@ class PrestasiSiswaImport implements ToCollection, WithHeadingRow
                 'lembaga_penyelenggara'     => $this->cleanText($row['lembaga_penyelenggara'] ?? null),
                 'kategori_penyelenggara'    => $this->cleanText($row['kategori_penyelenggara'] ?? null),
                 'waktu_kegiatan'            => !empty($row['waktu_kegiatan']) ? Date::excelToDateTimeObject($row['waktu_kegiatan'])->format('d-m-Y') : null,
-                'skor_luring'               => $row['skor_luring'] ?? 0,
-                'skor_daring'               => $row['skor_daring'] ?? 0,
+                'metode_pelaksanaan'        => $this->cleanText($row['metode_pelaksanaan'] ?? null),
+                'skor'                      => $row['skor'] ?? 0,
                 'link_drive_bukti'          => $row['link_drive_bukti'] ?? null,
                 'keterangan'                => $this->cleanText($row['keterangan'] ?? null),
             ];

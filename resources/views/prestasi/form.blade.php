@@ -4,8 +4,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                                                                                                                                                               FORM MADRASAH
-                                                                                                                                                                                                                                                                                                            ========================= */
+                                                                                                                                                                                                                                                                                                                       FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                    ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -233,7 +233,7 @@
 
 
                 <form
-                    action="{{ $mode === 'edit' ? route('prestasi.update', [$jenis, $prestasi->id]) : route('prestasi.store', $jenis) }}"
+                    action="{{ $mode === 'edit' ? route('prestasi.update', [$jenis, $prestasi->id]) : route('prestasi.store') }}"
                     method="POST">
 
                     @csrf
@@ -354,22 +354,30 @@
                                 required>
                         </div>
 
-                        {{-- SKOR LURING --}}
+                        {{-- METODE PELAKSANAAN --}}
                         <div class="col-md-4">
                             <label class="form-label">
-                                Skor Luring
+                                Metode Pelaksanaan <span class="required">*</span>
                             </label>
-                            <input type="number" step="0.01" name="skor_luring" class="form-control skor-input"
-                                value="{{ old('skor_luring', isset($prestasi) ? +$prestasi->skor_luring : 0) }}">
+                            <select name="metode_pelaksanaan" class="form-select" required>
+                                <option value="">Pilih Metode</option>
+
+                                @foreach (['Luring', 'Daring'] as $item)
+                                    <option value="{{ $item }}"
+                                        {{ old('metode_pelaksanaan', $prestasi->metode_pelaksanaan ?? '') == $item ? 'selected' : '' }}>
+                                        {{ $item }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
-                        {{-- SKOR DARING --}}
+                        {{-- SKOR --}}
                         <div class="col-md-4">
                             <label class="form-label">
-                                Skor Daring
+                                Skor
                             </label>
-                            <input type="number" step="0.01" name="skor_daring" class="form-control skor-input"
-                                value="{{ old('skor_daring', isset($prestasi) ? +$prestasi->skor_daring : 0) }}">
+                            <input type="number" step="0.01" name="skor" class="form-control skor-input"
+                                value="{{ old('skor', isset($prestasi) ? +$prestasi->skor : 0) }}">
                         </div>
 
                         {{-- LINK DRIVE --}}
@@ -382,7 +390,8 @@
                                 value="{{ old('link_drive_bukti', $prestasi->link_drive_bukti ?? '') }}"
                                 placeholder="https://drive.google.com/file/d/xxxxxxxx/view" required>
 
-                            <div class="drive-note mt-2" data-bs-toggle="modal" data-bs-target="#modalDriveExample" style="cursor: pointer;">
+                            <div class="drive-note mt-2" data-bs-toggle="modal" data-bs-target="#modalDriveExample"
+                                style="cursor: pointer;">
                                 <div class="drive-note-icon">
                                     <i class="bi bi-google"></i>
                                 </div>
@@ -413,7 +422,8 @@
 
                         {{-- BUTTON --}}
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{{ route('prestasi.index', $jenis) }}" class="btn btn-outline-secondary">
+                            <a href="{{ $mode === 'edit' ? route('prestasi.index', $jenis) : route('prestasi.tambah') }}"
+                                class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i>
                                 Kembali
                             </a>

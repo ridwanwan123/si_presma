@@ -27,8 +27,8 @@
         }
 
         /* ===========================
-           WARNING CALLOUT
-        =========================== */
+               WARNING CALLOUT
+            =========================== */
 
         .preview-warning {
             display: flex;
@@ -73,8 +73,8 @@
         }
 
         /* ===========================
-           SUMMARY CARD (berikon)
-        =========================== */
+               SUMMARY CARD (berikon)
+            =========================== */
 
         .preview-summary-card {
             display: flex;
@@ -124,8 +124,8 @@
         }
 
         /* ===========================
-           TABLE — COMPACT
-        =========================== */
+               TABLE — COMPACT
+            =========================== */
 
         .preview-table {
             margin-bottom: 0;
@@ -171,8 +171,8 @@
         }
 
         /* ===========================
-           STICKY COLUMN
-        =========================== */
+               STICKY COLUMN
+            =========================== */
 
         .preview-table tbody td.sticky-col {
             position: sticky;
@@ -223,8 +223,8 @@
         }
 
         /* ===========================
-           BADGE JUARA (selaras dengan halaman Daftar Prestasi)
-        =========================== */
+               BADGE JUARA (selaras dengan halaman Daftar Prestasi)
+            =========================== */
 
         .badge-juara {
             display: inline-block;
@@ -287,8 +287,8 @@
         }
 
         /* ===========================
-           LOADING OVERLAY
-        =========================== */
+               LOADING OVERLAY
+            =========================== */
 
         .simpan-loading {
             position: fixed;
@@ -363,7 +363,8 @@
                 <p class="preview-warning-text">
                     Pastikan nama kegiatan, tingkat, juara, dan skor pada tabel di bawah sudah benar.
                     Setelah <strong>Simpan Data</strong> diklik, seluruh data akan langsung masuk ke database.
-                    Anda tetap bisa mengedit atau menghapus data satu per satu setelah tersimpan melalui halaman Daftar Prestasi.
+                    Anda tetap bisa mengedit atau menghapus data satu per satu setelah tersimpan melalui halaman Daftar
+                    Prestasi.
                 </p>
             </div>
 
@@ -392,6 +393,10 @@
                 </div>
             </div>
 
+            @php
+                $bidangList = collect($data)->pluck('bidang_prestasi')->filter()->unique()->values();
+            @endphp
+
             <div class="col-6 col-md-3">
                 <div class="content-card mb-0 h-100">
                     <div class="preview-summary-card">
@@ -402,8 +407,8 @@
 
                         <div class="preview-summary-body">
                             <div class="preview-summary-label">Bidang Prestasi</div>
-                            <div class="summary-value">
-                                {{ $data[0]['bidang_prestasi'] }}
+                            <div class="summary-value" title="{{ $bidangList->implode(', ') }}">
+                                {{ $bidangList->count() > 1 ? $bidangList->count() . ' Bidang' : $bidangList->first() }}
                             </div>
                         </div>
 
@@ -490,14 +495,15 @@
                             <tr>
                                 <th class="sticky-col sticky-no text-center">No</th>
                                 <th class="sticky-col sticky-nama">Nama Kegiatan</th>
+                                <th>Bidang</th>
                                 <th>Tingkat</th>
                                 <th>Kategori</th>
                                 <th>Juara</th>
                                 <th>Lembaga</th>
                                 <th>Penyelenggara</th>
                                 <th>Tanggal</th>
-                                <th>Skor Luring</th>
-                                <th>Skor Daring</th>
+                                <th>Metode</th>
+                                <th>Skor</th>
                             </tr>
 
                         </thead>
@@ -532,7 +538,12 @@
                                     </td>
 
                                     <td>
-                                        <span class="badge-juara {{ $tingkatTinggi ? 'badge-tingkat-tinggi' : 'badge-tingkat-biasa' }}">
+                                        {{ $item['bidang_prestasi'] }}
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="badge-juara {{ $tingkatTinggi ? 'badge-tingkat-tinggi' : 'badge-tingkat-biasa' }}">
                                             {{ $item['tingkat'] }}
                                         </span>
                                     </td>
@@ -573,13 +584,13 @@
 
                                     <td class="text-center">
 
-                                        {{ $item['skor_luring'] }}
+                                        {{ $item['metode_pelaksanaan'] }}
 
                                     </td>
 
                                     <td class="text-center">
 
-                                        {{ $item['skor_daring'] }}
+                                        {{ $item['skor'] }}
 
                                     </td>
 
@@ -589,7 +600,7 @@
 
                                 <tr>
 
-                                    <td colspan="10" class="text-center py-5 text-muted">
+                                    <td colspan="11" class="text-center py-5 text-muted">
 
                                         Belum ada data.
 
@@ -617,7 +628,7 @@
 
                 <div class="d-flex justify-content-end gap-2">
 
-                    <a href="{{ route('prestasi.import', $jenis) }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('prestasi.import') }}" class="btn btn-outline-secondary">
 
                         <i class="bi bi-arrow-left"></i>
 
@@ -678,7 +689,7 @@
 
                     $.ajax({
 
-                        url: "{{ route('prestasi.store_import', $jenis) }}",
+                        url: "{{ route('prestasi.store_import') }}",
 
                         type: 'POST',
 
@@ -697,7 +708,8 @@
                             }).then(() => {
 
                                 window.location.href =
-                                    "{{ route('prestasi.index', $jenis) }}";
+                                    response.redirect ||
+                                    "{{ route('prestasi.tambah') }}";
 
                             });
 

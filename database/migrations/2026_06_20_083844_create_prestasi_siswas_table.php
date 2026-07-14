@@ -39,8 +39,14 @@ return new class extends Migration
             $table->string('lembaga_penyelenggara')->nullable();
             $table->string('kategori_penyelenggara')->nullable();
             $table->date('waktu_kegiatan');
-            $table->decimal('skor_luring', 8, 2)->default(0)->nullable();
-            $table->decimal('skor_daring', 8, 2)->default(0)->nullable();
+            
+            $table->enum('metode_pelaksanaan', [
+                'Luring',
+                'Daring',
+            ]);
+
+            $table->decimal('skor', 8, 2);
+
             $table->string('link_drive_bukti')->nullable();
             $table->text('keterangan')->nullable();
             $table->unsignedSmallInteger('periode');

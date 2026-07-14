@@ -172,50 +172,70 @@ Route::middleware('auth')->group(function () {
 
             /*
             |--------------------------------------------------------------------------
+            | ENTRY POINT "TAMBAH PRESTASI" (PILIH METODE)
+            |--------------------------------------------------------------------------
+            | Tidak lagi terikat $jenis, karena bidang prestasi kini dibaca dari
+            | inputan form / isi Excel itu sendiri, bukan dari halaman mana ia dibuka.
+            */
+
+            Route::get('tambah', [PrestasiController::class, 'pilihMetode'])
+                ->name('tambah');
+
+            /*
+            |--------------------------------------------------------------------------
+            | CREATE (INPUT MANUAL)
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('create', [PrestasiController::class, 'create'])
+                ->name('create');
+
+            Route::post('/', [PrestasiController::class, 'store'])
+                ->name('store');
+
+            /*
+            |--------------------------------------------------------------------------
             | IMPORT
             |--------------------------------------------------------------------------
             */
 
-            Route::get('{jenis}/import', [PrestasiController::class, 'import'])
+            Route::get('import', [PrestasiController::class, 'import'])
                 ->name('import');
 
-            Route::post('{jenis}/import', [PrestasiController::class, 'upload'])
+            Route::post('import', [PrestasiController::class, 'upload'])
                 ->name('import.upload');
 
-            Route::post('{jenis}/checking_import', [PrestasiController::class, 'checking_import_prestasi'])
+            Route::post('checking_import', [PrestasiController::class, 'checking_import_prestasi'])
                 ->name('checking_import');
 
-            Route::post('{jenis}/save-preview', [PrestasiController::class, 'save_preview'])
+            Route::post('save-preview', [PrestasiController::class, 'save_preview'])
                 ->name('save_preview');
 
-            Route::get('{jenis}/preview', [PrestasiController::class, 'preview'])
+            Route::get('preview', [PrestasiController::class, 'preview'])
                 ->name('preview');
 
-            Route::post('{jenis}/store-import', [PrestasiController::class, 'store_import'])
+            Route::post('store-import', [PrestasiController::class, 'store_import'])
                 ->name('store_import');
 
-            Route::get('{jenis}/template', [PrestasiController::class, 'template'])
+            Route::get('template', [PrestasiController::class, 'template'])
                 ->name('template');
 
             /*
             |--------------------------------------------------------------------------
-            | CRUD PRESTASI
+            | CRUD PRESTASI (MASIH TERIKAT $jenis, DIAKSES DARI DAFTAR PER BIDANG)
             |--------------------------------------------------------------------------
             */
 
-            Route::get('{jenis}/create', [PrestasiController::class, 'create'])
-                ->name('create');
-
-            Route::post('{jenis}', [PrestasiController::class, 'store'])
-                ->name('store');
-
             Route::get('{jenis}/{id}/edit', [PrestasiController::class, 'edit'])
+                ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
                 ->name('edit');
 
             Route::put('{jenis}/{id}', [PrestasiController::class, 'update'])
+                ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
                 ->name('update');
 
             Route::delete('{jenis}/{id}', [PrestasiController::class, 'destroy'])
+                ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
                 ->name('destroy');
 
             /*
