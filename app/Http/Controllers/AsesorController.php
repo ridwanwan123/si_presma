@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AssignAsesor;
 use App\Models\Madrasah;
 use App\Models\PenilaianPrestasi;
+use App\Models\PeriodeAktif;
 use App\Models\PrestasiSiklus;
 use App\Models\PrestasiSiswa;
 use Illuminate\Http\Request;
@@ -90,6 +91,7 @@ class AsesorController extends Controller
         
         $assignments = AssignAsesor::query()
             ->where('asesor_id', auth()->id())
+            ->where('periode', PeriodeAktif::aktif())
 
             // Filter Status Penilaian
             ->when($request->filled('status'), function ($query) use ($request) {
@@ -650,7 +652,7 @@ class AsesorController extends Controller
             */
 
             $siklus = PrestasiSiklus::where('madrasah_id', $madrasah->id)
-                ->where('periode', now()->year)
+                ->where('periode', PeriodeAktif::aktif())
                 ->first();
 
             if ($siklus && $siklus->canFinish()) {
@@ -709,6 +711,7 @@ class AsesorController extends Controller
     {
         $assignment = AssignAsesor::where('madrasah_id', $madrasah->id)
             ->where('asesor_id', auth()->id())
+            ->where('periode', PeriodeAktif::aktif())
             ->first();
 
         if (! $assignment) {

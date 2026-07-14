@@ -144,6 +144,14 @@
         ========================================================== --}}
         <div class="menu-title">SYSTEM</div>
 
+        @if ($user->hasRole('Administrator'))
+            <a href="{{ route('periode.index') }}"
+                class="menu-item {{ request()->routeIs('periode.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar-range"></i>
+                <span>Kelola Periode</span>
+            </a>
+        @endif
+
         <a href="{{ route('activity.index') }}"
             class="menu-item {{ request()->routeIs('activity.*') ? 'active' : '' }}">
             <i class="bi bi-clock-history"></i>

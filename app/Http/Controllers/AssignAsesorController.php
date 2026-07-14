@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignAsesor;
 use App\Models\Madrasah;
+use App\Models\PeriodeAktif;
 use App\Models\PrestasiSiklus;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class AssignAsesorController extends Controller
 
     private function periodeAktif(): int
     {
-        return now()->year;
+        return PeriodeAktif::aktif();
     }
 
     private function madrasahIdsPipeline()
@@ -53,7 +54,9 @@ class AssignAsesorController extends Controller
 
         $totalMadrasah = $madrasahIdsPipeline->count();
 
-        $sudahAssigned = AssignAsesor::whereIn('madrasah_id', $madrasahIdsPipeline)->count();
+        $sudahAssigned = AssignAsesor::whereIn('madrasah_id', $madrasahIdsPipeline)
+            ->where('periode', $this->periodeAktif())
+            ->count();
 
         $belumAssigned = max(0, $totalMadrasah - $sudahAssigned);
 
@@ -213,9 +216,11 @@ class AssignAsesorController extends Controller
     | STORE
     |--------------------------------------------------------------------------
     | Dipakai untuk assign single maupun assign massal (dipanggil berulang
-    | dari JS untuk tiap madrasah terpilih). Karena AssignAsesor::hasOne per
-    | Madrasah, updateOrCreate berbasis madrasah_id otomatis menangani rule:
-    | belum ada assignment -> INSERT, sudah ada -> UPDATE record yang sama.
+    | dari JS untuk tiap madrasah terpilih). AssignAsesor kini unique per
+    | (madrasah_id, periode), jadi updateOrCreate berbasis kombinasi itu
+    | otomatis menangani rule: belum ada assignment periode ini -> INSERT,
+    | sudah ada -> UPDATE record periode itu saja (tidak menimpa riwayat
+    | assignment periode-periode sebelumnya).
     */
 
     public function store(Request $request)
@@ -251,11 +256,14 @@ class AssignAsesorController extends Controller
                 ->with('error', $message);
         }
 
-        $assignAsesor = DB::transaction(function () use ($validated, $siklus) {
+        $periodeAktif = $this->periodeAktif();
+
+        $assignAsesor = DB::transaction(function () use ($validated, $siklus, $periodeAktif) {
 
             $assignAsesor = AssignAsesor::updateOrCreate(
                 [
                     'madrasah_id' => $validated['madrasah_id'],
+                    'periode'     => $periodeAktif,
                 ],
                 [
                     'asesor_id'   => $validated['asesor_id'],

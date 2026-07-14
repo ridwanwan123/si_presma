@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrestasiSiswa;
+use App\Models\PeriodeAktif;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PrestasiSiswaImport;
@@ -255,7 +256,7 @@ class PrestasiController extends Controller
 
         $madrasah_id = auth()->user()->madrasah_id;
         $submitter = auth()->user()->nama;
-        $periode = now()->year;
+        $periode = PeriodeAktif::aktif();
 
         $requiredFields = [
             'bidang_prestasi',
@@ -667,7 +668,7 @@ class PrestasiController extends Controller
 
             $validatedData['madrasah_id'] = auth()->user()->madrasah_id;
             $validatedData['submitter'] = auth()->user()->nama;
-            $validatedData['periode'] = now()->year;
+            $validatedData['periode'] = PeriodeAktif::aktif();
 
             $prestasi = PrestasiSiswa::create($validatedData);
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
 use App\Http\Controllers\AsesorController;
+use App\Http\Controllers\PeriodeController;
 // use App\Http\Controllers\WilayahPengawasController;
 
 use Illuminate\Support\Facades\Route;
@@ -102,6 +103,14 @@ Route::middleware('auth')->group(function () {
         Route::resource('assign-asesor', AssignAsesorController::class)
             ->only(['index', 'store', 'update', 'destroy']);
 
+        Route::prefix('periode')->name('periode.')->group(function () {
+ 
+            Route::get('/', [PeriodeController::class, 'index'])
+                ->name('index');
+ 
+            Route::post('/', [PeriodeController::class, 'aktifkan'])
+                ->name('aktifkan');
+        });
     });
     
     /*

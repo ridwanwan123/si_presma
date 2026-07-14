@@ -54,7 +54,10 @@ class Madrasah extends Model
 
     public function assignAsesor()
     {
-        return $this->hasOne(AssignAsesor::class);
+        // Satu madrasah bisa punya banyak baris assign_asesors seiring waktu
+        // (satu per periode). hasOne() ini dibatasi ke periode aktif supaya
+        // "assignment saat ini" tidak pernah kebaca dari periode lain.
+        return $this->hasOne(AssignAsesor::class)->where('periode', PeriodeAktif::aktif());
     }
 
     public function prestasiSiklus()
@@ -70,7 +73,7 @@ class Madrasah extends Model
 
         return $this->prestasiSiklus()->firstOrCreate(
             [
-                'periode' => now()->year,
+                'periode' => PeriodeAktif::aktif(),
             ],
             [
                 'status' => PrestasiSiklus::OPEN,

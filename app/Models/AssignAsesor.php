@@ -12,6 +12,7 @@ class AssignAsesor extends Model
     protected $fillable = [
         'asesor_id',
         'madrasah_id',
+        'periode',
         'assigned_by',
         'assigned_at',
         'status',

@@ -22,6 +22,17 @@ return new class extends Migration
                 ->constrained('madrasahs')
                 ->cascadeOnDelete();
 
+            /*
+            |--------------------------------------------------------------------------
+            | PERIODE
+            |--------------------------------------------------------------------------
+            | Satu madrasah bisa di-assign ulang setiap periode (tahun) berjalan.
+            | Tipe year() disamakan dengan prestasi_siklus.periode, karena satu
+            | baris assign_asesors konsepnya menempel ke satu siklus penilaian
+            | (madrasah_id + periode) yang sama.
+            */
+            $table->year('periode');
+
             $table->foreignId('assigned_by')
                 ->nullable()
                 ->constrained('users')
@@ -40,9 +51,21 @@ return new class extends Migration
 
             $table->timestamps();
 
+            /*
+            |--------------------------------------------------------------------------
+            | UNIQUE
+            |--------------------------------------------------------------------------
+            | Sebelumnya: unique(['asesor_id', 'madrasah_id']) -- ini tidak selaras
+            | dengan relasi hasOne() di model Madrasah, karena masih mengizinkan satu
+            | madrasah punya banyak baris assignment (selama asesor_id-nya beda).
+            | Diganti jadi unique(['madrasah_id', 'periode']): satu madrasah cuma
+            | boleh punya SATU baris assignment per periode, sesuai asumsi hasOne()
+            | untuk periode berjalan, sekaligus otomatis membuka riwayat baru begitu
+            | periode berganti.
+            */
             $table->unique([
-                'asesor_id',
-                'madrasah_id'
+                'madrasah_id',
+                'periode'
             ]);
         });
     }
