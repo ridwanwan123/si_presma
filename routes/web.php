@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MadrasahController;
 use App\Http\Controllers\PrestasiController;
+use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
 use App\Http\Controllers\AsesorController;
@@ -257,6 +258,25 @@ Route::middleware('auth')->group(function () {
             Route::get('{jenis}', [PrestasiController::class, 'index'])
                 ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
                 ->name('index');
+        });
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | PENGAJUAN PRESTASI
+    | Madrasah
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('role:Madrasah')->group(function () {
+
+        Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+
+            Route::get('/', [PengajuanController::class, 'index'])
+                ->name('index');
+
+            Route::post('/', [PengajuanController::class, 'submit'])
+                ->name('submit');
         });
     });
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AssignAsesor;
 use App\Models\Madrasah;
 use App\Models\PenilaianPrestasi;
+use App\Models\PrestasiSiklus;
 use App\Models\PrestasiSiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -434,10 +435,8 @@ class AsesorController extends Controller
         $daftarPrestasi = $prestasiPaginator->through(function ($prestasi) {
             $penilaian = $prestasi->penilaianPrestasi;
 
-            // Skor Awal: pakai kolom yang benar-benar berisi nilai.
-            $skorAwal = $prestasi->skor_luring > 0
-                ? $prestasi->skor_luring
-                : $prestasi->skor_daring;
+            // Skor Awal & metode pelaksanaan langsung dari kolom skor / metode_pelaksanaan.
+            $skorAwal = $prestasi->skor ?? 0;
 
             return [
                 'id' => $prestasi->id,
@@ -454,7 +453,7 @@ class AsesorController extends Controller
                 'juara' => $prestasi->juara,
                 'kategori_penyelenggara' => $prestasi->kategori_penyelenggara,
                 'bobot' => $skorAwal,
-                'sumber_skor' => $prestasi->skor_luring > 0 ? 'Luring' : 'Daring',
+                'sumber_skor' => $prestasi->metode_pelaksanaan,
                 'nilai' => $penilaian->persentase ?? null,
                 'nilai_akhir' => $penilaian->nilai_akhir ?? null,
                 'ada_penilaian' => $penilaian !== null,
@@ -525,9 +524,7 @@ class AsesorController extends Controller
             'persentase' => ['required', 'integer', Rule::in(self::OPSI_PERSENTASE)],
         ]);
 
-        $skorAwal = $prestasi->skor_luring > 0
-            ? $prestasi->skor_luring
-            : $prestasi->skor_daring;
+        $skorAwal = $prestasi->skor ?? 0;
 
         $nilaiAkhir = round($skorAwal * $validatedData['persentase'] / 100, 2);
 
@@ -639,6 +636,30 @@ class AsesorController extends Controller
                 'status' => 'completed',
             ]);
 
+            /*
+            |--------------------------------------------------------------------------
+            | MILESTONE: ASSESSMENT -> FINISHED
+            |--------------------------------------------------------------------------
+            | Karena satu madrasah hanya punya satu asesor (AssignAsesor::hasOne per
+            | Madrasah), begitu asesor tersebut finalisasi berarti seluruh rangkaian
+            | penilaian madrasah ini memang selesai. Pakai helper yang sudah ada di
+            | model (canFinish()), bukan pengecekan baru. Kalau siklus untuk periode
+            | ini tidak ditemukan atau statusnya bukan ASSESSMENT (mis. sudah pernah
+            | difinalisasi lewat jalur lain), lewati saja tanpa menganggapnya error —
+            | status assign_asesors tetap berhasil diperbarui.
+            */
+
+            $siklus = PrestasiSiklus::where('madrasah_id', $madrasah->id)
+                ->where('periode', now()->year)
+                ->first();
+
+            if ($siklus && $siklus->canFinish()) {
+                $siklus->update([
+                    'status' => PrestasiSiklus::FINISHED,
+                    'finished_at' => now(),
+                ]);
+            }
+
             ActivityLogger::log(
                 event: 'finalisasi',
                 description: 'Asesor melakukan finalisasi penilaian prestasi',
@@ -649,6 +670,8 @@ class AsesorController extends Controller
                     'total_prestasi'   => $totalPrestasi,
                     'jumlah_penilaian' => $jumlahPenilaian,
                     'status'           => 'completed',
+                    'siklus_id'        => $siklus->id ?? null,
+                    'siklus_status'    => $siklus->status ?? null,
                 ]
             );
 

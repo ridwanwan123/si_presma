@@ -344,6 +344,8 @@
                 return;
             }
 
+            const canInput = {{ $siklus->canInput() ? 'true' : 'false' }};
+
             $('#tablePrestasi').DataTable({
 
                 processing: true,
@@ -595,6 +597,16 @@
                         className: "text-center",
 
                         render: function(data) {
+
+                            if (!canInput) {
+                                return `
+                                    <div class="d-flex justify-content-center">
+                                        <span class="badge bg-secondary-subtle text-secondary border" title="Data terkunci, tidak dapat diubah">
+                                            <i class="bi bi-lock-fill"></i>
+                                        </span>
+                                    </div>
+                                `;
+                            }
 
                             const editUrl =
                                 "{{ route('prestasi.edit', ['jenis' => $jenis, 'id' => ':id']) }}"

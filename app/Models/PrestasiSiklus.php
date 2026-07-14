@@ -42,8 +42,6 @@ class PrestasiSiklus extends Model
 
     public const SUBMITTED = 'SUBMITTED';
 
-    public const LOCKED = 'LOCKED';
-
     public const ASSESSMENT = 'ASSESSMENT';
 
     public const FINISHED = 'FINISHED';
@@ -85,11 +83,6 @@ class PrestasiSiklus extends Model
         return $this->status === self::SUBMITTED;
     }
 
-    public function isLocked(): bool
-    {
-        return $this->status === self::LOCKED;
-    }
-
     public function isAssessment(): bool
     {
         return $this->status === self::ASSESSMENT;
@@ -123,10 +116,7 @@ class PrestasiSiklus extends Model
 
     public function canAssessment(): bool
     {
-        return in_array($this->status, [
-            self::LOCKED,
-            self::ASSESSMENT,
-        ]);
+        return $this->status === self::ASSESSMENT;
     }
 
     public function canFinish(): bool

@@ -3,15 +3,15 @@
 @push('styles')
     <style>
         /* ==========================================================
-                                                                       GENERAL
-                                                                    ========================================================== */
+                                                                               GENERAL
+                                                                            ========================================================== */
         .content {
             background-color: #f5f7fb;
         }
 
         /* ==========================================================
-                                                                       PAGE HEADER
-                                                                    ========================================================== */
+                                                                               PAGE HEADER
+                                                                            ========================================================== */
         .page-header {
             display: flex;
             align-items: flex-start;
@@ -111,8 +111,8 @@
         }
 
         /* ==========================================================
-                                                                       INFO CARD (KOLOM KIRI) - sticky
-                                                                    ========================================================== */
+                                                                               INFO CARD (KOLOM KIRI) - sticky
+                                                                            ========================================================== */
         .info-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -211,8 +211,8 @@
         }
 
         /* ==========================================================
-                                                                       QUICK STATS STRIP
-                                                                    ========================================================== */
+                                                                               QUICK STATS STRIP
+                                                                            ========================================================== */
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -254,8 +254,8 @@
         }
 
         /* ==========================================================
-                                                                       FILTER CARD
-                                                                    ========================================================== */
+                                                                               FILTER CARD
+                                                                            ========================================================== */
         .filter-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -316,8 +316,8 @@
         }
 
         /* ==========================================================
-                                                                       PANDUAN PENILAIAN - inline alert bar
-                                                                    ========================================================== */
+                                                                               PANDUAN PENILAIAN - inline alert bar
+                                                                            ========================================================== */
         .panduan-bar {
             display: flex;
             align-items: center;
@@ -361,8 +361,8 @@
         }
 
         /* ==========================================================
-                                                                       ASSESSMENT CARD (KOLOM KANAN)
-                                                                    ========================================================== */
+                                                                               ASSESSMENT CARD (KOLOM KANAN)
+                                                                            ========================================================== */
         .assessment-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -559,8 +559,8 @@
         }
 
         /* ==========================================================
-                                                                       MODAL NILAI PRESTASI
-                                                                    ========================================================== */
+                                                                               MODAL NILAI PRESTASI
+                                                                            ========================================================== */
         .nilai-modal .modal-content {
             border-radius: 20px;
             border: none;
@@ -804,57 +804,7 @@
     ================================================================= --}}
         <div class="row g-3">
 
-            {{-- ============================================================
-             KOLOM KIRI - Info Madrasah (sticky)
-        ============================================================= --}}
-            <div class="col-lg-3">
-
-                <div class="info-card">
-                    <div class="madrasah-logo">
-                        <i class="bi bi-building"></i>
-                    </div>
-                    <div class="info-name">{{ $madrasah['nama'] }}</div>
-
-                    <div class="info-row">
-                        <span class="info-key">NPSN</span>
-                        <span class="info-value">{{ $madrasah['npsn'] }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-key">Jenjang</span>
-                        <span class="info-value">{{ $madrasah['jenjang'] }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-key">Wilayah</span>
-                        <span class="info-value">{{ $madrasah['wilayah'] }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-key">Jumlah Prestasi</span>
-                        <span class="info-value">{{ $madrasah['jumlah_prestasi'] }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-key">Asesor</span>
-                        <span class="info-value">
-                            <div class="info-asesor">
-                                <div class="avatar-mini">{{ $inisialAsesor }}</div>
-                                {{ $madrasah['asesor'] }}
-                            </div>
-                        </span>
-                    </div>
-
-                    <div class="info-divider"></div>
-
-                    <a href="#" class="rubrik-link">
-                        <span><i class="bi bi-journal-text me-1"></i> Lihat Rubrik Penilaian</span>
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </div>
-
-            </div>
-
-            {{-- ============================================================
-             KOLOM KANAN - Penilaian (full lebar)
-        ============================================================= --}}
-            <div class="col-lg-9">
+            <div class="col-lg-12">
 
                 {{-- Quick stats --}}
                 <div class="quick-stats">

@@ -155,6 +155,10 @@ class PrestasiController extends Controller
     */
     public function pilihMetode()
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $breadcrumb = breadcrumb([
             'Tambah Prestasi'
         ]);
@@ -177,6 +181,10 @@ class PrestasiController extends Controller
 
     public function import()
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $breadcrumb = breadcrumb([
             'Tambah Prestasi' => route('prestasi.tambah'),
             'Import Excel'
@@ -604,6 +612,10 @@ class PrestasiController extends Controller
 
     public function create()
     {
+        if ($response = $this->cekAksesSiklus()) {
+            return $response;
+        }
+
         $breadcrumb = breadcrumb([
             'Tambah Prestasi' => route('prestasi.tambah'),
             'Input Manual'

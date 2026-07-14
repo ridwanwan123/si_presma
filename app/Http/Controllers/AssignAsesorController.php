@@ -4,12 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignAsesor;
 use App\Models\Madrasah;
+use App\Models\PrestasiSiklus;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class AssignAsesorController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER: PERIODE & PIPELINE MADRASAH
+    |--------------------------------------------------------------------------
+    | "Pipeline" = madrasah yang siklus prestasinya untuk periode berjalan
+    | sudah SUBMITTED (menunggu ditugaskan) atau ASSESSMENT (sudah
+    | ditugaskan, sedang dinilai). Madrasah yang masih OPEN (belum submit)
+    | atau sudah FINISHED tidak relevan untuk halaman Assign Asesor.
+    */
+
+    private function periodeAktif(): int
+    {
+        return now()->year;
+    }
+
+    private function madrasahIdsPipeline()
+    {
+        return PrestasiSiklus::where('periode', $this->periodeAktif())
+            ->whereIn('status', [
+                PrestasiSiklus::SUBMITTED,
+                PrestasiSiklus::ASSESSMENT,
+            ])
+            ->pluck('madrasah_id');
+    }
+
     public function index(Request $request)
     {
         /*
@@ -22,9 +49,11 @@ class AssignAsesorController extends Controller
             $q->where('nama', 'Pengawas');
         })->count();
 
-        $totalMadrasah = Madrasah::whereHas('prestasis')->count();
+        $madrasahIdsPipeline = $this->madrasahIdsPipeline();
 
-        $sudahAssigned = AssignAsesor::count();
+        $totalMadrasah = $madrasahIdsPipeline->count();
+
+        $sudahAssigned = AssignAsesor::whereIn('madrasah_id', $madrasahIdsPipeline)->count();
 
         $belumAssigned = max(0, $totalMadrasah - $sudahAssigned);
 
@@ -44,13 +73,13 @@ class AssignAsesorController extends Controller
             ->orderBy('nama')
             ->get();
 
-        $jenjang = Madrasah::whereHas('prestasis')
+        $jenjang = Madrasah::whereIn('id', $madrasahIdsPipeline)
             ->select('jenjang_madrasah')
             ->distinct()
             ->orderBy('jenjang_madrasah')
             ->pluck('jenjang_madrasah');
 
-        $wilayah = Madrasah::whereHas('prestasis')
+        $wilayah = Madrasah::whereIn('id', $madrasahIdsPipeline)
             ->select('kota')
             ->distinct()
             ->orderBy('kota')
@@ -63,7 +92,7 @@ class AssignAsesorController extends Controller
         */
 
         $madrasahs = Madrasah::query()
-            ->whereHas('prestasis')
+            ->whereIn('id', $madrasahIdsPipeline)
             ->withCount('prestasis')
             ->with([
                 'assignAsesor.asesor',
@@ -196,16 +225,60 @@ class AssignAsesorController extends Controller
             'asesor_id'   => 'required|exists:users,id',
         ]);
 
-        $assignAsesor = AssignAsesor::updateOrCreate(
-            [
-                'madrasah_id' => $validated['madrasah_id'],
-            ],
-            [
-                'asesor_id'   => $validated['asesor_id'],
-                'assigned_by' => auth()->id(),
-                'assigned_at' => now(),
-            ]
-        );
+        $siklus = PrestasiSiklus::where('madrasah_id', $validated['madrasah_id'])
+            ->where('periode', $this->periodeAktif())
+            ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Boleh assign kalau:
+        | - canAssignAsesor() -> status SUBMITTED (assign pertama kali), atau
+        | - isAssessment()    -> status ASSESSMENT (ubah/reassign asesor
+        |                        yang sudah pernah ditugaskan sebelumnya)
+        | Keduanya helper yang sudah ada di model PrestasiSiklus.
+        |--------------------------------------------------------------------------
+        */
+        if (!$siklus || (!$siklus->canAssignAsesor() && !$siklus->isAssessment())) {
+
+            $message = 'Madrasah ini belum mengirim pengajuan prestasi (status siklus bukan SUBMITTED/ASSESSMENT), sehingga tidak dapat ditugaskan asesor.';
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return redirect()
+                ->route('assign-asesor.index')
+                ->with('error', $message);
+        }
+
+        $assignAsesor = DB::transaction(function () use ($validated, $siklus) {
+
+            $assignAsesor = AssignAsesor::updateOrCreate(
+                [
+                    'madrasah_id' => $validated['madrasah_id'],
+                ],
+                [
+                    'asesor_id'   => $validated['asesor_id'],
+                    'assigned_by' => auth()->id(),
+                    'assigned_at' => now(),
+                ]
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Milestone berubah hanya saat assign PERTAMA kali (dari SUBMITTED).
+            | Kalau ini reassign (siklus sudah ASSESSMENT), status tidak diubah lagi.
+            |--------------------------------------------------------------------------
+            */
+            if ($siklus->canAssignAsesor()) {
+                $siklus->update([
+                    'status' => PrestasiSiklus::ASSESSMENT,
+                    'assessment_started_at' => now(),
+                ]);
+            }
+
+            return $assignAsesor;
+        });
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -265,7 +338,7 @@ class AssignAsesorController extends Controller
     private function filteredMadrasahQuery(Request $request)
     {
         $query = Madrasah::query()
-            ->whereHas('prestasis')
+            ->whereIn('id', $this->madrasahIdsPipeline())
             ->withCount('prestasis')
             ->with(['assignAsesor.asesor']);
 

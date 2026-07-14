@@ -98,6 +98,15 @@
 
         </div>
 
+        {{-- Pengajuan Prestasi --}}
+        @if ($user->hasRole('Madrasah'))
+            <a href="{{ route('pengajuan.index') }}"
+                class="menu-item {{ request()->routeIs('pengajuan.*') ? 'active' : '' }}">
+                <i class="bi bi-send-check"></i>
+                <span>Pengajuan Prestasi</span>
+            </a>
+        @endif
+
         {{-- =========================================================
             PENGAWAS
         ========================================================== --}}
