@@ -161,6 +161,13 @@ class LoginController extends Controller
             );
         }
 
+        // Tampilkan modal periode aktif sekali setelah login berhasil
+        session()->flash('show_periode_modal', true);
+
+        if ($user->hasRole('Madrasah')) {
+            return redirect()->route('dashboard.madrasah');
+        }
+
         return redirect()->route('dashboard');
     }
 

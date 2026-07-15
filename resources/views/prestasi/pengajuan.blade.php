@@ -3,8 +3,8 @@
 @push('styles')
     <style>
         /* =========================
-               HEADER
-            ========================= */
+           HEADER
+        ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -28,8 +28,8 @@
         }
 
         /* =========================
-               HERO CARD
-            ========================= */
+           HERO CARD
+        ========================= */
 
         .hero-card {
             display: flex;
@@ -69,8 +69,8 @@
         }
 
         /* =========================
-               GENERIC CARD
-            ========================= */
+           GENERIC CARD
+        ========================= */
 
         .content-card {
             background: #fff;
@@ -101,44 +101,81 @@
         }
 
         /* =========================
-               STATUS CARD
-            ========================= */
+           STATUS SIKLUS — HERO
+        ========================= */
 
-        .status-row {
+        .siklus-hero {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .12);
         }
 
-        .status-periode {
-            font-size: .82rem;
-            color: #64748b;
+        .siklus-open {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
         }
 
-        .status-periode strong {
-            color: #0f172a;
+        .siklus-submitted {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
         }
 
-        .badge-siklus {
-            display: inline-flex;
+        .siklus-assessment {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+
+        .siklus-finished {
+            background: linear-gradient(135deg, #475569 0%, #334155 100%);
+        }
+
+        .siklus-periode-badge {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: .5rem;
-            padding: .5rem 1rem;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: .82rem;
-            border: 1px solid transparent;
+            justify-content: center;
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .16);
         }
 
-        .badge-siklus i {
-            font-size: 1rem;
+        .siklus-periode-label {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            opacity: .85;
+        }
+
+        .siklus-periode-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .siklus-hero-title {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: .02em;
+            margin-bottom: .3rem;
+        }
+
+        .siklus-hero-desc {
+            margin: 0;
+            opacity: .92;
+            font-size: .95rem;
         }
 
         /* =========================
-               SUMMARY CARDS
-            ========================= */
+           SUMMARY CARDS
+        ========================= */
 
         .summary-card {
             display: flex;
@@ -212,8 +249,8 @@
         }
 
         /* =========================
-               INFO PENTING
-            ========================= */
+           INFO PENTING
+        ========================= */
 
         .info-card {
             background: #fffbeb;
@@ -250,8 +287,8 @@
         }
 
         /* =========================
-               PERNYATAAN
-            ========================= */
+           PERNYATAAN
+        ========================= */
 
         .pernyataan-card {
             display: flex;
@@ -283,8 +320,8 @@
         }
 
         /* =========================
-               BUTTON
-            ========================= */
+           BUTTON
+        ========================= */
 
         .btn {
             border-radius: 12px;
@@ -316,9 +353,10 @@
                 padding: 1.75rem 1.5rem;
             }
 
-            .status-row {
+            .siklus-hero {
                 flex-direction: column;
-                align-items: flex-start;
+                text-align: center;
+                padding: 1.75rem 1.5rem;
             }
         }
     </style>
@@ -328,9 +366,16 @@
     <main class="content">
 
         {{-- HEADER --}}
-        <div class="page-title">
-            <h2>Pengajuan Prestasi</h2>
-            <p>Kirim seluruh data prestasi madrasah Anda untuk diproses ke tahap penilaian.</p>
+        <div class="page-title d-flex align-items-start justify-content-between flex-wrap gap-3">
+            <div>
+                <h2>Pengajuan Prestasi</h2>
+                <p>Kirim seluruh data prestasi madrasah Anda untuk diproses ke tahap penilaian.</p>
+            </div>
+
+            <a href="{{ route('prestasi.export') }}" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-excel"></i>
+                Export Excel
+            </a>
         </div>
 
         <div class="container-fluid">
@@ -349,59 +394,45 @@
                 </div>
             </div>
 
-            {{-- 2. CARD STATUS --}}
+            {{-- 2. STATUS SIKLUS --}}
             @php
                 $statusMap = [
                     'OPEN' => [
                         'label' => 'Terbuka untuk Pengisian',
                         'icon' => 'bi-unlock-fill',
-                        'bg' => '#f0fdf4',
-                        'border' => '#bbf7d0',
-                        'color' => '#15803d',
+                        'class' => 'siklus-open',
                     ],
                     'SUBMITTED' => [
                         'label' => 'Menunggu Penugasan Asesor',
                         'icon' => 'bi-send-check-fill',
-                        'bg' => '#eff6ff',
-                        'border' => '#bfdbfe',
-                        'color' => '#1d4ed8',
+                        'class' => 'siklus-submitted',
                     ],
                     'ASSESSMENT' => [
                         'label' => 'Sedang Dinilai Asesor',
                         'icon' => 'bi-clipboard-data-fill',
-                        'bg' => '#f5f3ff',
-                        'border' => '#ddd6fe',
-                        'color' => '#6d28d9',
+                        'class' => 'siklus-assessment',
                     ],
                     'FINISHED' => [
                         'label' => 'Penilaian Selesai',
                         'icon' => 'bi-check-circle-fill',
-                        'bg' => '#f8fafc',
-                        'border' => '#e2e8f0',
-                        'color' => '#334155',
+                        'class' => 'siklus-finished',
                     ],
                 ];
 
                 $statusNow = $statusMap[$siklus->status] ?? $statusMap['OPEN'];
             @endphp
 
-            <div class="content-card">
-                <div class="status-row">
-                    <div>
-                        <div class="card-section-title mb-1">
-                            <i class="bi bi-info-circle"></i>
-                            Status Siklus Penilaian
-                        </div>
-                        <div class="status-periode">
-                            Periode <strong>{{ $siklus->periode }}</strong>
-                        </div>
-                    </div>
-
-                    <span class="badge-siklus"
-                        style="background: {{ $statusNow['bg'] }}; border-color: {{ $statusNow['border'] }}; color: {{ $statusNow['color'] }};">
+            <div class="siklus-hero {{ $statusNow['class'] }}">
+                <div class="siklus-periode-badge">
+                    <span class="siklus-periode-label">Periode</span>
+                    <span class="siklus-periode-number">{{ $siklus->periode }}</span>
+                </div>
+                <div>
+                    <div class="siklus-hero-title">
                         <i class="bi {{ $statusNow['icon'] }}"></i>
-                        {{ $siklus->status }} — {{ $statusNow['label'] }}
-                    </span>
+                        {{ $siklus->status }}
+                    </div>
+                    <p class="siklus-hero-desc">{{ $statusNow['label'] }}</p>
                 </div>
             </div>
 
@@ -497,17 +528,15 @@
                 </div>
 
                 <ul class="info-list">
-                    <li>Setelah pengajuan dikirim, <strong>seluruh data prestasi tidak dapat diedit atau dihapus</strong>
-                        sampai proses penilaian selesai.</li>
-                    <li>Fitur <strong>Tambah Prestasi</strong> dan <strong>Import Excel</strong> akan otomatis dinonaktifkan
-                        setelah pengajuan dikirim.</li>
+                    <li>Setelah pengajuan dikirim, <strong>seluruh data prestasi tidak dapat diedit atau dihapus</strong> sampai proses penilaian selesai.</li>
+                    <li>Fitur <strong>Tambah Prestasi</strong> dan <strong>Import Excel</strong> akan otomatis dinonaktifkan setelah pengajuan dikirim.</li>
                     <li>Asesor akan mulai melakukan penilaian terhadap seluruh data yang telah diajukan.</li>
                     <li>Pastikan seluruh data pada setiap bidang prestasi sudah benar sebelum melanjutkan.</li>
                 </ul>
             </div>
 
+            {{-- FORM PENGAJUAN --}}
             @if ($siklus->canSubmit())
-                {{-- FORM PENGAJUAN --}}
                 <form id="formPengajuan" action="{{ route('pengajuan.submit') }}" method="POST">
                     @csrf
 
@@ -532,7 +561,27 @@
                         </button>
                     </div>
                 </form>
+            @else
+                <div class="content-card mb-4">
+                    <div class="card-section-title mb-2">
+                        <i class="bi bi-info-circle"></i>
+                        Pengajuan Sudah Tidak Dapat Dikirim
+                    </div>
+                    <p class="mb-0" style="color:#64748b;">
+                        Prestasi untuk periode <strong>{{ $siklus->periode }}</strong> sudah dikirim dan status saat ini
+                        adalah <strong>{{ $siklus->status }}</strong>. Tidak ada tindakan lain yang perlu dilakukan di
+                        halaman ini.
+                    </p>
+                </div>
+
+                <div class="d-flex justify-content-end mb-4">
+                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Kembali
+                    </a>
+                </div>
             @endif
+
         </div>
     </main>
 @endsection
@@ -544,6 +593,12 @@
             const checkPernyataan = document.getElementById('checkPernyataan');
             const btnKirim = document.getElementById('btnKirimPrestasi');
             const formPengajuan = document.getElementById('formPengajuan');
+
+            // Elemen-elemen di atas tidak ada di DOM saat status siklus bukan
+            // OPEN (formnya tidak dirender sama sekali), jadi guard dulu di sini.
+            if (!checkPernyataan || !btnKirim || !formPengajuan) {
+                return;
+            }
 
             checkPernyataan.addEventListener('change', function() {
                 btnKirim.disabled = !this.checked;

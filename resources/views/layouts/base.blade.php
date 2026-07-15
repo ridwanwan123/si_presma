@@ -103,6 +103,36 @@
 
         </div>
 
+        {{-- =========================================================
+            MODAL PERIODE AKTIF — muncul sekali setelah login
+        ========================================================== --}}
+        @php
+            $periodeAktifModal = \App\Models\PeriodeAktif::aktif();
+        @endphp
+
+        <div class="modal fade" id="modalPeriodeAktif" tabindex="-1" aria-hidden="true"
+            data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content periode-modal-content">
+                    <div class="modal-body text-center px-4 py-5">
+
+                        <h4 class="periode-modal-title">Selamat Datang, {{ auth()->user()->nama ?? '' }}!</h4>
+                        <p class="periode-modal-subtitle">Anda sedang bekerja pada periode prestasi berikut</p>
+
+                        <div class="periode-modal-box">
+                            <div class="periode-modal-year">{{ $periodeAktifModal }}</div>
+                            <p class="periode-modal-desc">Tahun Prestasi {{ $periodeAktifModal }}</p>
+                        </div>
+
+                        <button type="button" class="btn periode-modal-btn w-100" data-bs-dismiss="modal">
+                            Lanjutkan
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- =========================================================
     SCRIPT
     ========================================================== -->
@@ -112,6 +142,24 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                const tampilkanModalPeriode = @json(session('show_periode_modal', false));
+
+                if (tampilkanModalPeriode) {
+
+                    const modalEl = document.getElementById('modalPeriodeAktif');
+
+                    if (modalEl) {
+                        new bootstrap.Modal(modalEl).show();
+                    }
+                }
+
+            });
+        </script>
+
         <!-- Bootstrap -->
         @stack('scripts')
         <!-- JS -->

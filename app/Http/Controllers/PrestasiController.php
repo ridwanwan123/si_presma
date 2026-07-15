@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PrestasiSiswa;
 use App\Models\PeriodeAktif;
+use App\Exports\PrestasiMadrasahExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PrestasiSiswaImport;
@@ -58,6 +59,7 @@ class PrestasiController extends Controller
         ];
 
         $query = PrestasiSiswa::visible()
+            ->where('periode', PeriodeAktif::aktif())
             ->where(
                 'bidang_prestasi',
                 $mapping[$jenis]
@@ -106,6 +108,7 @@ class PrestasiController extends Controller
         ];
 
         $query = PrestasiSiswa::visible()
+            ->where('periode', PeriodeAktif::aktif())
             ->where('bidang_prestasi', $mapping[$jenis])
             ->latest();
 
@@ -177,6 +180,29 @@ class PrestasiController extends Controller
         return Excel::download(
             new PrestasiTemplateExport,
             'template-prestasi.xlsx'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT DATA PRESTASI (SISI MADRASAH, DATA MENTAH — BUKAN HASIL PENILAIAN)
+    |--------------------------------------------------------------------------
+    | Format mengikuti template resmi Kanwil Kemenag DKI Jakarta, supaya bisa
+    | langsung dicetak. ?periode= opsional, default ke periode aktif.
+    */
+    public function export(Request $request)
+    {
+        $madrasah = auth()->user()->madrasah;
+
+        $periode = $request->integer('periode') ?: PeriodeAktif::aktif();
+
+        $namaFile = 'Data-Prestasi-'
+            . str_replace(' ', '-', $madrasah->nama_madrasah)
+            . '-' . $periode . '.xlsx';
+
+        return Excel::download(
+            new PrestasiMadrasahExport($madrasah, $periode),
+            $namaFile
         );
     }
 

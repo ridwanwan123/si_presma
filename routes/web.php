@@ -7,10 +7,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MadrasahController;
 use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\PeriodeController;
+use App\Http\Controllers\DashboardMadrasahController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
 use App\Http\Controllers\AsesorController;
-use App\Http\Controllers\PeriodeController;
 // use App\Http\Controllers\WilayahPengawasController;
 
 use Illuminate\Support\Facades\Route;
@@ -22,9 +23,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('login.form');
+    if (!auth()->check()) {
+        return redirect()->route('login.form');
+    }
+
+    return auth()->user()->hasRole('Madrasah')
+        ? redirect()->route('dashboard.madrasah')
+        : redirect()->route('dashboard');
 });
 
 /*
@@ -104,10 +109,10 @@ Route::middleware('auth')->group(function () {
             ->only(['index', 'store', 'update', 'destroy']);
 
         Route::prefix('periode')->name('periode.')->group(function () {
- 
+
             Route::get('/', [PeriodeController::class, 'index'])
                 ->name('index');
- 
+
             Route::post('/', [PeriodeController::class, 'aktifkan'])
                 ->name('aktifkan');
         });
@@ -156,6 +161,23 @@ Route::middleware('auth')->group(function () {
             'asesor/madrasah/{madrasah}/finalisasi',
             [AsesorController::class, 'finalisasi']
         )->name('asesor.finalisasi');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | DASHBOARD MADRASAH
+    | Madrasah
+    |--------------------------------------------------------------------------
+    | Didaftarkan SEBELUM Route::resource('madrasah', ...) di bawah supaya
+    | tidak ketiban route madrasah.show (GET /madrasah/{madrasah}), yang kalau
+    | didaftarkan lebih dulu akan mencocokkan "/madrasah/dashboard" sebagai
+    | {madrasah} = "dashboard" duluan.
+    */
+
+    Route::middleware('role:Madrasah')->group(function () {
+
+        Route::get('madrasah/dashboard', [DashboardMadrasahController::class, 'index'])
+            ->name('dashboard.madrasah');
     });
 
     /*
@@ -287,5 +309,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [PengajuanController::class, 'submit'])
                 ->name('submit');
         });
+
+        Route::get('prestasi-export', [PrestasiController::class, 'export'])
+            ->name('prestasi.export');
     });
 });

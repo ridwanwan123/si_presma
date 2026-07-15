@@ -20,6 +20,7 @@ class PengajuanController extends Controller
         $siklus = auth()->user()->madrasah->prestasiSiklusAktif();
 
         $ringkasan = PrestasiSiswa::visible()
+            ->where('periode', $siklus->periode)
             ->selectRaw("
                 COUNT(*) as total,
                 SUM(CASE WHEN bidang_prestasi = 'Akademik' THEN 1 ELSE 0 END) as akademik,
@@ -67,7 +68,9 @@ class PengajuanController extends Controller
         | Validasi 2: Minimal memiliki 1 data prestasi
         |--------------------------------------------------------------------------
         */
-        $totalPrestasi = PrestasiSiswa::visible()->count();
+        $totalPrestasi = PrestasiSiswa::visible()
+            ->where('periode', $siklus->periode)
+            ->count();
 
         if ($totalPrestasi < 1) {
             return redirect()
