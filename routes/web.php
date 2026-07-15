@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardMadrasahController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
 use App\Http\Controllers\AsesorController;
+use App\Http\Controllers\DashboardAsesorController;
 // use App\Http\Controllers\WilayahPengawasController;
 
 use Illuminate\Support\Facades\Route;
@@ -27,9 +28,17 @@ Route::get('/', function () {
         return redirect()->route('login.form');
     }
 
-    return auth()->user()->hasRole('Madrasah')
-        ? redirect()->route('dashboard.madrasah')
-        : redirect()->route('dashboard');
+    $user = auth()->user();
+
+    if ($user->hasRole('Madrasah')) {
+        return redirect()->route('dashboard.madrasah');
+    }
+
+    if ($user->hasRole('Pengawas')) {
+        return redirect()->route('dashboard.asesor');
+    }
+
+    return redirect()->route('dashboard');
 });
 
 /*
@@ -131,6 +140,17 @@ Route::middleware('auth')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
+        | DASHBOARD ASESOR
+        |--------------------------------------------------------------------------
+        | Didaftarkan SEBELUM asesor.show (GET /asesor/{madrasah}) supaya
+        | "/asesor/dashboard" tidak ketiban {madrasah} = "dashboard".
+        */
+
+        Route::get('asesor/dashboard', [DashboardAsesorController::class, 'index'])
+            ->name('dashboard.asesor');
+
+        /*
+        |--------------------------------------------------------------------------
         | SHOW PENILAIAN MADRASAH
         |--------------------------------------------------------------------------
         */
@@ -194,11 +214,13 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | PRESTASI
-    | Administrator, Madrasah, Pengawas
+    | Administrator (lihat semua), Madrasah (kelola milik sendiri)
     |--------------------------------------------------------------------------
+    | Pengawas TIDAK diikutkan di sini -- mereka menilai lewat alur
+    | asesor.* (AsesorController) yang terpisah, bukan lewat halaman ini.
     */
 
-    Route::middleware('role:Administrator,Madrasah,Pengawas')->group(function () {
+    Route::middleware('role:Administrator,Madrasah')->group(function () {
 
         Route::prefix('prestasi')->name('prestasi.')->group(function () {
 
@@ -208,9 +230,16 @@ Route::middleware('auth')->group(function () {
             |--------------------------------------------------------------------------
             | Tidak lagi terikat $jenis, karena bidang prestasi kini dibaca dari
             | inputan form / isi Excel itu sendiri, bukan dari halaman mana ia dibuka.
+            |
+            | Semua route "menambah/mengubah data" di bawah ini SENGAJA ditambah
+            | ->middleware('role:Madrasah') lagi -- di atas middleware grup
+            | (Administrator,Madrasah) -- supaya Administrator tetap BISA lihat
+            | (index/data), tapi TIDAK BISA menambah/mengedit/menghapus prestasi
+            | milik madrasah manapun.
             */
 
             Route::get('tambah', [PrestasiController::class, 'pilihMetode'])
+                ->middleware('role:Madrasah')
                 ->name('tambah');
 
             /*
@@ -220,9 +249,11 @@ Route::middleware('auth')->group(function () {
             */
 
             Route::get('create', [PrestasiController::class, 'create'])
+                ->middleware('role:Madrasah')
                 ->name('create');
 
             Route::post('/', [PrestasiController::class, 'store'])
+                ->middleware('role:Madrasah')
                 ->name('store');
 
             /*
@@ -232,24 +263,31 @@ Route::middleware('auth')->group(function () {
             */
 
             Route::get('import', [PrestasiController::class, 'import'])
+                ->middleware('role:Madrasah')
                 ->name('import');
 
             Route::post('import', [PrestasiController::class, 'upload'])
+                ->middleware('role:Madrasah')
                 ->name('import.upload');
 
             Route::post('checking_import', [PrestasiController::class, 'checking_import_prestasi'])
+                ->middleware('role:Madrasah')
                 ->name('checking_import');
 
             Route::post('save-preview', [PrestasiController::class, 'save_preview'])
+                ->middleware('role:Madrasah')
                 ->name('save_preview');
 
             Route::get('preview', [PrestasiController::class, 'preview'])
+                ->middleware('role:Madrasah')
                 ->name('preview');
 
             Route::post('store-import', [PrestasiController::class, 'store_import'])
+                ->middleware('role:Madrasah')
                 ->name('store_import');
 
             Route::get('template', [PrestasiController::class, 'template'])
+                ->middleware('role:Madrasah')
                 ->name('template');
 
             /*
@@ -260,31 +298,28 @@ Route::middleware('auth')->group(function () {
 
             Route::get('{jenis}/{id}/edit', [PrestasiController::class, 'edit'])
                 ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
+                ->middleware('role:Madrasah')
                 ->name('edit');
 
             Route::put('{jenis}/{id}', [PrestasiController::class, 'update'])
                 ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
+                ->middleware('role:Madrasah')
                 ->name('update');
 
             Route::delete('{jenis}/{id}', [PrestasiController::class, 'destroy'])
                 ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
+                ->middleware('role:Madrasah')
                 ->name('destroy');
 
             /*
             |--------------------------------------------------------------------------
-            | DATATABLE
+            | DATATABLE & INDEX -- Administrator (semua madrasah) + Madrasah (milik sendiri)
             |--------------------------------------------------------------------------
             */
 
             Route::get('{jenis}/data', [PrestasiController::class, 'data'])
                 ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')
                 ->name('data');
-
-            /*
-            |--------------------------------------------------------------------------
-            | INDEX
-            |--------------------------------------------------------------------------
-            */
 
             Route::get('{jenis}', [PrestasiController::class, 'index'])
                 ->where('jenis', 'akademik|non-akademik|keagamaan|gtk|lembaga')

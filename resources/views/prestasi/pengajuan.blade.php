@@ -3,8 +3,8 @@
 @push('styles')
     <style>
         /* =========================
-           HEADER
-        ========================= */
+               HEADER
+            ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -28,8 +28,8 @@
         }
 
         /* =========================
-           HERO CARD
-        ========================= */
+               HERO CARD
+            ========================= */
 
         .hero-card {
             display: flex;
@@ -69,8 +69,8 @@
         }
 
         /* =========================
-           GENERIC CARD
-        ========================= */
+               GENERIC CARD
+            ========================= */
 
         .content-card {
             background: #fff;
@@ -101,8 +101,8 @@
         }
 
         /* =========================
-           STATUS SIKLUS — HERO
-        ========================= */
+               STATUS SIKLUS — HERO
+            ========================= */
 
         .siklus-hero {
             display: flex;
@@ -174,8 +174,8 @@
         }
 
         /* =========================
-           SUMMARY CARDS
-        ========================= */
+               SUMMARY CARDS
+            ========================= */
 
         .summary-card {
             display: flex;
@@ -249,8 +249,8 @@
         }
 
         /* =========================
-           INFO PENTING
-        ========================= */
+               INFO PENTING
+            ========================= */
 
         .info-card {
             background: #fffbeb;
@@ -287,8 +287,8 @@
         }
 
         /* =========================
-           PERNYATAAN
-        ========================= */
+               PERNYATAAN
+            ========================= */
 
         .pernyataan-card {
             display: flex;
@@ -320,8 +320,8 @@
         }
 
         /* =========================
-           BUTTON
-        ========================= */
+               BUTTON
+            ========================= */
 
         .btn {
             border-radius: 12px;
@@ -528,8 +528,10 @@
                 </div>
 
                 <ul class="info-list">
-                    <li>Setelah pengajuan dikirim, <strong>seluruh data prestasi tidak dapat diedit atau dihapus</strong> sampai proses penilaian selesai.</li>
-                    <li>Fitur <strong>Tambah Prestasi</strong> dan <strong>Import Excel</strong> akan otomatis dinonaktifkan setelah pengajuan dikirim.</li>
+                    <li>Setelah pengajuan dikirim, <strong>seluruh data prestasi tidak dapat diedit atau dihapus</strong>
+                        sampai proses penilaian selesai.</li>
+                    <li>Fitur <strong>Tambah Prestasi</strong> dan <strong>Import Excel</strong> akan otomatis dinonaktifkan
+                        setelah pengajuan dikirim.</li>
                     <li>Asesor akan mulai melakukan penilaian terhadap seluruh data yang telah diajukan.</li>
                     <li>Pastikan seluruh data pada setiap bidang prestasi sudah benar sebelum melanjutkan.</li>
                 </ul>
@@ -550,7 +552,7 @@
 
                     {{-- 6. TOMBOL --}}
                     <div class="d-flex flex-column flex-sm-row justify-content-sm-between gap-2 mb-4">
-                        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                        <a href="{{ dashboardRoute() }}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i>
                             Kembali
                         </a>
@@ -575,7 +577,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end mb-4">
-                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                    <a href="{{ dashboardRoute() }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i>
                         Kembali
                     </a>

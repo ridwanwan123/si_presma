@@ -168,6 +168,10 @@ class LoginController extends Controller
             return redirect()->route('dashboard.madrasah');
         }
 
+        if ($user->hasRole('Pengawas')) {
+            return redirect()->route('dashboard.asesor');
+        }
+
         return redirect()->route('dashboard');
     }
 

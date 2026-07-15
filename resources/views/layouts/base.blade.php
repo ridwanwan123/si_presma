@@ -52,7 +52,7 @@
                             <div class="breadcrumb-modern">
 
                                 <div class="crumb">
-                                    <a href="{{ route('dashboard') }}">
+                                    <a href="{{ dashboardRoute() }}">
                                         <i class="bi bi-house-door-fill home-icon"></i>
                                         Home
                                     </a>
@@ -110,8 +110,8 @@
             $periodeAktifModal = \App\Models\PeriodeAktif::aktif();
         @endphp
 
-        <div class="modal fade" id="modalPeriodeAktif" tabindex="-1" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal fade" id="modalPeriodeAktif" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+            data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content periode-modal-content">
                     <div class="modal-body text-center px-4 py-5">

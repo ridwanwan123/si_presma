@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AssignAsesor;
 use App\Models\Madrasah;
 use App\Models\PenilaianPrestasi;
-use App\Models\PeriodeAktif;
 use App\Models\PrestasiSiklus;
 use App\Models\PrestasiSiswa;
 use Illuminate\Http\Request;
@@ -91,7 +90,6 @@ class AsesorController extends Controller
         
         $assignments = AssignAsesor::query()
             ->where('asesor_id', auth()->id())
-            ->where('periode', PeriodeAktif::aktif())
 
             // Filter Status Penilaian
             ->when($request->filled('status'), function ($query) use ($request) {
@@ -271,6 +269,14 @@ class AsesorController extends Controller
     {
         $assignment = $this->assignmentAtauGagal($madrasah);
 
+        // Semua query prestasi di bawah HARUS dibatasi ke periode assignment
+        // ini (bukan periode aktif global) -- supaya asesor cuma menilai/
+        // melihat prestasi yang memang untuk periode yang ditugaskan
+        // kepadanya, bukan gabungan seluruh riwayat multi-tahun madrasah.
+        $periodeAssignment = $assignment->periode;
+
+        $prestasiQuery = fn () => $madrasah->prestasis()->where('periode', $periodeAssignment);
+
         /*
         |--------------------------------------------------------------------------
         | STATISTIK — dihitung terpisah dari daftar yang di-paginate.
@@ -289,7 +295,7 @@ class AsesorController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalPrestasi = $madrasah->prestasis()->count();
+        $totalPrestasi = $prestasiQuery()->count();
 
         /*
         |--------------------------------------------------------------------------
@@ -299,7 +305,7 @@ class AsesorController extends Controller
         | baik status draft maupun completed.
         */
 
-        $sudahDinilai = $madrasah->prestasis()
+        $sudahDinilai = $prestasiQuery()
             ->whereHas('penilaianPrestasi')
             ->count();
 
@@ -311,7 +317,7 @@ class AsesorController extends Controller
         | penilaian_prestasis.
         */
 
-        $belumDinilai = $madrasah->prestasis()
+        $belumDinilai = $prestasiQuery()
             ->whereDoesntHave('penilaianPrestasi')
             ->count();
 
@@ -327,8 +333,9 @@ class AsesorController extends Controller
 
         // Total & rata-rata nilai akhir: langsung agregasi di database (SUM/AVG),
         // bukan di-loop di PHP, supaya tidak perlu menarik semua baris.
-        $agregatNilai = PenilaianPrestasi::whereHas('prestasiSiswa', function ($query) use ($madrasah) {
-                $query->where('madrasah_id', $madrasah->id);
+        $agregatNilai = PenilaianPrestasi::whereHas('prestasiSiswa', function ($query) use ($madrasah, $periodeAssignment) {
+                $query->where('madrasah_id', $madrasah->id)
+                    ->where('periode', $periodeAssignment);
             })
             ->whereNotNull('nilai_akhir')
             ->selectRaw('SUM(nilai_akhir) as total_nilai, AVG(nilai_akhir) as rata_nilai')
@@ -369,19 +376,19 @@ class AsesorController extends Controller
         // Opsi filter (dropdown Tingkat & Penyelenggara) sengaja diambil dari
         // SELURUH prestasi madrasah (bukan dari 20 baris yang tampil di halaman
         // ini), supaya daftar pilihannya tetap lengkap di setiap halaman.
-        $daftarTingkat = $madrasah->prestasis()
+        $daftarTingkat = $prestasiQuery()
             ->whereNotNull('tingkat')
             ->distinct()
             ->orderBy('tingkat')
             ->pluck('tingkat');
         
-        $daftarBidang = $madrasah->prestasis()
+        $daftarBidang = $prestasiQuery()
             ->whereNotNull('bidang_prestasi')
             ->distinct()
             ->orderBy('bidang_prestasi')
             ->pluck('bidang_prestasi');
 
-        $daftarPenyelenggara = $madrasah->prestasis()
+        $daftarPenyelenggara = $prestasiQuery()
             ->whereNotNull('lembaga_penyelenggara')
             ->distinct()
             ->orderBy('lembaga_penyelenggara')
@@ -396,7 +403,7 @@ class AsesorController extends Controller
         $tingkat = $request->query('tingkat');
         $penyelenggara = $request->query('penyelenggara');
 
-        $prestasiPaginator = $madrasah->prestasis()
+        $prestasiPaginator = $prestasiQuery()
             ->select('prestasi_siswas.*')
             ->leftJoin('penilaian_prestasis', 'penilaian_prestasis.prestasi_siswa_id', '=', 'prestasi_siswas.id')
             ->selectRaw("
@@ -447,8 +454,10 @@ class AsesorController extends Controller
                 // Ganti ke kolom lain kalau ternyata bukan ini.
                 'link_drive' => $prestasi->link_drive_bukti,
                 'kategori' => $prestasi->bidang_prestasi,
+                'kategori_kegiatan' => $prestasi->kategori_kegiatan,
                 'tingkat' => $prestasi->tingkat,
                 'tahun' => optional($prestasi->waktu_kegiatan)->format('Y'),
+                'waktu_kegiatan' => optional($prestasi->waktu_kegiatan)->format('d F Y'),
                 'penyelenggara' => $prestasi->lembaga_penyelenggara,
                 // ASUMSI nama kolom: juara, kategori_penyelenggara.
                 // Kalau nama kolom di tabel prestasi_siswas beda, ganti di sini saja.
@@ -458,6 +467,7 @@ class AsesorController extends Controller
                 'sumber_skor' => $prestasi->metode_pelaksanaan,
                 'nilai' => $penilaian->persentase ?? null,
                 'nilai_akhir' => $penilaian->nilai_akhir ?? null,
+                'catatan' => $penilaian->catatan ?? null,
                 'ada_penilaian' => $penilaian !== null,
             ];
         });
@@ -517,13 +527,14 @@ class AsesorController extends Controller
             abort(403, 'Penilaian untuk madrasah ini sudah difinalisasi dan tidak dapat diubah.');
         }
 
-        // Pastikan prestasi milik madrasah yang sedang dinilai
-        if ($prestasi->madrasah_id !== $madrasah->id) {
+        // Pastikan prestasi milik madrasah DAN periode yang sedang dinilai
+        if ($prestasi->madrasah_id !== $madrasah->id || $prestasi->periode != $assignment->periode) {
             abort(403);
         }
 
         $validatedData = $request->validate([
             'persentase' => ['required', 'integer', Rule::in(self::OPSI_PERSENTASE)],
+            'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $skorAwal = $prestasi->skor ?? 0;
@@ -540,6 +551,7 @@ class AsesorController extends Controller
                 [
                     'assign_asesor_id' => $assignment->id,
                     'persentase'       => $validatedData['persentase'],
+                    'catatan'          => $validatedData['catatan'] ?? null,
                     'nilai_akhir'      => $nilaiAkhir,
                     'status'           => 'draft',
                 ]
@@ -560,6 +572,7 @@ class AsesorController extends Controller
                     'prestasi_siswa_id' => $prestasi->id,
                     'assign_asesor_id' => $assignment->id,
                     'persentase' => $validatedData['persentase'],
+                    'catatan' => $validatedData['catatan'] ?? null,
                     'nilai_akhir' => $nilaiAkhir,
                 ]
             );
@@ -610,9 +623,18 @@ class AsesorController extends Controller
             abort(403, 'Penilaian untuk madrasah ini sudah difinalisasi sebelumnya.');
         }
 
-        $totalPrestasi = $madrasah->prestasis()->count();
+        // Sama seperti show(): dibatasi ke periode assignment ini, bukan
+        // periode aktif global, supaya finalisasi tetap benar walau admin
+        // sudah membuka periode berikutnya sementara asesor masih
+        // menyelesaikan penilaian periode ini.
+        $periodeAssignment = $assignment->periode;
+
+        $totalPrestasi = $madrasah->prestasis()
+            ->where('periode', $periodeAssignment)
+            ->count();
 
         $sudahDinilai = $madrasah->prestasis()
+            ->where('periode', $periodeAssignment)
             ->whereHas('penilaianPrestasi')
             ->count();
 
@@ -652,7 +674,7 @@ class AsesorController extends Controller
             */
 
             $siklus = PrestasiSiklus::where('madrasah_id', $madrasah->id)
-                ->where('periode', PeriodeAktif::aktif())
+                ->where('periode', $periodeAssignment)
                 ->first();
 
             if ($siklus && $siklus->canFinish()) {
@@ -709,9 +731,15 @@ class AsesorController extends Controller
     */
     private function assignmentAtauGagal(Madrasah $madrasah): AssignAsesor
     {
+        // TIDAK difilter ke PeriodeAktif::aktif() secara sengaja: assignment
+        // yang relevan buat asesor adalah assignment TERBARU dia untuk
+        // madrasah ini, apapun periode globalnya sekarang. Kalau difilter ke
+        // periode aktif, begitu admin buka periode baru sementara asesor
+        // masih menilai periode sebelumnya, dia akan langsung ke-block (403)
+        // padahal pekerjaannya belum selesai.
         $assignment = AssignAsesor::where('madrasah_id', $madrasah->id)
             ->where('asesor_id', auth()->id())
-            ->where('periode', PeriodeAktif::aktif())
+            ->orderByDesc('periode')
             ->first();
 
         if (! $assignment) {

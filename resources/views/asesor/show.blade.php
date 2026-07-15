@@ -3,15 +3,15 @@
 @push('styles')
     <style>
         /* ==========================================================
-                                                                               GENERAL
-                                                                            ========================================================== */
+                                                                                   GENERAL
+                                                                                ========================================================== */
         .content {
             background-color: #f5f7fb;
         }
 
         /* ==========================================================
-                                                                               PAGE HEADER
-                                                                            ========================================================== */
+                                                                                   PAGE HEADER
+                                                                                ========================================================== */
         .page-header {
             display: flex;
             align-items: flex-start;
@@ -111,8 +111,8 @@
         }
 
         /* ==========================================================
-                                                                               INFO CARD (KOLOM KIRI) - sticky
-                                                                            ========================================================== */
+                                                                                   INFO CARD (KOLOM KIRI) - sticky
+                                                                                ========================================================== */
         .info-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -211,8 +211,8 @@
         }
 
         /* ==========================================================
-                                                                               QUICK STATS STRIP
-                                                                            ========================================================== */
+                                                                                   QUICK STATS STRIP
+                                                                                ========================================================== */
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -254,8 +254,8 @@
         }
 
         /* ==========================================================
-                                                                               FILTER CARD
-                                                                            ========================================================== */
+                                                                                   FILTER CARD
+                                                                                ========================================================== */
         .filter-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -316,8 +316,8 @@
         }
 
         /* ==========================================================
-                                                                               PANDUAN PENILAIAN - inline alert bar
-                                                                            ========================================================== */
+                                                                                   PANDUAN PENILAIAN - inline alert bar
+                                                                                ========================================================== */
         .panduan-bar {
             display: flex;
             align-items: center;
@@ -361,8 +361,8 @@
         }
 
         /* ==========================================================
-                                                                               ASSESSMENT CARD (KOLOM KANAN)
-                                                                            ========================================================== */
+                                                                                   ASSESSMENT CARD (KOLOM KANAN)
+                                                                                ========================================================== */
         .assessment-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -559,8 +559,8 @@
         }
 
         /* ==========================================================
-                                                                               MODAL NILAI PRESTASI
-                                                                            ========================================================== */
+                                                                                   MODAL NILAI PRESTASI
+                                                                                ========================================================== */
         .nilai-modal .modal-content {
             border-radius: 20px;
             border: none;
@@ -660,6 +660,58 @@
             width: 1px;
             height: 32px;
             background-color: #e3e7ed;
+        }
+
+        /* Grid info detail prestasi di dalam modal */
+        .prestasi-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 20px;
+            background-color: #f9fafb;
+            border: 1px solid #eef1f5;
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+        }
+
+        .prestasi-detail-grid .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .prestasi-detail-grid .detail-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #9aa4b2;
+            margin-bottom: 3px;
+        }
+
+        .prestasi-detail-grid .detail-value {
+            font-size: 0.87rem;
+            font-weight: 600;
+            color: #344054;
+            word-break: break-word;
+        }
+
+        .prestasi-detail-grid .detail-value a {
+            color: #198754;
+            text-decoration: none;
+        }
+
+        .prestasi-detail-grid .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .nilai-modal textarea.form-control {
+            resize: vertical;
+            min-height: 84px;
+        }
+
+        @media (max-width: 575.98px) {
+            .prestasi-detail-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .nilai-modal .btn-modal-cancel {
@@ -1106,7 +1158,7 @@
         $nilaiAkhir = $prestasi['nilai_akhir'];
     @endphp
     <div class="modal fade nilai-modal" id="modalNilai{{ $index }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Beri Nilai Prestasi</h5>
@@ -1120,10 +1172,47 @@
                         <span>&middot; {{ $prestasi['penyelenggara'] }}</span>
                     </div>
 
+                    {{-- INFORMASI LENGKAP PRESTASI --}}
+                    <div class="prestasi-detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Kategori Kegiatan</div>
+                            <div class="detail-value">{{ $prestasi['kategori_kegiatan'] ?? '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Juara yang Diraih</div>
+                            <div class="detail-value">{{ $prestasi['juara'] ?? '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Lembaga Penyelenggara</div>
+                            <div class="detail-value">{{ $prestasi['penyelenggara'] ?? '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Kategori Penyelenggara</div>
+                            <div class="detail-value">{{ $prestasi['kategori_penyelenggara'] ?? '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Waktu Kegiatan</div>
+                            <div class="detail-value">{{ $prestasi['waktu_kegiatan'] ?? $prestasi['tahun'] }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Bukti Dukung</div>
+                            <div class="detail-value">
+                                @if ($prestasi['link_drive'])
+                                    <a href="{{ $prestasi['link_drive'] }}" target="_blank">
+                                        Lihat Dokumen <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                @else
+                                    -
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
                     <form method="POST"
                         action="{{ route('asesor.nilai.store', ['madrasah' => $madrasah['id'], 'prestasi' => $prestasi['id']]) }}"
                         id="formNilai{{ $index }}">
                         @csrf
+
                         <label class="form-label">Persentase Nilai</label>
                         <select class="form-select" name="persentase" required
                             {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>
@@ -1136,6 +1225,13 @@
                                 </option>
                             @endforeach
                         </select>
+
+                        <label class="form-label mt-3">
+                            Catatan Asesor <span class="text-muted fw-normal">(opsional)</span>
+                        </label>
+                        <textarea class="form-control" name="catatan" rows="3"
+                            placeholder="Tulis catatan atau masukan untuk madrasah terkait prestasi ini..."
+                            {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>{{ $prestasi['catatan'] ?? '' }}</textarea>
                     </form>
 
                     <div class="bobot-preview">

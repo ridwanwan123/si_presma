@@ -2,6 +2,26 @@
     $user = auth()->user();
 @endphp
 
+<style>
+    .menu-item.menu-usulan {
+        opacity: .55;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .badge-usulan {
+        margin-left: auto;
+        font-size: .6rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: #fef3c7;
+        color: #b45309;
+        white-space: nowrap;
+    }
+</style>
+
 <aside class="sidebar" id="sidebar">
 
     {{-- ===================== BRAND ===================== --}}
@@ -14,7 +34,8 @@
     <div class="sidebar-menu">
 
         {{-- Dashboard --}}
-        <a href="{{ route('dashboard') }}" class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <a href="{{ dashboardRoute() }}"
+            class="menu-item {{ request()->routeIs('dashboard', 'dashboard.madrasah', 'dashboard.asesor') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
@@ -22,7 +43,7 @@
         {{-- =========================================================
             MASTER DATA
         ========================================================== --}}
-        @if ($user->hasRole(['Administrator', 'Madrasah', 'Pengawas']))
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
             <div class="menu-title">MASTER DATA</div>
         @endif
 
@@ -47,56 +68,65 @@
         {{-- =========================================================
             BIDANG PRESTASI
         ========================================================== --}}
-        <div class="menu-title">BIDANG PRESTASI</div>
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
+            <div class="menu-title">BIDANG PRESTASI</div>
+        @endif
 
-        {{-- Tambah Prestasi (entry point pilih metode) --}}
-        <a href="{{ route('prestasi.tambah') }}"
-            class="menu-item {{ request()->routeIs('prestasi.tambah', 'prestasi.create', 'prestasi.store', 'prestasi.import', 'prestasi.import.upload', 'prestasi.checking_import', 'prestasi.save_preview', 'prestasi.preview', 'prestasi.store_import', 'prestasi.template') ? 'active' : '' }}">
-            <i class="bi bi-plus-circle"></i>
-            <span>Tambah Prestasi</span>
-        </a>
+        {{-- Tambah Prestasi (entry point pilih metode) -- Madrasah saja, karena
+             yang mengajukan prestasi baru memang cuma pihak Madrasah --}}
+        @if ($user->hasRole('Madrasah'))
+            <a href="{{ route('prestasi.tambah') }}"
+                class="menu-item {{ request()->routeIs('prestasi.tambah', 'prestasi.create', 'prestasi.store', 'prestasi.import', 'prestasi.import.upload', 'prestasi.checking_import', 'prestasi.save_preview', 'prestasi.preview', 'prestasi.store_import', 'prestasi.template') ? 'active' : '' }}">
+                <i class="bi bi-plus-circle"></i>
+                <span>Tambah Prestasi</span>
+            </a>
+        @endif
 
-        <a href="#"
-            class="menu-item has-submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'open' : '' }}">
-            <i class="bi bi-trophy"></i>
-            <span>Prestasi</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-
-        <div
-            class="submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'show' : '' }}">
-
-            <a href="{{ route('prestasi.index', 'akademik') }}"
-                class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
-                <i class="bi bi-mortarboard"></i>
-                <span>Akademik</span>
+        {{-- Prestasi Madrasah -- Administrator (lihat semua madrasah) + Madrasah
+             (lihat prestasi miliknya sendiri) --}}
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
+            <a href="#"
+                class="menu-item has-submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'open' : '' }}">
+                <i class="bi bi-trophy"></i>
+                <span>Prestasi Madrasah</span>
+                <i class="bi bi-chevron-down ms-auto"></i>
             </a>
 
-            <a href="{{ route('prestasi.index', 'non-akademik') }}"
-                class="menu-item {{ request()->route('jenis') == 'non-akademik' ? 'active' : '' }}">
-                <i class="bi bi-award"></i>
-                <span>Non Akademik</span>
-            </a>
+            <div
+                class="submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'show' : '' }}">
 
-            <a href="{{ route('prestasi.index', 'keagamaan') }}"
-                class="menu-item {{ request()->route('jenis') == 'keagamaan' ? 'active' : '' }}">
-                <i class="bi bi-book"></i>
-                <span>Keagamaan</span>
-            </a>
+                <a href="{{ route('prestasi.index', 'akademik') }}"
+                    class="menu-item {{ request()->route('jenis') == 'akademik' ? 'active' : '' }}">
+                    <i class="bi bi-mortarboard"></i>
+                    <span>Akademik</span>
+                </a>
 
-            <a href="{{ route('prestasi.index', 'gtk') }}"
-                class="menu-item {{ request()->route('jenis') == 'gtk' ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>GTK</span>
-            </a>
+                <a href="{{ route('prestasi.index', 'non-akademik') }}"
+                    class="menu-item {{ request()->route('jenis') == 'non-akademik' ? 'active' : '' }}">
+                    <i class="bi bi-award"></i>
+                    <span>Non Akademik</span>
+                </a>
 
-            <a href="{{ route('prestasi.index', 'lembaga') }}"
-                class="menu-item {{ request()->route('jenis') == 'lembaga' ? 'active' : '' }}">
-                <i class="bi bi-building"></i>
-                <span>Lembaga</span>
-            </a>
+                <a href="{{ route('prestasi.index', 'keagamaan') }}"
+                    class="menu-item {{ request()->route('jenis') == 'keagamaan' ? 'active' : '' }}">
+                    <i class="bi bi-book"></i>
+                    <span>Keagamaan</span>
+                </a>
 
-        </div>
+                <a href="{{ route('prestasi.index', 'gtk') }}"
+                    class="menu-item {{ request()->route('jenis') == 'gtk' ? 'active' : '' }}">
+                    <i class="bi bi-people"></i>
+                    <span>GTK</span>
+                </a>
+
+                <a href="{{ route('prestasi.index', 'lembaga') }}"
+                    class="menu-item {{ request()->route('jenis') == 'lembaga' ? 'active' : '' }}">
+                    <i class="bi bi-building"></i>
+                    <span>Lembaga</span>
+                </a>
+
+            </div>
+        @endif
 
         {{-- Pengajuan Prestasi --}}
         @if ($user->hasRole('Madrasah'))
@@ -104,6 +134,44 @@
                 class="menu-item {{ request()->routeIs('pengajuan.*') ? 'active' : '' }}">
                 <i class="bi bi-send-check"></i>
                 <span>Pengajuan Prestasi</span>
+            </a>
+        @endif
+
+        {{-- Hasil Penilaian (Madrasah) -- sudah dibangun (HasilController), belum
+             pernah dipasang ke sidebar. --}}
+        @if ($user->hasRole('Madrasah'))
+            <a href="#" class="menu-item">
+                <i class="bi bi-clipboard-data"></i>
+                <span>Hasil Penilaian</span>
+            </a>
+        @endif
+
+        {{-- =========================================================
+            LAPORAN (Administrator)
+        ========================================================== --}}
+        @if ($user->hasRole('Administrator'))
+            <div class="menu-title">LAPORAN</div>
+
+            {{-- Hasil & Ranking -- sudah dibangun (RankingController), belum
+                 pernah dipasang ke sidebar. --}}
+            <a href="#" class="menu-item">
+                <i class="bi bi-trophy"></i>
+                <span>Hasil & Ranking</span>
+            </a>
+
+            {{-- USULAN -- belum ada controller/route-nya --}}
+            <a href="#" class="menu-item menu-usulan">
+                <i class="bi bi-graph-up"></i>
+                <span>Monitoring Asesor</span>
+                <span class="badge-usulan">USULAN</span>
+            </a>
+
+            {{-- USULAN -- lihat catatan status_verifikasi/catatan_verifikasi
+                 di model PrestasiSiswa yang belum kepakai di controller manapun --}}
+            <a href="#" class="menu-item menu-usulan">
+                <i class="bi bi-patch-check"></i>
+                <span>Verifikasi Prestasi</span>
+                <span class="badge-usulan">USULAN</span>
             </a>
         @endif
 
@@ -117,6 +185,14 @@
                 class="menu-item {{ request()->routeIs('asesor.*') ? 'active' : '' }}">
                 <i class="bi bi-check2-circle"></i>
                 <span>Asesor</span>
+            </a>
+
+            {{-- USULAN -- riwayat penilaian yang sudah completed dari
+                 periode-periode lalu, terpisah dari daftar kerja aktif --}}
+            <a href="#" class="menu-item menu-usulan">
+                <i class="bi bi-clock-history"></i>
+                <span>Riwayat Penilaian</span>
+                <span class="badge-usulan">USULAN</span>
             </a>
         @endif
 
