@@ -1,5 +1,12 @@
 @php
     $user = auth()->user();
+
+    // Dipakai buat menyembunyikan "Tambah Prestasi" begitu siklus periode
+    // aktif sudah bukan OPEN lagi (SUBMITTED/ASSESSMENT/FINISHED) -- reuse
+    // helper canInput() yang sama persis dipakai backend (cekAksesSiklus()),
+    // bukan pengecekan baru. Cuma dihitung untuk role Madrasah karena
+    // Administrator/Pengawas tidak punya relasi madrasah().
+    $siklusAktif = $user->hasRole('Madrasah') ? $user->madrasah->prestasiSiklusAktif() : null;
 @endphp
 
 <style>
@@ -72,9 +79,11 @@
             <div class="menu-title">BIDANG PRESTASI</div>
         @endif
 
-        {{-- Tambah Prestasi (entry point pilih metode) -- Madrasah saja, karena
-             yang mengajukan prestasi baru memang cuma pihak Madrasah --}}
-        @if ($user->hasRole('Madrasah'))
+        {{-- Tambah Prestasi (entry point pilih metode) -- Madrasah saja, DAN
+             cuma tampil kalau siklus periode aktif masih OPEN. Begitu status
+             sudah SUBMITTED/ASSESSMENT/FINISHED, menu ini hilang -- konsisten
+             sama backend yang sudah menolak akses lewat cekAksesSiklus(). --}}
+        @if ($user->hasRole('Madrasah') && $siklusAktif && $siklusAktif->canInput())
             <a href="{{ route('prestasi.tambah') }}"
                 class="menu-item {{ request()->routeIs('prestasi.tambah', 'prestasi.create', 'prestasi.store', 'prestasi.import', 'prestasi.import.upload', 'prestasi.checking_import', 'prestasi.save_preview', 'prestasi.preview', 'prestasi.store_import', 'prestasi.template') ? 'active' : '' }}">
                 <i class="bi bi-plus-circle"></i>
@@ -83,7 +92,8 @@
         @endif
 
         {{-- Prestasi Madrasah -- Administrator (lihat semua madrasah) + Madrasah
-             (lihat prestasi miliknya sendiri) --}}
+             (lihat prestasi miliknya sendiri). TETAP tampil di status apapun,
+             karena ini cuma melihat data (read), bukan menambah. --}}
         @if ($user->hasRole(['Administrator', 'Madrasah']))
             <a href="#"
                 class="menu-item has-submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'open' : '' }}">
@@ -137,11 +147,10 @@
             </a>
         @endif
 
-        {{-- Hasil Penilaian (Madrasah) -- sudah dibangun (HasilController), belum
-             pernah dipasang ke sidebar. --}}
+        {{-- Hasil Penilaian (Madrasah) -- ditahan dulu (href="#") sampai
+             ada keputusan dari atasan soal risiko komplain nilai. --}}
         @if ($user->hasRole('Madrasah'))
-            <a href="{{ route('hasil.index') }}"
-                class="menu-item {{ request()->routeIs('hasil.*') ? 'active' : '' }}">
+            <a href="#" class="menu-item">
                 <i class="bi bi-clipboard-data"></i>
                 <span>Hasil Penilaian</span>
             </a>
@@ -153,10 +162,9 @@
         @if ($user->hasRole('Administrator'))
             <div class="menu-title">LAPORAN</div>
 
-            {{-- Hasil & Ranking -- sudah dibangun (RankingController), belum
-                 pernah dipasang ke sidebar. --}}
-            <a href="{{ route('ranking.index') }}"
-                class="menu-item {{ request()->routeIs('ranking.*') ? 'active' : '' }}">
+            {{-- Hasil & Ranking -- ditahan dulu (href="#"), diprioritaskan
+                 belakangan setelah flow lain matang. --}}
+            <a href="#" class="menu-item">
                 <i class="bi bi-trophy"></i>
                 <span>Hasil & Ranking</span>
             </a>
