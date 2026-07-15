@@ -140,7 +140,8 @@
         {{-- Hasil Penilaian (Madrasah) -- sudah dibangun (HasilController), belum
              pernah dipasang ke sidebar. --}}
         @if ($user->hasRole('Madrasah'))
-            <a href="#" class="menu-item">
+            <a href="{{ route('hasil.index') }}"
+                class="menu-item {{ request()->routeIs('hasil.*') ? 'active' : '' }}">
                 <i class="bi bi-clipboard-data"></i>
                 <span>Hasil Penilaian</span>
             </a>
@@ -154,7 +155,8 @@
 
             {{-- Hasil & Ranking -- sudah dibangun (RankingController), belum
                  pernah dipasang ke sidebar. --}}
-            <a href="#" class="menu-item">
+            <a href="{{ route('ranking.index') }}"
+                class="menu-item {{ request()->routeIs('ranking.*') ? 'active' : '' }}">
                 <i class="bi bi-trophy"></i>
                 <span>Hasil & Ranking</span>
             </a>

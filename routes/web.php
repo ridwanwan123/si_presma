@@ -8,6 +8,8 @@ use App\Http\Controllers\MadrasahController;
 use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\PeriodeController;
+use App\Http\Controllers\RankingController;
+use App\Http\Controllers\HasilController;
 use App\Http\Controllers\DashboardMadrasahController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
@@ -125,6 +127,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [PeriodeController::class, 'aktifkan'])
                 ->name('aktifkan');
         });
+
+        Route::get('ranking', [RankingController::class, 'index'])
+            ->name('ranking.index');
     });
     
     /*
@@ -347,5 +352,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('prestasi-export', [PrestasiController::class, 'export'])
             ->name('prestasi.export');
+
+        Route::get('hasil', [HasilController::class, 'index'])
+            ->name('hasil.index');
     });
 });
