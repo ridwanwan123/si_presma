@@ -10,6 +10,7 @@ use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\HasilController;
+use App\Http\Controllers\MonitoringAsesorController;
 use App\Http\Controllers\DashboardMadrasahController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
@@ -130,6 +131,9 @@ Route::middleware('auth')->group(function () {
 
         Route::get('ranking', [RankingController::class, 'index'])
             ->name('ranking.index');
+
+        Route::get('monitoring-asesor', [MonitoringAsesorController::class, 'index'])
+            ->name('monitoring-asesor.index');
     });
     
     /*

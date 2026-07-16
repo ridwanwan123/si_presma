@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\PrestasiSiswa;
 use App\Models\PeriodeAktif;
 use App\Exports\PrestasiMadrasahExport;
+use App\Services\PrestasiImportService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PrestasiSiswaImport;
 use App\Exports\PrestasiTemplateExport;
@@ -16,6 +18,15 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PrestasiController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | SERVICE IMPORT (dependency injection lewat constructor)
+    |--------------------------------------------------------------------------
+    */
+    public function __construct(
+        private PrestasiImportService $importService
+    ) {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -248,267 +259,65 @@ class PrestasiController extends Controller
         }
     }
 
-    private function normalizeKey($value)
-    {
-        $value = strtolower(trim((string) $value));
-
-        // Hilangkan semua karakter selain huruf dan angka
-        return preg_replace('/[^a-z0-9]/', '', $value);
-    }
-
     public function checking_import_prestasi(Request $request)
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
         }
 
+        // Batas ukuran file dinaikkan dari 2MB -> 20MB, supaya file Excel
+        // 5.000-20.000 baris tidak langsung ditolak sebelum sempat diproses.
         $request->validate([
-            'file_import' => 'required|mimes:xlsx,xls,csv|max:2048',
+            'file_import' => 'required|mimes:xlsx,xls,csv|max:20480',
         ]);
 
-        $mapping = [
-            'akademik' => 'Akademik',
-            'non-akademik' => 'Non Akademik',
-            'keagamaan' => 'Keagamaan',
-            'gtk' => 'GTK',
-            'lembaga' => 'Lembaga',
-        ];
+        // Jaring pengaman di level kode untuk import besar. Idealnya
+        // memory_limit, max_execution_time, upload_max_filesize, dan
+        // post_max_size di php.ini/vhost juga ikut disesuaikan untuk
+        // endpoint ini (upload_max_filesize & post_max_size TIDAK bisa
+        // diubah lewat ini_set(), harus di php.ini/server).
+        @ini_set('memory_limit', '512M');
+        set_time_limit(300);
 
-        $normalizedMapping = collect($mapping)
-            ->mapWithKeys(function ($value) {
-                return [$this->normalizeKey($value) => $value];
-            })
-            ->toArray();
-
-        $madrasah_id = auth()->user()->madrasah_id;
+        $madrasahId = auth()->user()->madrasah_id;
         $submitter = auth()->user()->nama;
         $periode = PeriodeAktif::aktif();
 
-        $requiredFields = [
-            'bidang_prestasi',
-            'nama_kegiatan',
-            'tingkat',
-            'kategori_kegiatan',
-            'juara',
-            'lembaga_penyelenggara',
-            'kategori_penyelenggara',
-            'waktu_kegiatan',
-            'metode_pelaksanaan',
-            'skor',
-            'link_drive_bukti',
-        ];
-
-        $validTingkat = [
-            'kabupatenkota' => 'Kabupaten/Kota',
-            'provinsi' => 'Provinsi',
-            'nasional' => 'Nasional',
-            'internasional' => 'Internasional',
-        ];
-
-        $validKategoriKegiatan = [
-            'individu' => 'Individu',
-            'beregu' => 'Beregu',
-        ];
-
-        $validMetodePelaksanaan = [
-            'luring' => 'Luring',
-            'daring' => 'Daring',
-        ];
-
-        $errors = [];
-        $result = [];
-
         try {
 
-            $import = new PrestasiSiswaImport();
+            $validated = $this->importService->validateFile(
+                $request->file('file_import'),
+                $madrasahId,
+                $submitter,
+                $periode
+            );
 
-            Excel::import($import, $request->file('file_import'));
+            $response = [
+                'success' => true,
+                'errors' => $validated['errors'],
+                'redirect' => route('prestasi.preview'),
+            ];
 
-            $data = $import->rows;
-
-            foreach ($data as $index => $row) {
-
-                // Rapikan seluruh kolom string
-                foreach ($row as $key => $value) {
-                    if (is_string($value)) {
-                        $row[$key] = preg_replace('/\s+/', ' ', trim($value));
-                    }
-                }
-
-                if (count($row) != 12) {
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'error' => 'Jumlah kolom harus 12'
-                    ];
-                    continue;
-                }
-
-                // Validasi wajib isi
-                foreach ($requiredFields as $field) {
-
-                    $value = $row[$field] ?? null;
-
-                    if (is_null($value) || trim((string)$value) === '') {
-
-                        $errors[] = [
-                            'row' => $index + 2,
-                            'column' => $field,
-                            'error' => 'Kolom wajib diisi'
-                        ];
-
-                        continue 2;
-                    }
-                }
+            if (empty($validated['errors'])) {
 
                 /*
                 |--------------------------------------------------------------------------
-                | Validasi Bidang Prestasi (dibaca dari isi Excel, bukan dari halaman)
+                | Data tervalidasi langsung ditulis ke temp storage + token
+                | disimpan di session DI SINI JUGA -- supaya client TIDAK
+                | perlu lagi kirim balik seluruh data ke save_preview().
+                | Sebelumnya alurnya: server kirim seluruh data ke client,
+                | client kirim balik data yang PERSIS SAMA ke save_preview,
+                | padahal tidak pernah dipakai/ditampilkan di browser sama
+                | sekali -- dobel transfer payload besar yang sia-sia.
                 |--------------------------------------------------------------------------
                 */
+                $token = $this->importService->storeTemp($validated['result']);
 
-                $bidang = $this->normalizeKey($row['bidang_prestasi']);
-
-                // apakah nama bidang pada excel valid?
-                if (!isset($normalizedMapping[$bidang])) {
-
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'column' => 'bidang_prestasi',
-                        'error' => 'Bidang prestasi tidak valid'
-                    ];
-
-                    continue;
-                }
-
-                $excelBidang = $normalizedMapping[$bidang];
-
-                // rapikan nilainya (tidak lagi dipaksa sesuai halaman/route)
-                $row['bidang_prestasi'] = $excelBidang;
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validasi Tingkat
-                |--------------------------------------------------------------------------
-                */
-
-                $tingkat = $this->normalizeKey($row['tingkat']);
-
-                if (!isset($validTingkat[$tingkat])) {
-
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'column' => 'tingkat',
-                        'error' => 'Tingkat harus Kabupaten/Kota, Provinsi, Nasional atau Internasional'
-                    ];
-
-                    continue;
-                }
-
-                $row['tingkat'] = $validTingkat[$tingkat];
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validasi Kategori Kegiatan
-                |--------------------------------------------------------------------------
-                */
-
-                $kategori = $this->normalizeKey($row['kategori_kegiatan']);
-
-                if (!isset($validKategoriKegiatan[$kategori])) {
-
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'column' => 'kategori_kegiatan',
-                        'error' => 'Kategori kegiatan harus Individu atau Beregu'
-                    ];
-
-                    continue;
-                }
-
-                $row['kategori_kegiatan'] = $validKategoriKegiatan[$kategori];
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validasi Metode Pelaksanaan
-                |--------------------------------------------------------------------------
-                */
-
-                $metode = $this->normalizeKey($row['metode_pelaksanaan']);
-
-                if (!isset($validMetodePelaksanaan[$metode])) {
-
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'column' => 'metode_pelaksanaan',
-                        'error' => 'Metode pelaksanaan harus Luring atau Daring'
-                    ];
-
-                    continue;
-                }
-
-                $row['metode_pelaksanaan'] = $validMetodePelaksanaan[$metode];
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validasi Skor
-                |--------------------------------------------------------------------------
-                */
-
-                if (!is_numeric($row['skor'])) {
-
-                    $errors[] = [
-                        'row' => $index + 2,
-                        'column' => 'skor',
-                        'error' => 'Skor harus berupa angka'
-                    ];
-
-                    continue;
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Data hasil
-                |--------------------------------------------------------------------------
-                */
-
-                $result[] = [
-                    'madrasah_id' => $madrasah_id,
-                    'bidang_prestasi' => $excelBidang,
-                    'submitter' => $submitter,
-                    'nama_kegiatan' => $row['nama_kegiatan'],
-                    'tingkat' => $row['tingkat'],
-                    'kategori_kegiatan' => $row['kategori_kegiatan'],
-                    'juara' => $row['juara'],
-                    'lembaga_penyelenggara' => $row['lembaga_penyelenggara'],
-                    'kategori_penyelenggara' => $row['kategori_penyelenggara'],
-                    'waktu_kegiatan' => $row['waktu_kegiatan'],
-                    'metode_pelaksanaan' => $row['metode_pelaksanaan'],
-                    'skor' => $row['skor'],
-                    'link_drive_bukti' => $row['link_drive_bukti'],
-                    'keterangan' => $row['keterangan'] ?? null,
-                    'periode' => $periode,
-                ];
+                session(['preview_prestasi_token' => $token]);
             }
 
-            $groupedErrors = collect($errors)
-                ->groupBy(function ($item) {
-                    return ($item['column'] ?? 'general') . '|' . $item['error'];
-                })
-                ->map(function ($items) {
-                    return [
-                        'column' => $items->first()['column'] ?? null,
-                        'message' => $items->first()['error'],
-                        'rows' => $items->pluck('row')->toArray()
-                    ];
-                })
-                ->values();
+            return response()->json($response);
 
-            return response()->json([
-                'success' => true,
-                'data' => $result,
-                'errors' => $groupedErrors,
-                'redirect' => route('prestasi.preview')
-            ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
@@ -517,38 +326,84 @@ class PrestasiController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE PREVIEW
+    |--------------------------------------------------------------------------
+    | Sejak checking_import_prestasi() langsung menyimpan token ke session,
+    | endpoint ini SUDAH TIDAK DIPANGGIL LAGI oleh alur utama (lihat JS di
+    | prestasi.import) -- TETAP DIPERTAHANKAN (bukan dihapus/route tidak
+    | diubah) untuk kompatibilitas ke belakang kalau ada pemanggil lain.
+    | Kalau dipanggil, tetap aman: data yang dikirim disimpan lewat jalur
+    | temp storage yang sama (bukan langsung ke session mentah).
+    |--------------------------------------------------------------------------
+    */
     public function save_preview(Request $request)
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
         }
 
-        session([
-            'preview_prestasi' =>
-                json_decode(
-                    $request->data,
-                    true
-                )
-        ]);
+        $data = json_decode($request->data, true) ?? [];
+
+        $token = $this->importService->storeTemp($data);
+
+        session(['preview_prestasi_token' => $token]);
 
         return response()->json([
-            'success'=>true
+            'success' => true
         ]);
     }
 
     public function preview()
     {
-        $data = session('preview_prestasi', []);
+        $token = session('preview_prestasi_token');
 
-        if(empty($data)){
+        $data = $this->importService->readTemp($token);
+
+        if (empty($data)) {
 
             return redirect()->route('prestasi.import');
 
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | PAGINASI MANUAL UNTUK PREVIEW
+        |--------------------------------------------------------------------------
+        | $data sumbernya array PHP dari temp file (bukan query Eloquent),
+        | jadi tidak bisa langsung pakai ->paginate() bawaan query builder.
+        | LengthAwarePaginator "membungkus" potongan array (array_slice)
+        | supaya tetap dapat link pagination Bootstrap yang sama seperti
+        | hasil ->paginate() biasa. Ini menghindari render ribuan <tr>
+        | sekaligus di satu halaman kalau import sampai 5.000-20.000 baris.
+        |
+        | store_import() TIDAK terpengaruh sama sekali oleh ini -- dia
+        | tetap membaca SELURUH $data dari temp file langsung, bukan dari
+        | yang sedang ditampilkan di halaman preview.
+        */
+        $perPage = 50;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+
+        $items = array_slice($data, ($currentPage - 1) * $perPage, $perPage);
+
+        $paginatedData = new LengthAwarePaginator(
+            $items,
+            count($data),
+            $perPage,
+            $currentPage,
+            ['path' => route('prestasi.preview')]
+        );
+
+        // Ringkasan (total, daftar bidang, submitter) tetap dihitung dari
+        // SELURUH data, bukan cuma yang tampil di halaman aktif.
+        $totalData = count($data);
+        $bidangList = collect($data)->pluck('bidang_prestasi')->filter()->unique()->values();
+        $submitter = $data[0]['submitter'] ?? '-';
+
         return view(
             'prestasi.preview',
-            compact('data')
+            compact('paginatedData', 'totalData', 'bidangList', 'submitter')
         );
     }
 
@@ -558,7 +413,9 @@ class PrestasiController extends Controller
             return $response;
         }
 
-        $data = session('preview_prestasi', []);
+        $token = session('preview_prestasi_token');
+
+        $data = $this->importService->readTemp($token);
 
         if (empty($data)) {
             return response()->json([
@@ -566,6 +423,9 @@ class PrestasiController extends Controller
                 'message' => 'Tidak ada data preview.'
             ], 422);
         }
+
+        @ini_set('memory_limit', '512M');
+        set_time_limit(300);
 
         $bidangSlugMap = [
             'Akademik' => 'akademik',
@@ -581,9 +441,15 @@ class PrestasiController extends Controller
 
         try {
 
-            foreach ($data as $row) {
-                PrestasiSiswa::create($row);
-            }
+            /*
+            |--------------------------------------------------------------------------
+            | Dari N query INSERT terpisah (satu per baris, lewat Eloquent
+            | create()) menjadi ceil(N / 500) query saja lewat bulk insert().
+            | Ini perbaikan performa paling besar di seluruh alur import --
+            | 20.000 baris = 20.000 query dulu, sekarang cuma ~40 query.
+            |--------------------------------------------------------------------------
+            */
+            $totalTersimpan = $this->importService->bulkInsert($data);
 
             ActivityLogger::log(
                 event: 'import',
@@ -591,7 +457,7 @@ class PrestasiController extends Controller
                 subject: new PrestasiSiswa(),
                 properties: [
                     'bidang' => $bidangTersimpan->toArray(),
-                    'jumlah_data' => count($data),
+                    'jumlah_data' => $totalTersimpan,
                     'madrasah_id' => auth()->user()->madrasah_id,
                     'nama_madrasah' => auth()->user()->madrasah->nama_madrasah,
                 ]
@@ -599,7 +465,8 @@ class PrestasiController extends Controller
 
             DB::commit();
 
-            session()->forget('preview_prestasi');
+            $this->importService->deleteTemp($token);
+            session()->forget('preview_prestasi_token');
 
             // Arahkan ke daftar bidang dari baris pertama yang berhasil diimport
             $jenisTujuan = $bidangSlugMap[$bidangTersimpan->first()] ?? null;

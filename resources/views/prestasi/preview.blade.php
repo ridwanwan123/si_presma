@@ -393,10 +393,6 @@
                 </div>
             </div>
 
-            @php
-                $bidangList = collect($data)->pluck('bidang_prestasi')->filter()->unique()->values();
-            @endphp
-
             <div class="col-6 col-md-3">
                 <div class="content-card mb-0 h-100">
                     <div class="preview-summary-card">
@@ -426,8 +422,8 @@
 
                         <div class="preview-summary-body">
                             <div class="preview-summary-label">Submitter</div>
-                            <div class="summary-value" title="{{ $data[0]['submitter'] }}">
-                                {{ $data[0]['submitter'] }}
+                            <div class="summary-value" title="{{ $submitter }}">
+                                {{ $submitter }}
                             </div>
                         </div>
 
@@ -446,7 +442,7 @@
                         <div class="preview-summary-body">
                             <div class="preview-summary-label">Total Data</div>
                             <div class="summary-value" style="color:#0f8a43">
-                                {{ count($data) }}
+                                {{ $totalData }}
                             </div>
                         </div>
 
@@ -473,13 +469,16 @@
 
                         <small class="text-muted">
                             Data berikut akan disimpan ke database PRESMA
+                            @if ($totalData > $paginatedData->perPage())
+                                &middot; menampilkan {{ $paginatedData->firstItem() }}-{{ $paginatedData->lastItem() }} dari {{ $totalData }} baris
+                            @endif
                         </small>
 
                     </div>
 
                     <span class="badge bg-success rounded-pill">
 
-                        {{ count($data) }} Data
+                        {{ $totalData }} Data
 
                     </span>
 
@@ -510,7 +509,7 @@
 
                         <tbody>
 
-                            @forelse($data as $item)
+                            @forelse($paginatedData as $item)
                                 @php
                                     $juara = $item['juara'] ?? '';
 
@@ -525,12 +524,15 @@
                                     }
 
                                     $tingkatTinggi = in_array($item['tingkat'] ?? '', ['Nasional', 'Internasional']);
+
+                                    // Nomor urut global, bukan mulai dari 1 lagi di tiap halaman
+                                    $nomorUrut = $paginatedData->firstItem() + $loop->index;
                                 @endphp
 
                                 <tr>
 
                                     <td class="sticky-col sticky-no text-center">
-                                        {{ $loop->iteration }}
+                                        {{ $nomorUrut }}
                                     </td>
 
                                     <td class="sticky-col sticky-nama col-kegiatan">
@@ -614,6 +616,12 @@
                     </table>
 
                 </div>
+
+                @if ($paginatedData->hasPages())
+                    <div class="d-flex justify-content-center pt-3">
+                        {{ $paginatedData->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
 
             </div>
 

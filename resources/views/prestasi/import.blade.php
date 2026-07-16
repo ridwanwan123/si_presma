@@ -495,30 +495,15 @@
                                 timerProgressBar: true,
                             }).then(function() {
 
-                                $('#loading').show();
+                                // Data hasil validasi sudah disimpan di sisi
+                                // server sejak checking_import (token di
+                                // session) -- tidak perlu lagi kirim balik
+                                // seluruh data ke save_preview sebelum
+                                // redirect, jadi langsung arahkan browser.
+                                window.location.href =
+                                    response.redirect ||
+                                    "{{ route('prestasi.preview') }}";
 
-                                $.ajax({
-                                    url: "{{ route('prestasi.save_preview') }}",
-                                    type: 'POST',
-                                    data: {
-                                        data: JSON.stringify(response.data),
-                                        _token: '{{ csrf_token() }}'
-                                    },
-                                    success: function() {
-                                        window.location.href =
-                                            "{{ route('prestasi.preview') }}";
-
-                                    },
-                                    error: function(xhr) {
-                                        $('#loading').hide();
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'Gagal',
-                                            text: 'Terjadi kesalahan saat menyiapkan preview.'
-                                        });
-                                        console.error(xhr.responseText);
-                                    }
-                                });
                             });
                         }
                     },

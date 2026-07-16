@@ -6,7 +6,9 @@
     // helper canInput() yang sama persis dipakai backend (cekAksesSiklus()),
     // bukan pengecekan baru. Cuma dihitung untuk role Madrasah karena
     // Administrator/Pengawas tidak punya relasi madrasah().
-    $siklusAktif = $user->hasRole('Madrasah') ? $user->madrasah->prestasiSiklusAktif() : null;
+    $siklusAktif = $user->hasRole('Madrasah')
+        ? $user->madrasah->prestasiSiklusAktif()
+        : null;
 @endphp
 
 <style>
@@ -169,11 +171,11 @@
                 <span>Hasil & Ranking</span>
             </a>
 
-            {{-- USULAN -- belum ada controller/route-nya --}}
-            <a href="#" class="menu-item menu-usulan">
+            {{-- Monitoring Asesor -- rangkuman progress semua asesor sekaligus --}}
+            <a href="{{ route('monitoring-asesor.index') }}"
+                class="menu-item {{ request()->routeIs('monitoring-asesor.*') ? 'active' : '' }}">
                 <i class="bi bi-graph-up"></i>
                 <span>Monitoring Asesor</span>
-                <span class="badge-usulan">USULAN</span>
             </a>
 
             {{-- USULAN -- lihat catatan status_verifikasi/catatan_verifikasi

@@ -65,6 +65,22 @@ return new class extends Migration
             ]);
 
             $table->index('nama_kegiatan');
+
+            /*
+            |--------------------------------------------------------------------------
+            | INDEX KOMPOSIT UNTUK QUERY BER-PERIODE
+            |--------------------------------------------------------------------------
+            | Hampir seluruh query prestasi sekarang selalu filter periode
+            | (PeriodeAktif::aktif()), tapi kolom ini belum pernah ter-index.
+            | Untuk Madrasah (data dibatasi ke madrasah_id sendiri) dampaknya
+            | kecil, tapi untuk Administrator yang melihat SELURUH madrasah,
+            | full scan tanpa index ini akan terasa begitu total baris
+            | mencapai puluhan ribu.
+            */
+            $table->index(
+                ['periode', 'bidang_prestasi', 'madrasah_id'],
+                'idx_prestasi_periode_bidang_madrasah'
+            );
         });
     }
 
