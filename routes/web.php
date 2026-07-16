@@ -11,6 +11,9 @@ use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\HasilController;
 use App\Http\Controllers\MonitoringAsesorController;
+use App\Http\Controllers\PengaturanPenguranganPoinController;
+use App\Http\Controllers\AduanMasyarakatController;
+use App\Http\Controllers\KeterlambatanBerkasController;
 use App\Http\Controllers\DashboardMadrasahController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
@@ -134,6 +137,21 @@ Route::middleware('auth')->group(function () {
 
         Route::get('monitoring-asesor', [MonitoringAsesorController::class, 'index'])
             ->name('monitoring-asesor.index');
+
+        Route::prefix('pengurangan-poin')->name('pengurangan-poin.')->group(function () {
+
+            Route::get('pengaturan', [PengaturanPenguranganPoinController::class, 'index'])
+                ->name('pengaturan');
+
+            Route::post('pengaturan', [PengaturanPenguranganPoinController::class, 'update'])
+                ->name('pengaturan.update');
+        });
+
+        Route::resource('aduan-masyarakat', AduanMasyarakatController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+
+        Route::resource('keterlambatan-berkas', KeterlambatanBerkasController::class)
+            ->only(['index', 'store', 'destroy']);
     });
     
     /*

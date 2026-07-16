@@ -6,9 +6,7 @@
     // helper canInput() yang sama persis dipakai backend (cekAksesSiklus()),
     // bukan pengecekan baru. Cuma dihitung untuk role Madrasah karena
     // Administrator/Pengawas tidak punya relasi madrasah().
-    $siklusAktif = $user->hasRole('Madrasah')
-        ? $user->madrasah->prestasiSiklusAktif()
-        : null;
+    $siklusAktif = $user->hasRole('Madrasah') ? $user->madrasah->prestasiSiklusAktif() : null;
 @endphp
 
 <style>
@@ -164,9 +162,10 @@
         @if ($user->hasRole('Administrator'))
             <div class="menu-title">LAPORAN</div>
 
-            {{-- Hasil & Ranking -- ditahan dulu (href="#"), diprioritaskan
-                 belakangan setelah flow lain matang. --}}
-            <a href="#" class="menu-item">
+            {{-- Hasil & Ranking -- sekarang sudah aktif, dilengkapi perhitungan
+                 potongan Aduan Masyarakat & Keterlambatan Berkas. --}}
+            <a href="{{ route('ranking.index') }}"
+                class="menu-item {{ request()->routeIs('ranking.*') ? 'active' : '' }}">
                 <i class="bi bi-trophy"></i>
                 <span>Hasil & Ranking</span>
             </a>
@@ -177,6 +176,38 @@
                 <i class="bi bi-graph-up"></i>
                 <span>Monitoring Asesor</span>
             </a>
+
+            {{-- Pengurangan Poin -- pengaturan nilai potongan + data
+                 Aduan Masyarakat & Keterlambatan Berkas --}}
+            <a href="#"
+                class="menu-item has-submenu {{ request()->routeIs('pengurangan-poin.*', 'aduan-masyarakat.*', 'keterlambatan-berkas.*') ? 'open' : '' }}">
+                <i class="bi bi-dash-circle"></i>
+                <span>Pengurangan Poin</span>
+                <i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+
+            <div
+                class="submenu {{ request()->routeIs('pengurangan-poin.*', 'aduan-masyarakat.*', 'keterlambatan-berkas.*') ? 'show' : '' }}">
+
+                <a href="{{ route('pengurangan-poin.pengaturan') }}"
+                    class="menu-item {{ request()->routeIs('pengurangan-poin.*') ? 'active' : '' }}">
+                    <i class="bi bi-sliders"></i>
+                    <span>Pengaturan Nilai</span>
+                </a>
+
+                <a href="{{ route('aduan-masyarakat.index') }}"
+                    class="menu-item {{ request()->routeIs('aduan-masyarakat.*') ? 'active' : '' }}">
+                    <i class="bi bi-megaphone"></i>
+                    <span>Aduan Masyarakat</span>
+                </a>
+
+                <a href="{{ route('keterlambatan-berkas.index') }}"
+                    class="menu-item {{ request()->routeIs('keterlambatan-berkas.*') ? 'active' : '' }}">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>Keterlambatan Berkas</span>
+                </a>
+
+            </div>
 
             {{-- USULAN -- lihat catatan status_verifikasi/catatan_verifikasi
                  di model PrestasiSiswa yang belum kepakai di controller manapun --}}

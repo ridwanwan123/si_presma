@@ -145,8 +145,7 @@
 
         <div class="page-title">
             <h2>Hasil & Ranking Prestasi</h2>
-            <p>Peringkat madrasah berdasarkan total nilai akhir yang telah difinalisasi asesor, periode {{ $periode }}.
-            </p>
+            <p>Peringkat madrasah berdasarkan total nilai akhir yang telah difinalisasi asesor, periode {{ $periode }}.</p>
         </div>
 
         <div class="container-fluid">
@@ -178,8 +177,7 @@
                     </div>
 
                     @if ($jenjangFilter)
-                        <a href="{{ route('ranking.index', ['periode' => $periode]) }}"
-                            class="btn btn-outline-secondary btn-reset-filter">
+                        <a href="{{ route('ranking.index', ['periode' => $periode]) }}" class="btn btn-outline-secondary btn-reset-filter">
                             <i class="bi bi-arrow-counterclockwise"></i>
                             Reset
                         </a>
@@ -198,6 +196,7 @@
                                 <th>Jenjang</th>
                                 <th>Wilayah</th>
                                 <th class="text-center">Prestasi Dinilai</th>
+                                <th class="text-end">Potongan</th>
                                 <th class="text-end">Total Nilai Akhir</th>
                             </tr>
                         </thead>
@@ -219,15 +218,23 @@
                                     <td>{{ $item->kota }}</td>
                                     <td class="text-center">{{ $item->jumlah_dinilai }}</td>
                                     <td class="text-end">
-                                        <span
-                                            class="total-nilai">{{ number_format($item->total_nilai, 2, ',', '.') }}</span>
+                                        @if ($item->total_potongan > 0)
+                                            <span class="text-danger fw-semibold" style="font-size:.8rem"
+                                                title="Aduan Masyarakat: -{{ number_format($item->potongan_aduan, 2, ',', '.') }} &middot; Keterlambatan: -{{ number_format($item->potongan_keterlambatan, 2, ',', '.') }}">
+                                                -{{ number_format($item->total_potongan, 2, ',', '.') }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted" style="font-size:.8rem">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="total-nilai">{{ number_format($item->total_nilai, 2, ',', '.') }}</span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-5">
-                                        Belum ada madrasah yang penilaiannya sudah difinalisasi untuk periode
-                                        {{ $periode }}.
+                                    <td colspan="7" class="text-center text-muted py-5">
+                                        Belum ada madrasah yang penilaiannya sudah difinalisasi untuk periode {{ $periode }}.
                                     </td>
                                 </tr>
                             @endforelse

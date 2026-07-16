@@ -5,11 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Madrasah;
 use App\Models\PeriodeAktif;
 use App\Models\PrestasiSiklus;
+use App\Services\PenguranganPoinService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RankingController extends Controller
 {
+    public function __construct(
+        private PenguranganPoinService $penguranganPoinService
+    ) {
+    }
     /*
     |--------------------------------------------------------------------------
     | HASIL & RANKING (SISI ADMINISTRATOR)
@@ -68,6 +73,26 @@ class RankingController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | SUBTOTAL KHUSUS BIDANG LEMBAGA — dipakai sebagai basis perhitungan
+        | potongan Aduan Masyarakat (persen), yang cuma menyunat bidang ini.
+        |--------------------------------------------------------------------------
+        */
+        $totalsLembaga = DB::table('penilaian_prestasis')
+            ->join('prestasi_siswas', 'prestasi_siswas.id', '=', 'penilaian_prestasis.prestasi_siswa_id')
+            ->where('penilaian_prestasis.status', 'completed')
+            ->whereIn('prestasi_siswas.madrasah_id', $madrasahIdsFinished)
+            ->where('prestasi_siswas.periode', $periode)
+            ->where('prestasi_siswas.bidang_prestasi', 'Lembaga')
+            ->groupBy('prestasi_siswas.madrasah_id')
+            ->selectRaw('
+                prestasi_siswas.madrasah_id,
+                SUM(penilaian_prestasis.nilai_akhir) as total_lembaga
+            ')
+            ->get()
+            ->keyBy('madrasah_id');
+
+        /*
+        |--------------------------------------------------------------------------
         | FILTER JENJANG (toggle) — kosong = semua jenjang digabung jadi satu
         | ranking, diisi = ranking dihitung ulang hanya di dalam jenjang itu.
         |--------------------------------------------------------------------------
@@ -85,8 +110,17 @@ class RankingController extends Controller
                 $q->where('jenjang_madrasah', $jenjangFilter);
             })
             ->get()
-            ->map(function ($madrasah) use ($totals) {
+            ->map(function ($madrasah) use ($totals, $totalsLembaga, $periode) {
                 $t = $totals->get($madrasah->id);
+                $totalMentah = round($t->total_nilai_akhir ?? 0, 2);
+                $totalLembaga = round($totalsLembaga->get($madrasah->id)->total_lembaga ?? 0, 2);
+
+                $hasilPotongan = $this->penguranganPoinService->hitungSetelahPotongan(
+                    $madrasah->id,
+                    $periode,
+                    $totalLembaga,
+                    $totalMentah
+                );
 
                 return (object) [
                     'id'               => $madrasah->id,
@@ -94,7 +128,11 @@ class RankingController extends Controller
                     'npsn'             => $madrasah->npsn,
                     'jenjang_madrasah' => $madrasah->jenjang_madrasah,
                     'kota'             => $madrasah->kota,
-                    'total_nilai'      => round($t->total_nilai_akhir ?? 0, 2),
+                    'total_nilai'      => $hasilPotongan['total_akhir'],
+                    'total_sebelum_potongan' => $hasilPotongan['total_sebelum_potongan'],
+                    'potongan_aduan'   => $hasilPotongan['potongan_aduan'],
+                    'potongan_keterlambatan' => $hasilPotongan['potongan_keterlambatan'],
+                    'total_potongan'   => $hasilPotongan['total_potongan'],
                     'jumlah_dinilai'   => $t->jumlah_dinilai ?? 0,
                 ];
             })
