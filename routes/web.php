@@ -9,6 +9,7 @@ use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\RankingArsipController;
 use App\Http\Controllers\HasilController;
 use App\Http\Controllers\MonitoringAsesorController;
 use App\Http\Controllers\PengaturanPenguranganPoinController;
@@ -134,6 +135,27 @@ Route::middleware('auth')->group(function () {
 
         Route::get('ranking', [RankingController::class, 'index'])
             ->name('ranking.index');
+
+        Route::get('ranking/export', [RankingController::class, 'export'])
+            ->name('ranking.export');
+
+        Route::prefix('ranking-arsip')->name('ranking-arsip.')->group(function () {
+
+            Route::get('/', [RankingArsipController::class, 'index'])
+                ->name('index');
+
+            Route::post('/', [RankingArsipController::class, 'store'])
+                ->name('store');
+
+            Route::get('{ranking_arsip}', [RankingArsipController::class, 'show'])
+                ->name('show');
+
+            Route::get('{ranking_arsip}/export', [RankingArsipController::class, 'export'])
+                ->name('export');
+
+            Route::delete('{ranking_arsip}', [RankingArsipController::class, 'destroy'])
+                ->name('destroy');
+        });
 
         Route::get('monitoring-asesor', [MonitoringAsesorController::class, 'index'])
             ->name('monitoring-asesor.index');

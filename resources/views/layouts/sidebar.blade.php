@@ -170,6 +170,14 @@
                 <span>Hasil & Ranking</span>
             </a>
 
+            {{-- Arsip Ranking -- snapshot beku ranking per periode, hasil
+                 dari tombol "Arsipkan Ranking" di halaman Hasil & Ranking --}}
+            <a href="{{ route('ranking-arsip.index') }}"
+                class="menu-item {{ request()->routeIs('ranking-arsip.*') ? 'active' : '' }}">
+                <i class="bi bi-archive"></i>
+                <span>Arsip Ranking</span>
+            </a>
+
             {{-- Monitoring Asesor -- rangkuman progress semua asesor sekaligus --}}
             <a href="{{ route('monitoring-asesor.index') }}"
                 class="menu-item {{ request()->routeIs('monitoring-asesor.*') ? 'active' : '' }}">

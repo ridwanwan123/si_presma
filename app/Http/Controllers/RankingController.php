@@ -6,8 +6,10 @@ use App\Models\Madrasah;
 use App\Models\PeriodeAktif;
 use App\Models\PrestasiSiklus;
 use App\Services\PenguranganPoinService;
+use App\Exports\RankingLiveExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RankingController extends Controller
 {
@@ -15,6 +17,7 @@ class RankingController extends Controller
         private PenguranganPoinService $penguranganPoinService
     ) {
     }
+
     /*
     |--------------------------------------------------------------------------
     | HASIL & RANKING (SISI ADMINISTRATOR)
@@ -27,29 +30,99 @@ class RankingController extends Controller
     public function index(Request $request)
     {
         $periode = $request->integer('periode') ?: PeriodeAktif::aktif();
+        $jenjangFilter = $request->query('jenjang');
 
-        /*
-        |--------------------------------------------------------------------------
-        | DAFTAR PERIODE UNTUK DROPDOWN
-        |--------------------------------------------------------------------------
-        | Cuma periode yang benar-benar punya madrasah FINISHED yang ditampilkan
-        | di dropdown -- supaya tidak ada pilihan periode yang ranking-nya
-        | pasti kosong.
-        */
+        $daftarPeriode = $this->daftarPeriodeFinished($periode);
+        $daftarJenjang = $this->daftarJenjangFinished($periode);
+        $ranking = $this->hitungRanking($periode, $jenjangFilter);
+
+        $breadcrumb = breadcrumb([
+            'Hasil & Ranking'
+        ]);
+
+        return view('ranking.index', compact(
+            'ranking',
+            'daftarJenjang',
+            'jenjangFilter',
+            'daftarPeriode',
+            'periode',
+            'breadcrumb'
+        ));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT EXCEL — ranking LIVE (dihitung ulang saat itu juga), bukan arsip.
+    | Mengikuti filter periode & jenjang yang sedang aktif di halaman.
+    |--------------------------------------------------------------------------
+    */
+    public function export(Request $request)
+    {
+        $periode = $request->integer('periode') ?: PeriodeAktif::aktif();
+        $jenjangFilter = $request->query('jenjang');
+
+        $ranking = $this->hitungRanking($periode, $jenjangFilter);
+
+        $namaFile = 'Ranking-Prestasi-Periode-' . $periode
+            . ($jenjangFilter ? '-' . str_replace('/', '-', $jenjangFilter) : '')
+            . '.xlsx';
+
+        return Excel::download(
+            new RankingLiveExport($ranking, $periode, $jenjangFilter),
+            $namaFile
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DAFTAR PERIODE UNTUK DROPDOWN
+    |--------------------------------------------------------------------------
+    | Cuma periode yang benar-benar punya madrasah FINISHED yang ditampilkan
+    | di dropdown -- supaya tidak ada pilihan periode yang ranking-nya
+    | pasti kosong.
+    |--------------------------------------------------------------------------
+    */
+    private function daftarPeriodeFinished(int $periodeAktif)
+    {
         $daftarPeriode = PrestasiSiklus::where('status', PrestasiSiklus::FINISHED)
             ->select('periode')
             ->distinct()
             ->pluck('periode');
 
-        if (! $daftarPeriode->contains($periode)) {
-            $daftarPeriode->push($periode);
+        if (! $daftarPeriode->contains($periodeAktif)) {
+            $daftarPeriode->push($periodeAktif);
         }
 
-        $daftarPeriode = $daftarPeriode->sortDesc()->values();
+        return $daftarPeriode->sortDesc()->values();
+    }
 
-        $madrasahIdsFinished = PrestasiSiklus::where('periode', $periode)
+    private function madrasahIdsFinished(int $periode)
+    {
+        return PrestasiSiklus::where('periode', $periode)
             ->where('status', PrestasiSiklus::FINISHED)
             ->pluck('madrasah_id');
+    }
+
+    private function daftarJenjangFinished(int $periode)
+    {
+        return Madrasah::whereIn('id', $this->madrasahIdsFinished($periode))
+            ->select('jenjang_madrasah')
+            ->distinct()
+            ->orderBy('jenjang_madrasah')
+            ->pluck('jenjang_madrasah');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HITUNG RANKING — dipakai bareng oleh index() (tampilan) dan export()
+    | (Excel), supaya logicnya cuma ditulis SEKALI dan selalu konsisten.
+    | FILTER JENJANG (toggle) — kosong = semua jenjang digabung jadi satu
+    | ranking, diisi = ranking dihitung ulang hanya di dalam jenjang itu.
+    |--------------------------------------------------------------------------
+    */
+    private function hitungRanking(int $periode, ?string $jenjangFilter)
+    {
+        $madrasahIdsFinished = $this->madrasahIdsFinished($periode);
 
         /*
         |--------------------------------------------------------------------------
@@ -91,21 +164,7 @@ class RankingController extends Controller
             ->get()
             ->keyBy('madrasah_id');
 
-        /*
-        |--------------------------------------------------------------------------
-        | FILTER JENJANG (toggle) — kosong = semua jenjang digabung jadi satu
-        | ranking, diisi = ranking dihitung ulang hanya di dalam jenjang itu.
-        |--------------------------------------------------------------------------
-        */
-        $jenjangFilter = $request->query('jenjang');
-
-        $daftarJenjang = Madrasah::whereIn('id', $madrasahIdsFinished)
-            ->select('jenjang_madrasah')
-            ->distinct()
-            ->orderBy('jenjang_madrasah')
-            ->pluck('jenjang_madrasah');
-
-        $ranking = Madrasah::whereIn('id', $madrasahIdsFinished)
+        return Madrasah::whereIn('id', $madrasahIdsFinished)
             ->when($jenjangFilter, function ($q) use ($jenjangFilter) {
                 $q->where('jenjang_madrasah', $jenjangFilter);
             })
@@ -142,18 +201,5 @@ class RankingController extends Controller
                 $item->peringkat = $index + 1;
                 return $item;
             });
-
-        $breadcrumb = breadcrumb([
-            'Hasil & Ranking'
-        ]);
-
-        return view('ranking.index', compact(
-            'ranking',
-            'daftarJenjang',
-            'jenjangFilter',
-            'daftarPeriode',
-            'periode',
-            'breadcrumb'
-        ));
     }
 }
