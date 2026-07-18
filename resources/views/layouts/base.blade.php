@@ -116,7 +116,7 @@
                 <div class="modal-content periode-modal-content">
                     <div class="modal-body text-center px-4 py-5">
 
-                        <h4 class="periode-modal-title">Selamat Datang, {{ auth()->user()->nama ?? '' }}!</h4>
+                        <h4 class="periode-modal-title">Selamat Datang, <br />{{ auth()->user()->nama ?? '' }} 👋</h4>
                         <p class="periode-modal-subtitle">Anda sedang bekerja pada periode prestasi berikut</p>
 
                         <div class="periode-modal-box">

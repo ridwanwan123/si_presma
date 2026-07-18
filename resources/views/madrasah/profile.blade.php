@@ -23,8 +23,8 @@
         }
 
         /* ================================
-                                       HERO
-                                    ================================ */
+                                                   HERO
+                                                ================================ */
 
         .profile-hero {
             position: relative;
@@ -123,8 +123,8 @@
         }
 
         /* ================================
-                                       GRID
-                                    ================================ */
+                                                   GRID
+                                                ================================ */
 
         .profile-grid {
             display: grid;
@@ -140,8 +140,8 @@
         }
 
         /* ================================
-                                       CARD
-                                    ================================ */
+                                                   CARD
+                                                ================================ */
 
         .saas-card {
             background: var(--card-bg);
@@ -179,8 +179,8 @@
         }
 
         /* ================================
-                                       INFO GRID
-                                    ================================ */
+                                                   INFO GRID
+                                                ================================ */
 
         .info-grid {
             display: grid;
@@ -212,8 +212,8 @@
         }
 
         /* ================================
-                                       SDM
-                                    ================================ */
+                                                   SDM
+                                                ================================ */
 
         .sdm-wrapper {
             display: flex;
@@ -291,8 +291,8 @@
         }
 
         /* ================================
-                                       MAP BUTTON
-                                    ================================ */
+                                                   MAP BUTTON
+                                                ================================ */
 
         .map-btn {
             display: inline-flex;
@@ -323,8 +323,8 @@
         }
 
         /* ================================
-                                       TABLET
-                                    ================================ */
+                                                   TABLET
+                                                ================================ */
 
         @media (max-width: 992px) {
 
@@ -344,8 +344,8 @@
         }
 
         /* ================================
-                                       MOBILE
-                                    ================================ */
+                                                   MOBILE
+                                                ================================ */
 
         @media (max-width:768px) {
 
@@ -379,8 +379,8 @@
         }
 
         /* ================================
-                                       SMALL MOBILE
-                                    ================================ */
+                                                   SMALL MOBILE
+                                                ================================ */
 
         @media (max-width:576px) {
 
@@ -451,13 +451,52 @@
             transform: translateY(-2px);
             text-decoration: none;
         }
+
+        .profile-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem 1.25rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-left: 5px solid #2563eb;
+            border-radius: 12px;
+        }
+
+        .profile-info i {
+            font-size: 1.2rem;
+            color: #2563eb;
+            margin-top: 2px;
+        }
+
+        .profile-info h5 {
+            margin: 0 0 .25rem;
+            color: #1e3a8a;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .profile-info p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.6;
+        }
     </style>
 @endpush
 
 @section('content')
     <main class="content">
         <div class="profile-container">
-
+            <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                <div>
+                    <strong>Informasi!</strong> Mohon untuk melengkapi data profil madrasah agar informasi yang ditampilkan
+                    lebih lengkap dan akurat. Pastikan data identitas, alamat, serta informasi kepala madrasah dan tata
+                    usaha
+                    telah diisi dengan benar.
+                </div>
+            </div>
             <div class="profile-hero">
                 <div class="logo-container">
                     @if ($madrasah->logo)

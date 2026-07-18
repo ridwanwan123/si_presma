@@ -10,6 +10,7 @@ use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\RankingArsipController;
+use App\Http\Controllers\RankingArsipManualController;
 use App\Http\Controllers\HasilController;
 use App\Http\Controllers\MonitoringAsesorController;
 use App\Http\Controllers\PengaturanPenguranganPoinController;
@@ -100,6 +101,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+ 
+    Route::get('/dashboard/export', [DashboardController::class, 'export'])
+        ->name('dashboard.export');
 
     Route::resource('activity', ActivityController::class);
 
@@ -140,19 +144,49 @@ Route::middleware('auth')->group(function () {
             ->name('ranking.export');
 
         Route::prefix('ranking-arsip')->name('ranking-arsip.')->group(function () {
-
+ 
             Route::get('/', [RankingArsipController::class, 'index'])
                 ->name('index');
-
+        
             Route::post('/', [RankingArsipController::class, 'store'])
                 ->name('store');
-
+        
+            /*
+            |--------------------------------------------------------------------------
+            | INPUT MANUAL DATA HISTORIS (didaftarkan sebelum {ranking_arsip})
+            |--------------------------------------------------------------------------
+            */
+        
+            Route::get('manual/create', [RankingArsipManualController::class, 'create'])
+                ->name('manual.create');
+        
+            Route::post('manual', [RankingArsipManualController::class, 'store'])
+                ->name('manual.store');
+        
+            Route::get('{ranking_arsip}/kelola', [RankingArsipManualController::class, 'kelola'])
+                ->name('kelola');
+        
+            Route::post('{ranking_arsip}/detail', [RankingArsipManualController::class, 'storeDetail'])
+                ->name('detail.store');
+        
+            Route::put('{ranking_arsip}/detail/{detail}', [RankingArsipManualController::class, 'updateDetail'])
+                ->name('detail.update');
+        
+            Route::delete('{ranking_arsip}/detail/{detail}', [RankingArsipManualController::class, 'destroyDetail'])
+                ->name('detail.destroy');
+        
+            /*
+            |--------------------------------------------------------------------------
+            | Route lama (tidak berubah)
+            |--------------------------------------------------------------------------
+            */
+        
             Route::get('{ranking_arsip}', [RankingArsipController::class, 'show'])
                 ->name('show');
-
+        
             Route::get('{ranking_arsip}/export', [RankingArsipController::class, 'export'])
                 ->name('export');
-
+        
             Route::delete('{ranking_arsip}', [RankingArsipController::class, 'destroy'])
                 ->name('destroy');
         });

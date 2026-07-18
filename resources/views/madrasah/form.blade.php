@@ -5,8 +5,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                                                                                                                                                                                                                                                                       FORM MADRASAH
-                                                                                                                                                                                                                                                                                                                                                                                                                    ========================= */
+                                                                                                                                                                                                                                                                                                                                                                                                                           FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                                                                                                                        ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -208,6 +208,123 @@
         .cropper-modal {
             background-color: rgba(0, 0, 0, 0.35) !important;
         }
+
+        /* =========================
+               PHOTO UPLOAD CARD
+               (Logo / Foto Kamad / Foto KTU)
+            ========================= */
+
+        .mp-upload-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .mp-upload-frame {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            flex-shrink: 0;
+            overflow: hidden;
+
+            border-radius: 14px;
+            border: 1.5px dashed #cbd5e1;
+            background: #f8fafc;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: border-color .25s, box-shadow .25s;
+        }
+
+        .mp-upload-frame--round {
+            border-radius: 50%;
+        }
+
+        .mp-upload-frame:hover {
+            border-color: #38bdf8;
+            border-style: solid;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, .12);
+        }
+
+        .mp-upload-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mp-upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .3rem;
+            padding: .4rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .mp-upload-placeholder span {
+            font-size: .62rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .mp-upload-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            cursor: pointer;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .25rem;
+
+            background: rgba(15, 23, 42, .74);
+            backdrop-filter: blur(1px);
+            color: #fff;
+
+            opacity: 0;
+            transition: opacity .25s;
+        }
+
+        .mp-upload-frame:hover .mp-upload-overlay,
+        .mp-upload-frame:focus-within .mp-upload-overlay {
+            opacity: 1;
+        }
+
+        .mp-upload-overlay span {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+        }
+
+        .mp-upload-overlay input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .mp-upload-meta {
+            padding-top: .25rem;
+        }
+
+        .mp-upload-meta .form-label {
+            margin-bottom: .3rem;
+        }
+
+        .mp-upload-hint {
+            margin: 0;
+            font-size: .76rem;
+            color: #94a3b8;
+        }
     </style>
 @endpush
 
@@ -359,14 +476,43 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Logo Madrasah</label>
 
-                                    <input type="file" class="form-control crop-image-input" data-target="logo_cropped"
-                                        data-preview="previewLogo" data-title="Crop Logo Madrasah" accept="image/*">
+                                    <div class="mp-upload-card">
+                                        <div class="mp-upload-frame">
+                                            <img id="previewLogo" class="mp-upload-img"
+                                                style="display:{{ $mode == 'edit' && $madrasah->logo ? 'block' : 'none' }};"
+                                                src="{{ $mode == 'edit' && $madrasah->logo ? asset('storage/' . $madrasah->logo) : '' }}">
+
+                                            <div id="previewLogo_placeholder" class="mp-upload-placeholder"
+                                                style="display:{{ $mode == 'edit' && $madrasah->logo ? 'none' : 'flex' }};">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                    <path d="M21 15l-5-5L5 21"></path>
+                                                </svg>
+                                                <span>Belum ada logo</span>
+                                            </div>
+
+                                            <label class="mp-upload-overlay">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M12 20h9"></path>
+                                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z">
+                                                    </path>
+                                                </svg>
+                                                <span>Ganti</span>
+                                                <input type="file" class="crop-image-input" data-target="logo_cropped"
+                                                    data-preview="previewLogo" data-title="Crop Logo Madrasah"
+                                                    accept="image/*">
+                                            </label>
+                                        </div>
+
+                                        <div class="mp-upload-meta">
+                                            <p class="mp-upload-hint">Format PNG/JPG, disarankan rasio 1:1.</p>
+                                        </div>
+                                    </div>
 
                                     <input type="hidden" name="logo_cropped" id="logo_cropped">
-
-                                    <img id="previewLogo" class="mt-2 rounded"
-                                        style="width:90px;height:90px;object-fit:cover;"
-                                        src="{{ $mode == 'edit' && $madrasah->logo ? asset('storage/' . $madrasah->logo) : '' }}">
                                 </div>
 
                             </div>
@@ -389,25 +535,25 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Provinsi</label>
                                     <input type="text" name="provinsi" class="form-control"
-                                        value="{{ old('provinsi', $madrasah->provinsi ?? '') }}">
+                                        value="{{ old('provinsi', $madrasah->provinsi ?? '') }}" readonly>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Kota</label>
                                     <input type="text" name="kota" class="form-control"
-                                        value="{{ old('kota', $madrasah->kota ?? '') }}">
+                                        value="{{ old('kota', $madrasah->kota ?? '') }}" readonly>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Kecamatan</label>
                                     <input type="text" name="kecamatan" class="form-control"
-                                        value="{{ old('kecamatan', $madrasah->kecamatan ?? '') }}">
+                                        value="{{ old('kecamatan', $madrasah->kecamatan ?? '') }}" readonly>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Kelurahan</label>
                                     <input type="text" name="kelurahan" class="form-control"
-                                        value="{{ old('kelurahan', $madrasah->kelurahan ?? '') }}">
+                                        value="{{ old('kelurahan', $madrasah->kelurahan ?? '') }}" readonly>
                                 </div>
 
                             </div>
@@ -511,15 +657,42 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Foto Kamad</label>
 
-                                    <input type="file" class="form-control crop-image-input"
-                                        data-target="foto_kamad_cropped" data-preview="previewKamad"
-                                        data-title="Crop Foto Kamad" accept="image/*">
+                                    <div class="mp-upload-card">
+                                        <div class="mp-upload-frame mp-upload-frame--round">
+                                            <img id="previewKamad" class="mp-upload-img"
+                                                style="display:{{ $mode == 'edit' && $madrasah->foto_kamad ? 'block' : 'none' }};"
+                                                src="{{ $mode == 'edit' && $madrasah->foto_kamad ? asset('storage/' . $madrasah->foto_kamad) : '' }}">
+
+                                            <div id="previewKamad_placeholder" class="mp-upload-placeholder"
+                                                style="display:{{ $mode == 'edit' && $madrasah->foto_kamad ? 'none' : 'flex' }};">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="12" cy="7" r="4"></circle>
+                                                </svg>
+                                                <span>Belum ada foto</span>
+                                            </div>
+
+                                            <label class="mp-upload-overlay">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M12 20h9"></path>
+                                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z">
+                                                    </path>
+                                                </svg>
+                                                <span>Ganti</span>
+                                                <input type="file" class="crop-image-input"
+                                                    data-target="foto_kamad_cropped" data-preview="previewKamad"
+                                                    data-title="Crop Foto Kamad" accept="image/*">
+                                            </label>
+                                        </div>
+
+                                        <div class="mp-upload-meta">
+                                            <p class="mp-upload-hint">Format PNG/JPG, foto wajah jelas.</p>
+                                        </div>
+                                    </div>
 
                                     <input type="hidden" name="foto_kamad_cropped" id="foto_kamad_cropped">
-
-                                    <img id="previewKamad" class="mt-2 rounded"
-                                        style="width:90px;height:90px;object-fit:cover;"
-                                        src="{{ $mode == 'edit' && $madrasah->foto_kamad ? asset('storage/' . $madrasah->foto_kamad) : '' }}">
                                 </div>
 
                             </div>
@@ -560,15 +733,42 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Foto KTU</label>
 
-                                    <input type="file" class="form-control crop-image-input"
-                                        data-target="foto_katu_cropped" data-preview="previewKatu"
-                                        data-title="Crop Foto KTU" accept="image/*">
+                                    <div class="mp-upload-card">
+                                        <div class="mp-upload-frame mp-upload-frame--round">
+                                            <img id="previewKatu" class="mp-upload-img"
+                                                style="display:{{ $mode == 'edit' && $madrasah->foto_katu ? 'block' : 'none' }};"
+                                                src="{{ $mode == 'edit' && $madrasah->foto_katu ? asset('storage/' . $madrasah->foto_katu) : '' }}">
+
+                                            <div id="previewKatu_placeholder" class="mp-upload-placeholder"
+                                                style="display:{{ $mode == 'edit' && $madrasah->foto_katu ? 'none' : 'flex' }};">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="12" cy="7" r="4"></circle>
+                                                </svg>
+                                                <span>Belum ada foto</span>
+                                            </div>
+
+                                            <label class="mp-upload-overlay">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M12 20h9"></path>
+                                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z">
+                                                    </path>
+                                                </svg>
+                                                <span>Ganti</span>
+                                                <input type="file" class="crop-image-input"
+                                                    data-target="foto_katu_cropped" data-preview="previewKatu"
+                                                    data-title="Crop Foto KTU" accept="image/*">
+                                            </label>
+                                        </div>
+
+                                        <div class="mp-upload-meta">
+                                            <p class="mp-upload-hint">Format PNG/JPG, foto wajah jelas.</p>
+                                        </div>
+                                    </div>
 
                                     <input type="hidden" name="foto_katu_cropped" id="foto_katu_cropped">
-
-                                    <img id="previewKatu" class="mt-2 rounded"
-                                        style="width:90px;height:90px;object-fit:cover;"
-                                        src="{{ $mode == 'edit' && $madrasah->foto_katu ? asset('storage/' . $madrasah->foto_katu) : '' }}">
                                 </div>
 
                             </div>
@@ -792,6 +992,11 @@
                         if (previewEl) {
                             previewEl.src = reader.result;
                             previewEl.style.display = 'block';
+
+                            const placeholderEl = document.getElementById(previewId + '_placeholder');
+                            if (placeholderEl) {
+                                placeholderEl.style.display = 'none';
+                            }
                         }
                     }
                 };

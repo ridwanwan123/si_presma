@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Madrasah;
 use App\Models\PeriodeAktif;
 use App\Models\PrestasiSiswa;
 use Illuminate\Http\Request;
@@ -35,6 +36,8 @@ class DashboardMadrasahController extends Controller
 
     private const WARNA_JUARA = ['#1d4ed8', '#38bdf8', '#f59e0b', '#8b5cf6', '#10b981', '#94a3b8'];
 
+    private const NAMA_BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
     /*
     |--------------------------------------------------------------------------
     | JUMLAH TAHUN YANG DITAMPILKAN DI GRAFIK/TABEL MULTI-TAHUN
@@ -42,6 +45,16 @@ class DashboardMadrasahController extends Controller
     */
     private const JUMLAH_TAHUN_TREN = 4;
 
+    /*
+    |--------------------------------------------------------------------------
+    | CATATAN PENTING: SELURUH KOMPONEN DI DASHBOARD INI SENGAJA HANYA
+    | MEMAKAI DATA MENTAH (jumlah/komposisi dari prestasi_siswas) --
+    | TIDAK ADA yang menyentuh nilai_akhir/persentase hasil penilaian
+    | asesor. Ini keputusan sengaja supaya madrasah tidak melihat nilai
+    | yang berpotensi jadi bahan sanggahan/protes, tapi tetap dapat bahan
+    | evaluasi lewat pola partisipasi & komposisi.
+    |--------------------------------------------------------------------------
+    */
     public function index(Request $request)
     {
         $periodeDipilih = $request->integer('periode') ?: PeriodeAktif::aktif();
@@ -66,8 +79,6 @@ class DashboardMadrasahController extends Controller
         |--------------------------------------------------------------------------
         | RENTANG TAHUN UNTUK GRAFIK/TABEL MULTI-TAHUN
         |--------------------------------------------------------------------------
-        | Sampai JUMLAH_TAHUN_TREN tahun terakhir, dihitung mundur dari periode
-        | yang sedang dipilih (bukan dari tahun kalender berjalan).
         */
         $tahunRentang = $daftarPeriode
             ->filter(fn ($p) => $p <= $periodeDipilih)
@@ -152,9 +163,6 @@ class DashboardMadrasahController extends Controller
         |--------------------------------------------------------------------------
         | 5. KOMPOSISI JUARA (donut, periode dipilih, kategori DINAMIS)
         |--------------------------------------------------------------------------
-        | "juara" adalah kolom teks bebas, bukan enum -- jadi dikelompokkan
-        | apa adanya berdasarkan nilai yang benar-benar diinput, bukan 4
-        | kategori yang di-hardcode.
         */
         $komposisiJuara = $dataPeriodeIni
             ->groupBy('juara')
@@ -225,7 +233,126 @@ class DashboardMadrasahController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | 8. INSIGHT — rule-based sederhana (BUKAN AI), murni perbandingan angka
+        | 8. CROSS-TAB BIDANG x TINGKAT (BARU)
+        |--------------------------------------------------------------------------
+        | Supaya kelihatan per bidang mentoknya di tingkat apa -- bukan cuma
+        | gabungan semua bidang seperti komponen #4.
+        |--------------------------------------------------------------------------
+        */
+        $crosstabBidangTingkat = collect(self::URUTAN_BIDANG)
+            ->map(function ($bidang) use ($dataPeriodeIni) {
+                $subsetBidang = $dataPeriodeIni->where('bidang_prestasi', $bidang);
+
+                $perTingkat = collect(self::URUTAN_TINGKAT)->mapWithKeys(function ($tingkat) use ($subsetBidang) {
+                    return [$tingkat => $subsetBidang->where('tingkat', $tingkat)->count()];
+                });
+
+                return [
+                    'bidang'      => $bidang,
+                    'per_tingkat' => $perTingkat,
+                    'total'       => $perTingkat->sum(),
+                ];
+            })
+            ->filter(fn ($row) => $row['total'] > 0)
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 9. KOMPOSISI INDIVIDU vs BEREGU (BARU)
+        |--------------------------------------------------------------------------
+        */
+        $komposisiKategori = $dataPeriodeIni
+            ->groupBy('kategori_kegiatan')
+            ->map(fn ($items, $kategori) => [
+                'label'  => $kategori ?: 'Tidak diketahui',
+                'jumlah' => $items->count(),
+                'persen' => $totalPrestasi > 0 ? round($items->count() / $totalPrestasi * 100) : 0,
+            ])
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 10. KOMPOSISI LURING vs DARING (BARU)
+        |--------------------------------------------------------------------------
+        */
+        $komposisiMetode = $dataPeriodeIni
+            ->groupBy('metode_pelaksanaan')
+            ->map(fn ($items, $metode) => [
+                'label'  => $metode ?: 'Tidak diketahui',
+                'jumlah' => $items->count(),
+                'persen' => $totalPrestasi > 0 ? round($items->count() / $totalPrestasi * 100) : 0,
+            ])
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 11. DISTRIBUSI BULANAN KEGIATAN (BARU) — buat perencanaan kalender
+        |--------------------------------------------------------------------------
+        */
+        $distribusiBulanMentah = $dataPeriodeIni->groupBy(fn ($item) => $item->waktu_kegiatan?->format('n'));
+
+        $distribusiBulan = collect(range(1, 12))->map(function ($bulanIndex) use ($distribusiBulanMentah) {
+            return [
+                'label'  => self::NAMA_BULAN[$bulanIndex - 1],
+                'jumlah' => $distribusiBulanMentah->get((string) $bulanIndex, collect())->count(),
+            ];
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | 12. TOP 5 LEMBAGA PENYELENGGARA (BARU) — cek konsentrasi sumber lomba
+        |--------------------------------------------------------------------------
+        */
+        $topLembaga = $dataPeriodeIni
+            ->groupBy('lembaga_penyelenggara')
+            ->map(fn ($items, $lembaga) => [
+                'lembaga' => $lembaga ?: 'Tidak diketahui',
+                'jumlah'  => $items->count(),
+                'persen'  => $totalPrestasi > 0 ? round($items->count() / $totalPrestasi * 100) : 0,
+            ])
+            ->sortByDesc('jumlah')
+            ->values()
+            ->take(5);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 13. BENCHMARK VOLUME DENGAN SESAMA JENJANG (BARU)
+        |--------------------------------------------------------------------------
+        | SENGAJA cuma bandingkan JUMLAH prestasi (partisipasi), BUKAN nilai/
+        | kualitas -- supaya tidak menyentuh hasil penilaian asesor sama sekali.
+        |--------------------------------------------------------------------------
+        */
+        $madrasahSaya = auth()->user()->madrasah;
+        $jenjangSaya = $madrasahSaya->jenjang_madrasah ?? null;
+
+        $benchmarkJenjang = null;
+
+        if ($jenjangSaya) {
+
+            $madrasahIdsSejenjang = Madrasah::where('jenjang_madrasah', $jenjangSaya)->pluck('id');
+
+            $totalPrestasiSejenjang = PrestasiSiswa::whereIn('madrasah_id', $madrasahIdsSejenjang)
+                ->where('periode', $periodeDipilih)
+                ->count();
+
+            $jumlahMadrasahSejenjang = $madrasahIdsSejenjang->count();
+
+            $rataRataSejenjang = $jumlahMadrasahSejenjang > 0
+                ? round($totalPrestasiSejenjang / $jumlahMadrasahSejenjang, 1)
+                : 0;
+
+            $benchmarkJenjang = [
+                'jenjang'                  => $jenjangSaya,
+                'total_saya'               => $totalPrestasi,
+                'rata_rata_sejenjang'      => $rataRataSejenjang,
+                'jumlah_madrasah_sejenjang' => $jumlahMadrasahSejenjang,
+                'selisih'                  => round($totalPrestasi - $rataRataSejenjang, 1),
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 14. INSIGHT — rule-based sederhana (BUKAN AI), murni perbandingan angka
         |--------------------------------------------------------------------------
         */
         $insight = $this->buildInsight(
@@ -233,7 +360,10 @@ class DashboardMadrasahController extends Controller
             $dataTingkatMultiTahun,
             $trenTotalPrestasi,
             $tahunRentang,
-            $ringkasanBidang
+            $ringkasanBidang,
+            $crosstabBidangTingkat,
+            $komposisiKategori,
+            $benchmarkJenjang
         );
 
         return view('dashboard.madrasah', compact(
@@ -254,12 +384,26 @@ class DashboardMadrasahController extends Controller
             'totalKeseluruhan',
             'topKegiatan',
             'maxJumlahKegiatan',
+            'crosstabBidangTingkat',
+            'komposisiKategori',
+            'komposisiMetode',
+            'distribusiBulan',
+            'topLembaga',
+            'benchmarkJenjang',
             'insight'
         ));
     }
 
-    private function buildInsight($komposisiBidang, $dataTingkatMultiTahun, $trenTotalPrestasi, $tahunRentang, $ringkasanBidang): array
-    {
+    private function buildInsight(
+            $komposisiBidang,
+            $dataTingkatMultiTahun,
+            $trenTotalPrestasi,
+            $tahunRentang,
+            $ringkasanBidang,
+            $crosstabBidangTingkat,
+            $komposisiKategori,
+            $benchmarkJenjang
+        ): array {
         $insight = [];
 
         // Bidang penyumbang terbesar
@@ -311,6 +455,43 @@ class DashboardMadrasahController extends Controller
                 $insight[] = [
                     'icon' => 'bi-graph-up-arrow',
                     'text' => "Bidang <strong>{$pertumbuhanTerbesar['bidang']}</strong> mengalami perkembangan positif dibanding tahun sebelumnya.",
+                ];
+            }
+        }
+
+        // BARU: Bidang yang belum pernah tembus tingkat Nasional/Internasional
+        $bidangBelumTinggi = $crosstabBidangTingkat->first(function ($row) {
+            $tinggi = ($row['per_tingkat']['Nasional'] ?? 0) + ($row['per_tingkat']['Internasional'] ?? 0);
+            return $row['total'] > 0 && $tinggi === 0;
+        });
+
+        if ($bidangBelumTinggi) {
+            $insight[] = [
+                'icon' => 'bi-flag',
+                'text' => "Bidang <strong>{$bidangBelumTinggi['bidang']}</strong> belum pernah tembus tingkat Nasional/Internasional pada periode ini.",
+            ];
+        }
+
+        // BARU: Komposisi Individu vs Beregu dominan
+        $kategoriDominan = $komposisiKategori->sortByDesc('jumlah')->first();
+        if ($kategoriDominan && $kategoriDominan['jumlah'] > 0) {
+            $insight[] = [
+                'icon' => 'bi-people',
+                'text' => "Mayoritas prestasi ({$kategoriDominan['persen']}%) berasal dari kategori <strong>{$kategoriDominan['label']}</strong>.",
+            ];
+        }
+
+        // BARU: Benchmark dengan sesama jenjang
+        if ($benchmarkJenjang && $benchmarkJenjang['jumlah_madrasah_sejenjang'] > 1) {
+            if ($benchmarkJenjang['selisih'] > 0) {
+                $insight[] = [
+                    'icon' => 'bi-graph-up',
+                    'text' => "Total prestasi Anda <strong>{$benchmarkJenjang['selisih']} lebih banyak</strong> dari rata-rata madrasah sejenjang {$benchmarkJenjang['jenjang']}.",
+                ];
+            } elseif ($benchmarkJenjang['selisih'] < 0) {
+                $insight[] = [
+                    'icon' => 'bi-graph-down',
+                    'text' => "Total prestasi Anda <strong>" . abs($benchmarkJenjang['selisih']) . " di bawah</strong> rata-rata madrasah sejenjang {$benchmarkJenjang['jenjang']}.",
                 ];
             }
         }

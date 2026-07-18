@@ -79,6 +79,11 @@
             min-width: 280px;
         }
 
+        .dash-col-half {
+            flex: 1 1 49%;
+            min-width: 280px;
+        }
+
         .dash-stat-row {
             display: flex;
             flex-wrap: wrap;
@@ -183,9 +188,6 @@
             height: 210px;
         }
 
-        /* Kalau card-nya ikut melar (h-100, disamakan tinggi sama card
-               sebelah), chart-box ikut melar mengisi sisa ruang -- bukan
-               nyisain kotak kosong di bawah karena tetap fixed-height. */
         .content-card.h-100 {
             display: flex;
             flex-direction: column;
@@ -337,6 +339,68 @@
             min-width: 24px;
             display: inline-block;
         }
+
+        /* ============ BENCHMARK ============ */
+
+        .benchmark-card {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .benchmark-angka {
+            display: flex;
+            align-items: baseline;
+            gap: .5rem;
+        }
+
+        .benchmark-angka .saya {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .benchmark-angka .vs {
+            font-size: .85rem;
+            color: #94a3b8;
+        }
+
+        .benchmark-angka .rata {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .benchmark-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .5rem 1rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .benchmark-badge.naik {
+            background: rgba(22, 163, 74, .1);
+            color: #16a34a;
+        }
+
+        .benchmark-badge.turun {
+            background: rgba(220, 38, 38, .1);
+            color: #dc2626;
+        }
+
+        .benchmark-badge.sama {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .benchmark-sub {
+            font-size: .8rem;
+            color: #64748b;
+        }
     </style>
 @endpush
 
@@ -421,6 +485,43 @@
                 </div>
             </div>
 
+            {{-- BARU: BENCHMARK SESAMA JENJANG --}}
+            @if ($benchmarkJenjang)
+                <div class="content-card mb-4">
+                    <div class="card-title-row mb-2">
+                        <div class="title"><i class="bi bi-bar-chart-line text-primary"></i> Benchmark Partisipasi —
+                            Jenjang {{ $benchmarkJenjang['jenjang'] }}</div>
+                    </div>
+                    <div class="benchmark-card">
+                        <div class="benchmark-angka">
+                            <span class="saya">{{ $benchmarkJenjang['total_saya'] }}</span>
+                            <span class="vs">prestasi Anda &nbsp;vs&nbsp;</span>
+                            <span class="rata">{{ $benchmarkJenjang['rata_rata_sejenjang'] }}</span>
+                            <span class="vs">rata-rata</span>
+                        </div>
+
+                        @if ($benchmarkJenjang['selisih'] > 0)
+                            <span class="benchmark-badge naik">
+                                <i class="bi bi-arrow-up-circle"></i> +{{ $benchmarkJenjang['selisih'] }} di atas rata-rata
+                            </span>
+                        @elseif ($benchmarkJenjang['selisih'] < 0)
+                            <span class="benchmark-badge turun">
+                                <i class="bi bi-arrow-down-circle"></i> {{ $benchmarkJenjang['selisih'] }} di bawah
+                                rata-rata
+                            </span>
+                        @else
+                            <span class="benchmark-badge sama">
+                                <i class="bi bi-dash-circle"></i> Setara rata-rata
+                            </span>
+                        @endif
+
+                        <span class="benchmark-sub">Dibandingkan dengan
+                            {{ $benchmarkJenjang['jumlah_madrasah_sejenjang'] }} madrasah jenjang
+                            {{ $benchmarkJenjang['jenjang'] }} lainnya (berdasarkan jumlah prestasi).</span>
+                    </div>
+                </div>
+            @endif
+
             {{-- TREN + KOMPOSISI BIDANG --}}
             <div class="dash-row">
                 <div class="dash-col-7">
@@ -497,12 +598,101 @@
                 </div>
             </div>
 
+            {{-- BARU: CROSS-TAB BIDANG x TINGKAT --}}
+            <div class="content-card mb-4">
+                <div class="card-title-row">
+                    <div class="title"><i class="bi bi-grid-3x3 text-primary"></i> Sebaran Bidang berdasarkan Tingkat
+                        (Periode {{ $periodeDipilih }})</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Bidang</th>
+                                @foreach (['Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'] as $tingkat)
+                                    <th>{{ $tingkat }}</th>
+                                @endforeach
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($crosstabBidangTingkat as $row)
+                                <tr>
+                                    <td>{{ $row['bidang'] }}</td>
+                                    @foreach (['Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'] as $tingkat)
+                                        <td>{{ $row['per_tingkat'][$tingkat] }}</td>
+                                    @endforeach
+                                    <td class="col-total">{{ $row['total'] }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-3">Belum ada data.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- BARU: INDIVIDU/BEREGU + LURING/DARING --}}
+            <div class="dash-row">
+                <div class="dash-col-half">
+                    <div class="content-card h-100">
+                        <div class="card-title-row">
+                            <div class="title"><i class="bi bi-people text-primary"></i> Individu vs Beregu</div>
+                        </div>
+                        <div class="chart-box-sm">
+                            <canvas id="chartKategori"></canvas>
+                        </div>
+                        <ul class="legend-list">
+                            @foreach ($komposisiKategori as $item)
+                                <li>
+                                    <span class="legend-label">{{ $item['label'] }}</span>
+                                    <span class="legend-value">{{ $item['jumlah'] }} ({{ $item['persen'] }}%)</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="dash-col-half">
+                    <div class="content-card h-100">
+                        <div class="card-title-row">
+                            <div class="title"><i class="bi bi-wifi text-primary"></i> Luring vs Daring</div>
+                        </div>
+                        <div class="chart-box-sm">
+                            <canvas id="chartMetode"></canvas>
+                        </div>
+                        <ul class="legend-list">
+                            @foreach ($komposisiMetode as $item)
+                                <li>
+                                    <span class="legend-label">{{ $item['label'] }}</span>
+                                    <span class="legend-value">{{ $item['jumlah'] }} ({{ $item['persen'] }}%)</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {{-- BARU: DISTRIBUSI BULANAN --}}
+            <div class="content-card mb-4">
+                <div class="card-title-row">
+                    <div class="title"><i class="bi bi-calendar3 text-primary"></i> Distribusi Kegiatan per Bulan
+                        (Periode {{ $periodeDipilih }})</div>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartBulan"></canvas>
+                </div>
+            </div>
+
             {{-- RINGKASAN TABEL + INSIGHT --}}
             <div class="dash-row">
                 <div class="dash-col-7">
                     <div class="content-card h-100">
                         <div class="card-title-row">
-                            <div class="title"><i class="bi bi-table text-primary"></i> Ringkasan Prestasi per Bidang</div>
+                            <div class="title"><i class="bi bi-table text-primary"></i> Ringkasan Prestasi per Bidang
+                            </div>
                         </div>
 
                         <div class="table-responsive">
@@ -557,6 +747,37 @@
                             </div>
                         @endforelse
                     </div>
+                </div>
+            </div>
+
+            {{-- BARU: TOP 5 LEMBAGA PENYELENGGARA --}}
+            <div class="content-card mb-4">
+                <div class="card-title-row">
+                    <div class="title"><i class="bi bi-building text-primary"></i> Top 5 Lembaga Penyelenggara</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Lembaga Penyelenggara</th>
+                                <th style="width:100px">Jumlah</th>
+                                <th style="width:100px">Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($topLembaga as $item)
+                                <tr>
+                                    <td>{{ $item['lembaga'] }}</td>
+                                    <td>{{ $item['jumlah'] }}</td>
+                                    <td>{{ $item['persen'] }}%</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">Belum ada data.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -836,6 +1057,118 @@
                     centerText: {
                         value: '{{ $totalPrestasi }}',
                         label: 'Total Prestasi'
+                    }
+                }
+            });
+
+            /* ============ BARU: INDIVIDU vs BEREGU (DONUT) ============ */
+            const kategoriLabels = @json($komposisiKategori->pluck('label'));
+            const kategoriJumlah = @json($komposisiKategori->pluck('jumlah'));
+            const warnaKategori = ['#2563eb', '#f59e0b', '#94a3b8'];
+
+            new Chart(document.getElementById('chartKategori'), {
+                type: 'doughnut',
+                data: {
+                    labels: kategoriLabels,
+                    datasets: [{
+                        data: kategoriJumlah,
+                        backgroundColor: warnaKategori,
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    centerText: {
+                        value: '{{ $totalPrestasi }}',
+                        label: 'Total Prestasi'
+                    }
+                }
+            });
+
+            /* ============ BARU: LURING vs DARING (DONUT) ============ */
+            const metodeLabels = @json($komposisiMetode->pluck('label'));
+            const metodeJumlah = @json($komposisiMetode->pluck('jumlah'));
+            const warnaMetode = ['#0f8a43', '#8b5cf6', '#94a3b8'];
+
+            new Chart(document.getElementById('chartMetode'), {
+                type: 'doughnut',
+                data: {
+                    labels: metodeLabels,
+                    datasets: [{
+                        data: metodeJumlah,
+                        backgroundColor: warnaMetode,
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    centerText: {
+                        value: '{{ $totalPrestasi }}',
+                        label: 'Total Prestasi'
+                    }
+                }
+            });
+
+            /* ============ BARU: DISTRIBUSI BULANAN (BAR) ============ */
+            const bulanLabels = @json($distribusiBulan->pluck('label'));
+            const bulanJumlah = @json($distribusiBulan->pluck('jumlah'));
+
+            new Chart(document.getElementById('chartBulan'), {
+                type: 'bar',
+                data: {
+                    labels: bulanLabels,
+                    datasets: [{
+                        label: 'Jumlah Kegiatan',
+                        data: bulanJumlah,
+                        backgroundColor: '#2563eb',
+                        borderRadius: 6,
+                        maxBarThickness: 32,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            padding: 10,
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
                     }
                 }
             });
