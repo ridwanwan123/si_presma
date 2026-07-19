@@ -2,76 +2,34 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class RankingLiveExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithTitle
+class RankingLiveExport implements WithMultipleSheets
 {
     public function __construct(
-        private \Illuminate\Support\Collection $ranking,
+        private array $hasil,
         private int $periode,
         private ?string $jenjangFilter
     ) {
     }
 
-    public function collection()
+    /*
+    |--------------------------------------------------------------------------
+    | SATU FILE, BEBERAPA SHEET -- karena juara sekarang ditentukan per
+    | Bidang, tiap bidang layak punya sheet sendiri (bukan digabung jadi
+    | satu tabel besar yang membingungkan siapa juara bidang apa).
+    |--------------------------------------------------------------------------
+    */
+    public function sheets(): array
     {
-        return $this->ranking;
-    }
+        $sheets = [];
 
-    public function headings(): array
-    {
-        return [
-            'Peringkat',
-            'Nama Madrasah',
-            'NPSN',
-            'Jenjang',
-            'Kota',
-            'Total Sebelum Potongan',
-            'Potongan Aduan Masyarakat',
-            'Potongan Keterlambatan',
-            'Total Nilai Akhir',
-            'Jumlah Prestasi Dinilai',
-        ];
-    }
-
-    public function map($item): array
-    {
-        return [
-            $item->peringkat,
-            $item->nama_madrasah,
-            $item->npsn,
-            $item->jenjang_madrasah,
-            $item->kota,
-            $item->total_sebelum_potongan,
-            $item->potongan_aduan,
-            $item->potongan_keterlambatan,
-            $item->total_nilai,
-            $item->jumlah_dinilai,
-        ];
-    }
-
-    public function title(): string
-    {
-        $judul = 'Ranking ' . $this->periode;
-
-        if ($this->jenjangFilter) {
-            // Nama sheet Excel tidak boleh mengandung karakter "/" dst.
-            $judul .= ' - ' . str_replace(['/', '\\', '*', '?', ':', '[', ']'], '-', $this->jenjangFilter);
+        foreach ($this->hasil['per_bidang'] as $bidang => $papan) {
+            $sheets[] = new RankingLiveSheetExport($papan, $bidang, false);
         }
 
-        return substr($judul, 0, 31); // batas nama sheet Excel adalah 31 karakter
-    }
+        $sheets[] = new RankingLiveSheetExport($this->hasil['total'], 'Total Keseluruhan', true);
 
-    public function styles(Worksheet $sheet)
-    {
-        return [
-            1 => ['font' => ['bold' => true]],
-        ];
+        return $sheets;
     }
 }

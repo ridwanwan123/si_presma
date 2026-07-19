@@ -37,6 +37,74 @@
             margin-bottom: 1.25rem;
         }
 
+        /* ============ FILTER ============ */
+
+        .filter-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-field label {
+            display: block;
+            font-size: .76rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: .35rem;
+        }
+
+        .filter-field select {
+            min-width: 220px;
+            border-radius: 10px;
+        }
+
+        .filter-note {
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            margin-top: 1rem;
+            padding: .75rem 1rem;
+            border-radius: 12px;
+            font-size: .82rem;
+            line-height: 1.5;
+        }
+
+        .filter-note i {
+            font-size: 1rem;
+            margin-top: .15rem;
+            flex-shrink: 0;
+        }
+
+        .filter-note-warning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+
+        .filter-note-warning i {
+            color: #d97706;
+        }
+
+        .filter-note-active {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .filter-note-active i {
+            color: #16a34a;
+        }
+
+        .badge-inline {
+            display: inline-block;
+            font-size: .68rem;
+            font-weight: 700;
+            background: rgba(0, 0, 0, .06);
+            padding: 0 5px;
+            border-radius: 999px;
+        }
+
         /* ============ STAT STRIP ============ */
 
         .stat-row {
@@ -221,6 +289,18 @@
             color: #cbd5e1;
         }
 
+        .bidang-rank-badge {
+            display: inline-block;
+            font-size: .68rem;
+            font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 999px;
+            margin-left: 3px;
+            white-space: nowrap;
+        }
+
         .action-icon-btn {
             width: 30px;
             height: 30px;
@@ -368,6 +448,50 @@
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
+            {{-- FILTER JENJANG --}}
+            <div class="content-card">
+                <form method="GET" class="filter-bar">
+                    <div class="filter-field">
+                        <label>Filter Jenjang</label>
+                        <select name="jenjang" class="form-select" onchange="this.form.submit()">
+                            <option value="">Semua Jenjang</option>
+                            @foreach ($daftarJenjangArsip as $item)
+                                <option value="{{ $item }}" {{ $jenjangFilter == $item ? 'selected' : '' }}>
+                                    {{ $item }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if ($jenjangFilter)
+                        <a href="{{ route('ranking-arsip.kelola', $ranking_arsip->id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    @endif
+                </form>
+
+                @if ($jenjangFilter)
+                    <div class="filter-note filter-note-active">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div>
+                            <strong>Sedang menampilkan peringkat resmi jenjang {{ $jenjangFilter }}.</strong>
+                            Angka <span class="badge-inline">#</span> di tiap kolom nilai (Akademik, Non Akademik, dst)
+                            adalah peringkat per bidang khusus jenjang ini — itulah yang menentukan juara.
+                            Kolom <strong>Peringkat</strong> paling kiri tidak berubah walau difilter, karena itu peringkat
+                            gabungan lintas jenjang untuk referensi saja.
+                        </div>
+                    </div>
+                @else
+                    <div class="filter-note filter-note-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>Belum difilter ke satu jenjang.</strong>
+                            Angka <span class="badge-inline">#</span> di tiap kolom nilai saat ini dihitung lintas semua
+                            jenjang, jadi <u>belum</u> mencerminkan juara yang sesungguhnya. Pilih satu jenjang di atas
+                            dulu untuk melihat peringkat per bidang yang benar-benar berlaku.
+                        </div>
+                    </div>
+                @endif
+            </div>
+
             {{-- STAT STRIP --}}
             <div class="stat-row">
                 <div class="stat-col">
@@ -384,7 +508,7 @@
                     <div class="content-card stat-card">
                         <div class="stat-icon bg-green"><i class="bi bi-graph-up"></i></div>
                         <div>
-                            <div class="stat-label">Total Nilai Sistem</div>
+                            <div class="stat-label">Total Nilai</div>
                             <div class="stat-value">{{ number_format($detail->sum('total_nilai_akhir'), 0, ',', '.') }}
                             </div>
                         </div>
@@ -429,7 +553,11 @@
                     <table class="kelola-table">
                         <thead>
                             <tr>
-                                <th style="width:60px">Peringkat</th>
+                                <th style="width:80px"
+                                    title="Peringkat gabungan seluruh arsip (lintas jenjang) berdasarkan total nilai akhir -- tetap sama walau difilter jenjang, bukan penentu juara">
+                                    Peringkat<br><span
+                                        style="font-weight:400;text-transform:none;font-size:.6rem">(Gabungan, lintas
+                                        jenjang)</span></th>
                                 <th>Madrasah</th>
                                 <th>Akademik</th>
                                 <th>Non Akademik</th>
@@ -452,11 +580,21 @@
                                             {{ $item->jenjang_madrasah }}{{ $item->npsn ? ' · NPSN ' . $item->npsn : '' }}
                                         </div>
                                     </td>
-                                    <td>{{ number_format($item->nilai_akademik, 2, ',', '.') }}</td>
-                                    <td>{{ number_format($item->nilai_non_akademik, 2, ',', '.') }}</td>
-                                    <td>{{ number_format($item->nilai_keagamaan, 2, ',', '.') }}</td>
-                                    <td>{{ number_format($item->nilai_gtk, 2, ',', '.') }}</td>
-                                    <td>{{ number_format($item->nilai_lembaga, 2, ',', '.') }}</td>
+                                    <td>{{ number_format($item->nilai_akademik, 2, ',', '.') }} <span
+                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Akademik'] ?? '-' }}</span>
+                                    </td>
+                                    <td>{{ number_format($item->nilai_non_akademik, 2, ',', '.') }} <span
+                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Non Akademik'] ?? '-' }}</span>
+                                    </td>
+                                    <td>{{ number_format($item->nilai_keagamaan, 2, ',', '.') }} <span
+                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Keagamaan'] ?? '-' }}</span>
+                                    </td>
+                                    <td>{{ number_format($item->nilai_gtk, 2, ',', '.') }} <span
+                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['GTK'] ?? '-' }}</span>
+                                    </td>
+                                    <td>{{ number_format($item->nilai_lembaga, 2, ',', '.') }} <span
+                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Lembaga'] ?? '-' }}</span>
+                                    </td>
                                     <td>
                                         @php $totalPotongan = $item->potongan_aduan + $item->potongan_keterlambatan; @endphp
                                         @if ($totalPotongan > 0)
@@ -489,119 +627,6 @@
                                         </form>
                                     </td>
                                 </tr>
-
-                                {{-- MODAL EDIT --}}
-                                <div class="modal fade" id="modalEdit{{ $item->id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                                        <div class="modal-content">
-                                            <form
-                                                action="{{ route('ranking-arsip.detail.update', [$ranking_arsip->id, $item->id]) }}"
-                                                method="POST">
-                                                @csrf @method('PUT')
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title"><i
-                                                            class="bi bi-pencil-square text-primary me-1"></i> Edit —
-                                                        {{ $item->nama_madrasah }}</h5>
-                                                    <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <input type="hidden" name="madrasah_id"
-                                                        value="{{ $item->madrasah_id }}">
-                                                    <div class="form-grid">
-                                                        <div class="grid-section-label"><i class="bi bi-building"></i>
-                                                            IDENTITAS</div>
-
-                                                        <div>
-                                                            <label class="form-label">Nama Madrasah *</label>
-                                                            <input type="text" name="nama_madrasah" class="form-control"
-                                                                required value="{{ $item->nama_madrasah }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">NPSN</label>
-                                                            <input type="text" name="npsn" class="form-control"
-                                                                value="{{ $item->npsn }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Jenjang</label>
-                                                            <input type="text" name="jenjang_madrasah"
-                                                                class="form-control"
-                                                                value="{{ $item->jenjang_madrasah }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Kota</label>
-                                                            <input type="text" name="kota" class="form-control"
-                                                                value="{{ $item->kota }}">
-                                                        </div>
-
-                                                        <div class="grid-section-label"><i
-                                                                class="bi bi-clipboard-data"></i> NILAI PER BIDANG</div>
-
-                                                        <div>
-                                                            <label class="form-label">Akademik *</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="nilai_akademik" class="form-control" required
-                                                                value="{{ $item->nilai_akademik }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Non Akademik *</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="nilai_non_akademik" class="form-control" required
-                                                                value="{{ $item->nilai_non_akademik }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Keagamaan *</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="nilai_keagamaan" class="form-control" required
-                                                                value="{{ $item->nilai_keagamaan }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">GTK *</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="nilai_gtk" class="form-control" required
-                                                                value="{{ $item->nilai_gtk }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Lembaga *</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="nilai_lembaga" class="form-control" required
-                                                                value="{{ $item->nilai_lembaga }}">
-                                                        </div>
-
-                                                        <div class="grid-section-label"><i class="bi bi-dash-circle"></i>
-                                                            POTONGAN & INFO TAMBAHAN</div>
-
-                                                        <div>
-                                                            <label class="form-label">Potongan Aduan</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="potongan_aduan" class="form-control"
-                                                                value="{{ $item->potongan_aduan }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Potongan Keterlambatan</label>
-                                                            <input type="number" step="0.01" min="0"
-                                                                name="potongan_keterlambatan" class="form-control"
-                                                                value="{{ $item->potongan_keterlambatan }}">
-                                                        </div>
-                                                        <div>
-                                                            <label class="form-label">Jumlah Prestasi Dinilai</label>
-                                                            <input type="number" min="0"
-                                                                name="jumlah_prestasi_dinilai" class="form-control"
-                                                                value="{{ $item->jumlah_prestasi_dinilai }}">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline-secondary"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit" class="btn btn-success">
-                                                        <i class="bi bi-check-lg"></i> Simpan Perubahan
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             @empty
                                 <tr>
                                     <td colspan="10" style="padding: 0;">
@@ -620,41 +645,131 @@
                     </table>
                 </div>
             </div>
-
         </div>
-
     </main>
 @endsection
+
+@foreach ($detail as $item)
+    <div class="modal fade" id="modalEdit{{ $item->id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form action="{{ route('ranking-arsip.detail.update', [$ranking_arsip->id, $item->id]) }}"
+                    method="POST">
+                    @csrf @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-pencil-square text-primary me-1"></i> Edit —
+                            {{ $item->nama_madrasah }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="madrasah_id" value="{{ $item->madrasah_id }}">
+                        <div class="form-grid">
+                            <div class="grid-section-label"><i class="bi bi-building"></i>
+                                IDENTITAS</div>
+
+                            <div>
+                                <label class="form-label">Nama Madrasah *</label>
+                                <input type="text" name="nama_madrasah" class="form-control" required
+                                    value="{{ $item->nama_madrasah }}">
+                            </div>
+                            <div>
+                                <label class="form-label">NPSN</label>
+                                <input type="text" name="npsn" class="form-control"
+                                    value="{{ $item->npsn }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Jenjang</label>
+                                <input type="text" name="jenjang_madrasah" class="form-control"
+                                    value="{{ $item->jenjang_madrasah }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Kota</label>
+                                <input type="text" name="kota" class="form-control"
+                                    value="{{ $item->kota }}">
+                            </div>
+
+                            <div class="grid-section-label"><i class="bi bi-clipboard-data"></i> NILAI PER BIDANG
+                            </div>
+
+                            <div>
+                                <label class="form-label">Akademik *</label>
+                                <input type="number" step="0.01" min="0" name="nilai_akademik"
+                                    class="form-control" required value="{{ $item->nilai_akademik }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Non Akademik *</label>
+                                <input type="number" step="0.01" min="0" name="nilai_non_akademik"
+                                    class="form-control" required value="{{ $item->nilai_non_akademik }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Keagamaan *</label>
+                                <input type="number" step="0.01" min="0" name="nilai_keagamaan"
+                                    class="form-control" required value="{{ $item->nilai_keagamaan }}">
+                            </div>
+                            <div>
+                                <label class="form-label">GTK *</label>
+                                <input type="number" step="0.01" min="0" name="nilai_gtk"
+                                    class="form-control" required value="{{ $item->nilai_gtk }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Lembaga *</label>
+                                <input type="number" step="0.01" min="0" name="nilai_lembaga"
+                                    class="form-control" required value="{{ $item->nilai_lembaga }}">
+                            </div>
+
+                            <div class="grid-section-label"><i class="bi bi-dash-circle"></i>
+                                POTONGAN & INFO TAMBAHAN</div>
+
+                            <div>
+                                <label class="form-label">Potongan Aduan</label>
+                                <input type="number" step="0.01" min="0" name="potongan_aduan"
+                                    class="form-control" value="{{ $item->potongan_aduan }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Potongan Keterlambatan</label>
+                                <input type="number" step="0.01" min="0" name="potongan_keterlambatan"
+                                    class="form-control" value="{{ $item->potongan_keterlambatan }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Jumlah Prestasi Dinilai</label>
+                                <input type="number" min="0" name="jumlah_prestasi_dinilai"
+                                    class="form-control" value="{{ $item->jumlah_prestasi_dinilai }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
+
 {{-- MODAL TAMBAH --}}
 <div class="modal fade" id="modalTambah" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content border-0 shadow">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
             <form method="POST" action="{{ route('ranking-arsip.detail.store', $ranking_arsip->id) }}">
                 @csrf
-                {{-- HEADER --}}
-                <div class="modal-header border-bottom py-3">
-                    <div>
-                        <h5 class="mb-1 fw-semibold">
-                            Tambah Data Madrasah
-                        </h5>
-                        <small class="text-muted">
-                            Tambahkan data penilaian madrasah untuk arsip ranking.
-                        </small>
-                    </div>
-
-                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle text-success me-1"></i> Tambah Data
+                        Madrasah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    {{-- MASTER MADRASAH --}}
-                    <div class="card border-0 bg-light mb-4">
-                        <div class="card-body">
-                            <h6 class="fw-semibold mb-3">
-                                <i class="bi bi-search me-2"></i>
-                                Ambil dari Master Madrasah
-                            </h6>
+                    <div class="form-grid">
+
+                        <div class="full-width">
+                            <label class="form-label">Cari dari Master Madrasah (opsional — otomatis isi
+                                identitas)</label>
                             <div class="search-select">
                                 <input type="text" id="madrasahSearch" class="form-control"
-                                    placeholder="Cari nama madrasah atau NPSN..." autocomplete="off">
+                                    placeholder="Ketik nama madrasah atau NPSN..." autocomplete="off">
                                 <input type="hidden" name="madrasah_id" id="inputMadrasahId">
                                 <div class="search-dropdown" id="madrasahDropdown">
                                     @foreach ($daftarMadrasah as $m)
@@ -662,145 +777,91 @@
                                             data-nama="{{ $m->nama_madrasah }}" data-npsn="{{ $m->npsn }}"
                                             data-jenjang="{{ $m->jenjang_madrasah }}"
                                             data-kota="{{ $m->kota }}">
-                                            {{ $m->nama_madrasah }}
-                                            <small class="text-muted">
-                                                • NPSN {{ $m->npsn ?: '-' }}
-                                            </small>
+                                            {{ $m->nama_madrasah }} — NPSN {{ $m->npsn ?: '-' }}
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
-                            <small class="text-muted mt-2 d-block">
-                                Tidak menemukan madrasah? Abaikan pencarian dan isi data secara manual.
-                            </small>
+                            <span class="search-select-hint">Madrasah tidak terdaftar / sudah tidak ada di master
+                                data? Lewati saja, isi manual di kolom bawah.</span>
                         </div>
-                    </div>
 
-                    {{-- IDENTITAS --}}
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-semibold">
-                                Identitas Madrasah
-                            </h6>
+                        <div class="grid-section-label"><i class="bi bi-building"></i> IDENTITAS</div>
+
+                        <div>
+                            <label class="form-label">Nama Madrasah *</label>
+                            <input type="text" name="nama_madrasah" id="inputNama" class="form-control" required
+                                value="{{ old('nama_madrasah') }}">
                         </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        Nama Madrasah
-                                    </label>
-                                    <input type="text" name="nama_madrasah" id="inputNama" class="form-control"
-                                        required>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">
-                                        NPSN
-                                    </label>
-                                    <input type="text" name="npsn" id="inputNpsn" class="form-control">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">
-                                        Jenjang
-                                    </label>
-                                    <input type="text" name="jenjang_madrasah" id="inputJenjang"
-                                        class="form-control">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        Kota / Kabupaten
-                                    </label>
-                                    <input type="text" name="kota" id="inputKota" class="form-control">
-                                </div>
-                            </div>
+                        <div>
+                            <label class="form-label">NPSN</label>
+                            <input type="text" name="npsn" id="inputNpsn" class="form-control"
+                                value="{{ old('npsn') }}">
                         </div>
-                    </div>
-
-                    {{-- NILAI --}}
-                    <div class="card border-0 shadow-sm mb-4">
-
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-semibold">
-                                Nilai Penilaian
-                            </h6>
+                        <div>
+                            <label class="form-label">Jenjang</label>
+                            <input type="text" name="jenjang_madrasah" id="inputJenjang" class="form-control"
+                                placeholder="MI / MTs / MA" value="{{ old('jenjang_madrasah') }}">
                         </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Akademik</label>
-                                    <input type="number" step="0.01" min="0" name="nilai_akademik"
-                                        class="form-control" value="0">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Non Akademik</label>
-                                    <input type="number" step="0.01" min="0" name="nilai_non_akademik"
-                                        class="form-control" value="0">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Keagamaan</label>
-                                    <input type="number" step="0.01" min="0" name="nilai_keagamaan"
-                                        class="form-control" value="0">
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">GTK</label>
-                                    <input type="number" step="0.01" min="0" name="nilai_gtk"
-                                        class="form-control" value="0">
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">Lembaga</label>
-                                    <input type="number" step="0.01" min="0" name="nilai_lembaga"
-                                        class="form-control" value="0">
-                                </div>
-                            </div>
+                        <div>
+                            <label class="form-label">Kota</label>
+                            <input type="text" name="kota" id="inputKota" class="form-control"
+                                value="{{ old('kota') }}">
                         </div>
-                    </div>
 
-                    {{-- OPSIONAL --}}
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-semibold">
-                                Informasi Tambahan
-                            </h6>
+                        <div class="grid-section-label"><i class="bi bi-clipboard-data"></i> NILAI PER BIDANG
                         </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">
-                                        Potongan Aduan
-                                    </label>
-                                    <input type="number" step="0.01" min="0" name="potongan_aduan"
-                                        class="form-control">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">
-                                        Potongan Keterlambatan
-                                    </label>
-                                    <input type="number" step="0.01" min="0"
-                                        name="potongan_keterlambatan" class="form-control">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">
-                                        Jumlah Prestasi
-                                    </label>
-                                    <input type="number" min="0" name="jumlah_prestasi_dinilai"
-                                        class="form-control">
-                                </div>
-                            </div>
+
+                        <div>
+                            <label class="form-label">Akademik *</label>
+                            <input type="number" step="0.01" min="0" name="nilai_akademik"
+                                class="form-control" required value="{{ old('nilai_akademik', 0) }}">
+                        </div>
+                        <div>
+                            <label class="form-label">Non Akademik *</label>
+                            <input type="number" step="0.01" min="0" name="nilai_non_akademik"
+                                class="form-control" required value="{{ old('nilai_non_akademik', 0) }}">
+                        </div>
+                        <div>
+                            <label class="form-label">Keagamaan *</label>
+                            <input type="number" step="0.01" min="0" name="nilai_keagamaan"
+                                class="form-control" required value="{{ old('nilai_keagamaan', 0) }}">
+                        </div>
+                        <div>
+                            <label class="form-label">GTK *</label>
+                            <input type="number" step="0.01" min="0" name="nilai_gtk"
+                                class="form-control" required value="{{ old('nilai_gtk', 0) }}">
+                        </div>
+                        <div>
+                            <label class="form-label">Lembaga *</label>
+                            <input type="number" step="0.01" min="0" name="nilai_lembaga"
+                                class="form-control" required value="{{ old('nilai_lembaga', 0) }}">
+                        </div>
+
+                        <div class="grid-section-label"><i class="bi bi-dash-circle"></i> POTONGAN & INFO TAMBAHAN
+                            (KOSONGKAN KALAU TIDAK ADA)</div>
+
+                        <div>
+                            <label class="form-label">Potongan Aduan</label>
+                            <input type="number" step="0.01" min="0" name="potongan_aduan"
+                                class="form-control" value="{{ old('potongan_aduan') }}">
+                        </div>
+                        <div>
+                            <label class="form-label">Potongan Keterlambatan</label>
+                            <input type="number" step="0.01" min="0" name="potongan_keterlambatan"
+                                class="form-control" value="{{ old('potongan_keterlambatan') }}">
+                        </div>
+                        <div>
+                            <label class="form-label">Jumlah Prestasi Dinilai</label>
+                            <input type="number" min="0" name="jumlah_prestasi_dinilai" class="form-control"
+                                value="{{ old('jumlah_prestasi_dinilai') }}">
                         </div>
                     </div>
                 </div>
-
-                <div class="modal-footer border-top">
-                    <button class="btn btn-light" data-bs-dismiss="modal">
-                        Batal
-                    </button>
-
-                    <button type="submit" class="btn btn-success px-4">
-                        <i class="bi bi-check-lg me-1"></i>
-                        Simpan Data
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus-lg"></i> Tambahkan
                     </button>
                 </div>
             </form>

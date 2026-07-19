@@ -82,14 +82,79 @@ class PenguranganPoinService
 
     /*
     |--------------------------------------------------------------------------
-    | HITUNG NILAI AKHIR SETELAH POTONGAN
+    | HITUNG NILAI AKHIR SETELAH POTONGAN — PER BIDANG (JMA menentukan juara
+    | per Bidang x Jenjang, jadi potongan juga harus dipecah per bidang)
     |--------------------------------------------------------------------------
-    | $totalLembaga     = total nilai_akhir KHUSUS bidang Lembaga saja
-    | $totalKeseluruhan = total nilai_akhir SELURUH bidang digabung
+    | Aturan pembagian:
+    | - Aduan Masyarakat: TETAP cuma menyunat bidang LEMBAGA saja (tidak
+    |   berubah dari aturan asli).
+    | - Keterlambatan Berkas: sifatnya administratif untuk keseluruhan
+    |   madrasah (bukan spesifik satu bidang), jadi poinnya DIBAGI RATA ke
+    |   5 bidang.
+    | - Bidang Lembaga jadi satu-satunya yang kena DUA potongan sekaligus
+    |   (Aduan + jatah Keterlambatan) -- bidang lain cuma kena jatah
+    |   Keterlambatan.
     |
-    | TIDAK mengubah data penilaian_prestasis yang asli -- potongan ini
-    | murni dihitung ulang tiap dipanggil (on-the-fly), supaya nilai asli
-    | hasil penilaian asesor tetap utuh dan bisa ditelusuri/diaudit.
+    | $nilaiPerBidang = ['Akademik' => x, 'Non Akademik' => y, 'Keagamaan' => z,
+    |                     'GTK' => w, 'Lembaga' => v] -- nilai MENTAH (asli
+    |                     dari asesor, belum ada potongan apapun).
+    |--------------------------------------------------------------------------
+    */
+    public function hitungSetelahPotonganPerBidang(int $madrasahId, int $periode, array $nilaiPerBidang): array
+    {
+        $persenAduan = $this->persenPotonganAduan($madrasahId, $periode);
+        $poinKeterlambatanTotal = $this->poinPotonganKeterlambatan($madrasahId, $periode);
+
+        $jumlahBidang = count($nilaiPerBidang) ?: 1;
+        $potonganKeterlambatanPerBidang = round($poinKeterlambatanTotal / $jumlahBidang, 2);
+
+        $hasil = [];
+        $totalNilaiMentah = 0;
+        $totalPotongan = 0;
+        $totalNilaiAkhir = 0;
+
+        foreach ($nilaiPerBidang as $bidang => $nilaiMentah) {
+
+            $potonganAduanBidang = $bidang === 'Lembaga'
+                ? round($nilaiMentah * ($persenAduan / 100), 2)
+                : 0.0;
+
+            $totalPotonganBidang = round($potonganAduanBidang + $potonganKeterlambatanPerBidang, 2);
+            $nilaiAkhirBidang = round(max(0, $nilaiMentah - $totalPotonganBidang), 2);
+
+            $hasil[$bidang] = [
+                'nilai_mentah'           => round($nilaiMentah, 2),
+                'potongan_aduan'         => $potonganAduanBidang,
+                'potongan_keterlambatan' => $potonganKeterlambatanPerBidang,
+                'total_potongan'         => $totalPotonganBidang,
+                'nilai_akhir'            => $nilaiAkhirBidang,
+            ];
+
+            $totalNilaiMentah += $nilaiMentah;
+            $totalPotongan += $totalPotonganBidang;
+            $totalNilaiAkhir += $nilaiAkhirBidang;
+        }
+
+        return [
+            'per_bidang'         => $hasil,
+            'persen_aduan'       => $persenAduan,
+            'total_nilai_mentah' => round($totalNilaiMentah, 2),
+            'total_potongan'     => round($totalPotongan, 2),
+            // Referensi/statistik saja -- BUKAN dasar penentuan juara lagi,
+            // karena juara sekarang ditentukan per Bidang x Jenjang.
+            'total_nilai_akhir'  => round($totalNilaiAkhir, 2),
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | [LAMA] HITUNG NILAI AKHIR SETELAH POTONGAN -- AGREGAT
+    |--------------------------------------------------------------------------
+    | Dipertahankan untuk kompatibilitas kalau ada pemanggil lain, TAPI
+    | sudah tidak dipakai lagi oleh RankingController/RankingArsipController
+    | (keduanya sudah pindah ke hitungSetelahPotonganPerBidang() di atas).
+    | Secara matematis hasil 'total_akhir' di sini identik dengan
+    | 'total_nilai_akhir' hasil penjumlahan per bidang di atas.
     |--------------------------------------------------------------------------
     */
     public function hitungSetelahPotongan(

@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Exceptions\ImportTerlaluBanyakBarisException;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -12,6 +13,11 @@ use PhpOffice\PhpSpreadsheet\RichText\RichText;
 class PrestasiSiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
     public array $rows = [];
+
+    public function __construct(
+        private int $maksBaris = 7000
+    ) {
+    }
 
     private function cleanText($value)
     {
@@ -48,12 +54,57 @@ class PrestasiSiswaImport implements ToCollection, WithHeadingRow, WithChunkRead
                 'juara'                     => $this->cleanText($row['juara'] ?? null),
                 'lembaga_penyelenggara'     => $this->cleanText($row['lembaga_penyelenggara'] ?? null),
                 'kategori_penyelenggara'    => $this->cleanText($row['kategori_penyelenggara'] ?? null),
-                'waktu_kegiatan'            => !empty($row['waktu_kegiatan']) ? Date::excelToDateTimeObject($row['waktu_kegiatan'])->format('d-m-Y') : null,
+                'waktu_kegiatan'            => $this->parseTanggal($row['waktu_kegiatan'] ?? null),
                 'metode_pelaksanaan'        => $this->cleanText($row['metode_pelaksanaan'] ?? null),
                 'skor'                      => $row['skor'] ?? 0,
                 'link_drive_bukti'          => $row['link_drive_bukti'] ?? null,
                 'keterangan'                => $this->cleanText($row['keterangan'] ?? null),
             ];
+
+            /*
+            |--------------------------------------------------------------------------
+            | HENTIKAN SEGERA BEGITU MELEBIHI BATAS
+            |--------------------------------------------------------------------------
+            | Dicek TIAP BARIS (bukan nunggu satu chunk penuh dulu), supaya
+            | begitu baris ke (maksBaris+1) kedeteksi, pembacaan file
+            | langsung berhenti SAAT ITU JUGA -- file 20.000 baris cuma
+            | akan sempat kebaca ±maksBaris baris, bukan 20.000-nya
+            | sekaligus, sebelum user tahu filenya kelebihan.
+            |--------------------------------------------------------------------------
+            */
+            if (count($this->rows) > $this->maksBaris) {
+                throw new ImportTerlaluBanyakBarisException($this->maksBaris);
+            }
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PARSE TANGGAL — DIBUAT AMAN TERHADAP NILAI RUSAK
+    |--------------------------------------------------------------------------
+    | Date::excelToDateTimeObject() akan melempar exception kalau isi cell
+    | bukan serial tanggal Excel yang valid (mis. user ketik teks bebas di
+    | kolom tanggal). Sebelumnya exception ini TIDAK ditangkap sama sekali,
+    | jadi satu cell tanggal rusak bisa bikin SELURUH proses import gagal
+    | dengan error 500 generik -- bukan pesan per-baris yang jelas.
+    |
+    | Sekarang: kalau gagal parse, nilai mentahnya tetap disimpan apa adanya
+    | (bukan exception), supaya PrestasiImportService::validateFile() yang
+    | menentukan pesan errornya secara rapi per baris/kolom, konsisten
+    | dengan validasi kolom lain.
+    */
+    private function parseTanggal($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        try {
+            return Date::excelToDateTimeObject($value)->format('d-m-Y');
+        } catch (\Throwable $e) {
+            // Kembalikan sebagai teks mentah -- akan gagal di validasi
+            // format tanggal pada validateFile(), bukan crash di sini.
+            return (string) $value;
         }
     }
 

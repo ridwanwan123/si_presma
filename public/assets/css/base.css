@@ -711,3 +711,222 @@ RESPONSIVE
     background: #0c7438;
     color: #fff;
 }
+
+/* =========================
+   TOPBAR — ICON BUTTON (Bantuan, dst)
+========================= */
+
+.icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #4b5563;
+    transition: 0.2s;
+}
+
+.icon-btn:hover {
+    background: rgba(15, 138, 67, 0.08);
+    color: #0f8a43;
+}
+
+.icon-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(15, 138, 67, 0.15);
+}
+
+/* =========================
+   BANTUAN / CUSTOMER SERVICE DROPDOWN
+========================= */
+
+.help-menu {
+    width: 300px;
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px -14px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.help-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(135deg, #0f8a43, #16a34a);
+    color: #fff;
+}
+
+.help-menu-header i {
+    font-size: 1.4rem;
+}
+
+.help-menu-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.help-menu-subtitle {
+    font-size: 0.76rem;
+    opacity: 0.9;
+}
+
+.help-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem 0.6rem;
+}
+
+.help-contact-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(15, 138, 67, 0.12);
+    color: #0f8a43;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.help-contact-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #111827;
+}
+
+.help-contact-role {
+    font-size: 0.76rem;
+    color: #6b7280;
+}
+
+.help-contact-action {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0.3rem 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.help-contact-action:last-child {
+    margin-bottom: 0.75rem;
+}
+
+.help-contact-action i {
+    font-size: 1rem;
+}
+
+.help-contact-wa {
+    background: rgba(37, 211, 102, 0.1);
+    color: #128c3f;
+}
+
+.help-contact-wa:hover {
+    background: rgba(37, 211, 102, 0.18);
+    color: #128c3f;
+}
+
+.help-contact-call {
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #e5e7eb;
+}
+
+.help-contact-call:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+/* =========================
+   NAVBAR — RESPONSIVE MOBILE
+   (dipersingkat biar tidak kepotong di layar kecil)
+========================= */
+
+@media (max-width: 768px) {
+    .topbar {
+        height: 60px;
+        padding: 0 12px;
+    }
+
+    .topbar .left {
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .topbar .left img {
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .app-title {
+        padding-left: 8px;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .app-name {
+        display: block;
+        font-size: 13.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 46vw;
+    }
+
+    .app-region {
+        display: none;
+    }
+
+    .right {
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .icon-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .right form button.btn {
+        padding: 0.4rem 0.55rem;
+    }
+
+    .btn-label {
+        display: none;
+    }
+
+    .help-menu {
+        width: 260px;
+    }
+}
+
+@media (max-width: 380px) {
+    .app-name {
+        max-width: 34vw;
+        font-size: 10.5px;
+    }
+
+    .toggle-btn {
+        font-size: 20px;
+    }
+
+    .topbar .left img {
+        display: none;
+    }
+}

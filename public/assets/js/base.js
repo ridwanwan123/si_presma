@@ -8,7 +8,7 @@ const content = document.querySelector(".content");
 // =========================
 // SIDEBAR TOGGLE
 // =========================
-toggle.addEventListener("click", () => {
+toggle?.addEventListener("click", () => {
   if (window.innerWidth > 992) {
     // Desktop → toggle collapse
     sidebar.classList.toggle("collapsed");
@@ -21,20 +21,10 @@ toggle.addEventListener("click", () => {
 // =========================
 // AUTO CLOSE SIDEBAR (MOBILE)
 // =========================
-content.addEventListener("click", () => {
+content?.addEventListener("click", () => {
   if (window.innerWidth <= 992) {
     sidebar.classList.remove("active");
   }
-});
-
-// =========================
-// SUBMENU TOGGLE
-// =========================
-document.querySelectorAll(".menu-item.has-submenu").forEach((item) => {
-  item.addEventListener("click", (e) => {
-    e.stopPropagation(); // prevent bubbling
-    item.classList.toggle("active");
-  });
 });
 
 // =========================
@@ -51,12 +41,51 @@ window.addEventListener("resize", () => {
 });
 
 // =========================================================
+// SUBMENU TOGGLE (Master Data / Bidang Prestasi / Pengurangan Poin)
+// Satu-satunya handler untuk .has-submenu — cocok dengan CSS di
+// sidebar.blade.php: .submenu.show untuk buka/tutup, .has-submenu.open
+// untuk rotasi ikon chevron.
+// =========================================================
+document.querySelectorAll(".has-submenu").forEach((menu) => {
+  menu.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const submenu = this.nextElementSibling;
+    if (submenu) {
+      submenu.classList.toggle("show");
+    }
+
+    this.classList.toggle("open");
+  });
+});
+
+// =========================================================
 // LOADER
 // =========================================================
 window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
+  if (!loader) return;
+
   setTimeout(() => {
     loader.style.opacity = "0";
     loader.style.visibility = "hidden";
   }, 500);
+});
+
+// =========================================================
+// MODAL PERIODE AKTIF — muncul sekali setelah login
+// Nilainya dititipkan dari base.blade.php lewat window.PRESMA.showPeriodeModal
+// (lihat komentar di base.blade.php)
+// =========================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const showPeriodeModal = window.PRESMA?.showPeriodeModal ?? false;
+
+  if (!showPeriodeModal) return;
+
+  const modalEl = document.getElementById("modalPeriodeAktif");
+
+  if (modalEl && window.bootstrap) {
+    new bootstrap.Modal(modalEl).show();
+  }
 });

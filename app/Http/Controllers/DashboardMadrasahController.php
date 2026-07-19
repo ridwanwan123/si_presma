@@ -43,7 +43,7 @@ class DashboardMadrasahController extends Controller
     | JUMLAH TAHUN YANG DITAMPILKAN DI GRAFIK/TABEL MULTI-TAHUN
     |--------------------------------------------------------------------------
     */
-    private const JUMLAH_TAHUN_TREN = 4;
+    private const JUMLAH_TAHUN_TREN = 3;
 
     /*
     |--------------------------------------------------------------------------

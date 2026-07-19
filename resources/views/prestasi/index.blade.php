@@ -11,121 +11,126 @@
             </div>
         </div>
 
-        {{-- STATUS SIKLUS --}}
-        @php
-            $siklusMap = [
-                'OPEN' => [
-                    'label' => 'Terbuka untuk Pengisian',
-                    'icon' => 'bi-unlock-fill',
-                    'desc' =>
-                        'Operator dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' .
-                        $siklus->periode .
-                        '.',
-                    'border' => '#bbf7d0',
-                    'bg' => '#f0fdf4',
-                    'icon_bg' => '#dcfce7',
-                    'icon_color' => '#15803d',
-                ],
-                'SUBMITTED' => [
-                    'label' => 'Menunggu Penugasan Asesor',
-                    'icon' => 'bi-send-check-fill',
-                    'desc' =>
-                        'Data periode ' .
-                        $siklus->periode .
-                        ' telah diserahkan dan menunggu penugasan asesor. Data tidak dapat diubah.',
-                    'border' => '#bfdbfe',
-                    'bg' => '#eff6ff',
-                    'icon_bg' => '#dbeafe',
-                    'icon_color' => '#1d4ed8',
-                ],
-                'LOCKED' => [
-                    'label' => 'Dikunci untuk Penilaian',
-                    'icon' => 'bi-lock-fill',
-                    'desc' =>
-                        'Data periode ' .
-                        $siklus->periode .
-                        ' sedang dikunci untuk persiapan penilaian. Data tidak dapat diubah.',
-                    'border' => '#fde68a',
-                    'bg' => '#fffbeb',
-                    'icon_bg' => '#fef3c7',
-                    'icon_color' => '#b45309',
-                ],
-                'ASSESSMENT' => [
-                    'label' => 'Sedang Dinilai Asesor',
-                    'icon' => 'bi-clipboard-data-fill',
-                    'desc' =>
-                        'Asesor sedang menilai data periode ' .
-                        $siklus->periode .
-                        '. Data tidak dapat diubah sampai penilaian selesai.',
-                    'border' => '#ddd6fe',
-                    'bg' => '#f5f3ff',
-                    'icon_bg' => '#ede9fe',
-                    'icon_color' => '#6d28d9',
-                ],
-                'FINISHED' => [
-                    'label' => 'Penilaian Selesai',
-                    'icon' => 'bi-check-circle-fill',
-                    'desc' => 'Penilaian periode ' . $siklus->periode . ' telah selesai. Data periode ini sudah final.',
-                    'border' => '#e2e8f0',
-                    'bg' => '#f8fafc',
-                    'icon_bg' => '#e2e8f0',
-                    'icon_color' => '#334155',
-                ],
-            ];
+        {{-- STATUS SIKLUS — HANYA UNTUK MADRASAH; Administrator melihat semua
+             madrasah sekaligus (bisa beda-beda status), jadi tidak relevan
+             ditampilkan sebagai satu banner tunggal. --}}
+        @unless ($isAdmin)
+            @php
+                $siklusMap = [
+                    'OPEN' => [
+                        'label' => 'Terbuka untuk Pengisian',
+                        'icon' => 'bi-unlock-fill',
+                        'desc' =>
+                            'Operator dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' .
+                            $siklus->periode .
+                            '.',
+                        'border' => '#bbf7d0',
+                        'bg' => '#f0fdf4',
+                        'icon_bg' => '#dcfce7',
+                        'icon_color' => '#15803d',
+                    ],
+                    'SUBMITTED' => [
+                        'label' => 'Menunggu Penugasan Asesor',
+                        'icon' => 'bi-send-check-fill',
+                        'desc' =>
+                            'Data periode ' .
+                            $siklus->periode .
+                            ' telah diserahkan dan menunggu penugasan asesor. Data tidak dapat diubah.',
+                        'border' => '#bfdbfe',
+                        'bg' => '#eff6ff',
+                        'icon_bg' => '#dbeafe',
+                        'icon_color' => '#1d4ed8',
+                    ],
+                    'LOCKED' => [
+                        'label' => 'Dikunci untuk Penilaian',
+                        'icon' => 'bi-lock-fill',
+                        'desc' =>
+                            'Data periode ' .
+                            $siklus->periode .
+                            ' sedang dikunci untuk persiapan penilaian. Data tidak dapat diubah.',
+                        'border' => '#fde68a',
+                        'bg' => '#fffbeb',
+                        'icon_bg' => '#fef3c7',
+                        'icon_color' => '#b45309',
+                    ],
+                    'ASSESSMENT' => [
+                        'label' => 'Sedang Dinilai Asesor',
+                        'icon' => 'bi-clipboard-data-fill',
+                        'desc' =>
+                            'Asesor sedang menilai data periode ' .
+                            $siklus->periode .
+                            '. Data tidak dapat diubah sampai penilaian selesai.',
+                        'border' => '#ddd6fe',
+                        'bg' => '#f5f3ff',
+                        'icon_bg' => '#ede9fe',
+                        'icon_color' => '#6d28d9',
+                    ],
+                    'FINISHED' => [
+                        'label' => 'Penilaian Selesai',
+                        'icon' => 'bi-check-circle-fill',
+                        'desc' =>
+                            'Penilaian periode ' . $siklus->periode . ' telah selesai. Data periode ini sudah final.',
+                        'border' => '#e2e8f0',
+                        'bg' => '#f8fafc',
+                        'icon_bg' => '#e2e8f0',
+                        'icon_color' => '#334155',
+                    ],
+                ];
 
-            $steps = [
-                'OPEN' => 'Pengisian',
-                'SUBMITTED' => 'Diserahkan',
-                'LOCKED' => 'Dikunci',
-                'ASSESSMENT' => 'Penilaian',
-                'FINISHED' => 'Selesai',
-            ];
+                $steps = [
+                    'OPEN' => 'Pengisian',
+                    'SUBMITTED' => 'Diserahkan',
+                    'LOCKED' => 'Dikunci',
+                    'ASSESSMENT' => 'Penilaian',
+                    'FINISHED' => 'Selesai',
+                ];
 
-            $stepKeys = array_keys($steps);
-            $currentIndex = array_search($siklus->status, $stepKeys);
-            $current = $siklusMap[$siklus->status] ?? $siklusMap['OPEN'];
-        @endphp
+                $stepKeys = array_keys($steps);
+                $currentIndex = array_search($siklus->status, $stepKeys);
+                $current = $siklusMap[$siklus->status] ?? $siklusMap['OPEN'];
+            @endphp
 
-        <div class="siklus-banner"
-            style="--siklus-border: {{ $current['border'] }}; --siklus-bg: {{ $current['bg'] }}; --siklus-icon-bg: {{ $current['icon_bg'] }}; --siklus-icon-color: {{ $current['icon_color'] }};">
+            <div class="siklus-banner"
+                style="--siklus-border: {{ $current['border'] }}; --siklus-bg: {{ $current['bg'] }}; --siklus-icon-bg: {{ $current['icon_bg'] }}; --siklus-icon-color: {{ $current['icon_color'] }};">
 
-            <div class="siklus-banner-icon">
-                <i class="bi {{ $current['icon'] }}"></i>
+                <div class="siklus-banner-icon">
+                    <i class="bi {{ $current['icon'] }}"></i>
+                </div>
+
+                <div class="siklus-banner-body">
+
+                    <div class="siklus-banner-title">
+                        Periode {{ $siklus->periode }}
+                        <span class="badge-status">{{ $current['label'] }}</span>
+                    </div>
+
+                    <div class="siklus-banner-desc">
+                        {{ $current['desc'] }}
+                    </div>
+
+                    <div class="siklus-steps">
+                        @foreach ($steps as $key => $label)
+                            @php
+                                $index = array_search($key, $stepKeys);
+                                $state =
+                                    $index < $currentIndex ? 'is-done' : ($index === $currentIndex ? 'is-current' : '');
+                            @endphp
+
+                            <div class="siklus-step {{ $state }}">
+                                <span class="dot"></span>
+                                {{ $label }}
+                            </div>
+
+                            @if (!$loop->last)
+                                <div class="siklus-step-line"></div>
+                            @endif
+                        @endforeach
+                    </div>
+
+                </div>
+
             </div>
-
-            <div class="siklus-banner-body">
-
-                <div class="siklus-banner-title">
-                    Periode {{ $siklus->periode }}
-                    <span class="badge-status">{{ $current['label'] }}</span>
-                </div>
-
-                <div class="siklus-banner-desc">
-                    {{ $current['desc'] }}
-                </div>
-
-                <div class="siklus-steps">
-                    @foreach ($steps as $key => $label)
-                        @php
-                            $index = array_search($key, $stepKeys);
-                            $state =
-                                $index < $currentIndex ? 'is-done' : ($index === $currentIndex ? 'is-current' : '');
-                        @endphp
-
-                        <div class="siklus-step {{ $state }}">
-                            <span class="dot"></span>
-                            {{ $label }}
-                        </div>
-
-                        @if (!$loop->last)
-                            <div class="siklus-step-line"></div>
-                        @endif
-                    @endforeach
-                </div>
-
-            </div>
-
-        </div>
+        @endunless
 
         {{-- SUMMARY --}}
         <div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
@@ -258,6 +263,31 @@
 
         </div>
 
+        @if ($isAdmin)
+            <div class="content-card p-3 mb-3">
+                <form method="GET" class="d-flex align-items-end gap-3 flex-wrap">
+                    <div>
+                        <label class="form-label small fw-semibold text-muted mb-1">Filter Madrasah</label>
+                        <select name="madrasah_id" class="form-select" style="min-width:280px; border-radius:10px;"
+                            onchange="this.form.submit()">
+                            <option value="">Semua Madrasah</option>
+                            @foreach ($daftarMadrasah as $m)
+                                <option value="{{ $m->id }}" {{ $madrasahFilter == $m->id ? 'selected' : '' }}>
+                                    {{ $m->nama_madrasah }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    @if ($madrasahFilter)
+                        <a href="{{ route('prestasi.index', $jenis) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    @endif
+                </form>
+            </div>
+        @endif
+
         <div class="content-card">
 
             <div class="table-header">
@@ -285,6 +315,12 @@
                     <thead>
                         <tr>
                             <th style="width:55px">#</th>
+
+                            @if ($isAdmin)
+                                <th style="width:16%">
+                                    Madrasah
+                                </th>
+                            @endif
 
                             <th style="width:26%">
                                 Info Kegiatan
@@ -344,14 +380,259 @@
                 return;
             }
 
-            const canInput = {{ $siklus->canInput() ? 'true' : 'false' }};
+            const canInput = {{ $canInput ? 'true' : 'false' }};
+            const isAdmin = {{ $isAdmin ? 'true' : 'false' }};
+            const madrasahFilter = "{{ $madrasahFilter }}";
+
+            /*
+            |--------------------------------------------------------------------------
+            | KOLOM DIBANGUN SEBAGAI ARRAY JS (bukan hardcode indeks di
+            | columnDefs) -- supaya kolom "Madrasah" bisa disisipkan khusus
+            | untuk Administrator tanpa bikin nomor kolom lain di
+            | columnDefs ikut geser dan salah sasaran. Width/className
+            | sekarang menempel LANGSUNG di tiap objek kolom.
+            |--------------------------------------------------------------------------
+            */
+            let columns = [{
+                data: 'DT_RowIndex',
+                searchable: false,
+                orderable: false,
+                width: "55px",
+                className: "text-center"
+            }];
+
+            if (isAdmin) {
+                columns.push({
+                    data: 'nama_madrasah',
+                    width: "16%"
+                });
+            }
+
+            columns.push(
+
+                {
+                    data: null,
+                    width: "27%",
+                    render: function(data) {
+
+                        return `
+                            <div class="cell-kegiatan">
+
+                                <div
+                                    class="nama-kegiatan"
+                                    title="${data.nama_kegiatan}">
+                                    ${data.nama_kegiatan}
+                                </div>
+
+                                <div class="meta-badge">
+
+                                    <span class="badge-soft badge-${data.bidang_prestasi?.toLowerCase().replace(' ', '-')}">
+                                        ${data.bidang_prestasi}
+                                    </span>
+
+                                    <span class="dot"></span>
+
+                                    <span class="badge-soft tingkat-${data.tingkat?.toLowerCase()}">
+                                        ${data.tingkat}
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        `;
+                    }
+                },
+
+                {
+                    data: null,
+                    width: "14%",
+                    className: "text-center",
+                    render: function(data) {
+
+                        let juaraClass = "juara-default";
+
+                        if (data.juara?.includes("1"))
+                            juaraClass = "juara-gold";
+
+                        else if (data.juara?.includes("2"))
+                            juaraClass = "juara-silver";
+
+                        else if (data.juara?.includes("3"))
+                            juaraClass = "juara-bronze";
+
+                        return `
+                            <div class="cell-detail">
+
+                                <div class="kategori">
+                                    ${data.kategori_kegiatan}
+                                </div>
+
+                                <span class="badge-soft ${juaraClass}">
+                                    ${data.juara}
+                                </span>
+
+                            </div>
+                        `;
+                    }
+                },
+
+                {
+                    data: null,
+                    width: "20%",
+                    render: function(data) {
+
+                        return `
+                            <div class="cell-penyelenggara">
+
+                                <div class="kategori-penyelenggara">
+                                    ${data.kategori_penyelenggara ?? '-'}
+                                </div>
+
+                                <div
+                                    class="nama-penyelenggara"
+                                    title="${data.lembaga_penyelenggara ?? '-'}">
+
+                                    ${data.lembaga_penyelenggara ?? '-'}
+
+                                </div>
+
+                            </div>
+                        `;
+                    }
+                },
+
+                {
+                    data: 'waktu_kegiatan',
+                    width: "10%",
+                    className: "text-center"
+                },
+
+                {
+                    data: null,
+                    width: "9%",
+                    className: "text-center",
+                    render: function(data) {
+
+                        if (data.skor === null || data.skor === undefined) {
+                            return '-';
+                        }
+
+                        const isLuring = data.metode_pelaksanaan === 'Luring';
+
+                        return `
+                            <span class="badge ${isLuring ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'} border">
+                                ${isLuring ? 'L' : 'D'} ${data.skor}
+                            </span>
+                        `;
+                    }
+                },
+
+                {
+                    data: 'link_drive_bukti',
+                    width: "9%",
+                    className: "text-center",
+                    searchable: false,
+                    orderable: false,
+
+                    render: function(data) {
+
+                        if (!data)
+                            return "-";
+
+                        return `
+                            <a
+                                href="${data}"
+                                target="_blank"
+                                class="btn btn-drive">
+
+                                <i class="bi bi-box-arrow-up-right"></i>
+
+                                Bukti
+
+                            </a>
+                        `;
+                    }
+                },
+
+                {
+                    data: 'keterangan',
+                    width: "12%"
+                },
+
+                {
+                    data: 'id',
+                    width: "90px",
+                    searchable: false,
+                    orderable: false,
+                    className: "text-center",
+
+                    render: function(data) {
+
+                        if (!canInput) {
+                            return `
+                                <div class="d-flex justify-content-center">
+                                    <span class="badge bg-secondary-subtle text-secondary border" title="Data terkunci, tidak dapat diubah">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                </div>
+                            `;
+                        }
+
+                        const editUrl =
+                            "{{ route('prestasi.edit', ['jenis' => $jenis, 'id' => ':id']) }}"
+                            .replace(':id', data);
+
+                        const deleteUrl =
+                            "{{ route('prestasi.destroy', ['jenis' => $jenis, 'id' => ':id']) }}"
+                            .replace(':id', data);
+
+                        return `
+                            <div class="d-flex justify-content-center gap-1">
+
+                                <a
+                                    href="${editUrl}"
+                                    class="btn btn-sm btn-warning">
+
+                                    <i class="bi bi-pencil-square"></i>
+
+                                </a>
+
+                                <form
+                                    action="${deleteUrl}"
+                                    method="POST"
+                                    class="form-delete">
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-danger">
+
+                                        <i class="bi bi-trash"></i>
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        `;
+                    }
+                }
+
+            );
 
             $('#tablePrestasi').DataTable({
 
                 processing: true,
                 serverSide: true,
 
-                ajax: "{{ route('prestasi.data', $jenis) }}",
+                ajax: {
+                    url: "{{ route('prestasi.data', $jenis) }}",
+                    data: function(d) {
+                        d.madrasah_id = madrasahFilter;
+                    }
+                },
 
                 autoWidth: false,
                 deferRender: true,
@@ -388,271 +669,10 @@
                     "<'col-lg-6 col-md-6 d-flex justify-content-md-end'p>" +
                     ">",
 
-                columnDefs: [
-
-                    {
-                        targets: 0,
-                        width: "55px",
-                        className: "text-center"
-                    },
-
-                    {
-                        targets: 1,
-                        width: "27%"
-                    },
-
-                    {
-                        targets: 2,
-                        width: "14%",
-                        className: "text-center"
-                    },
-
-                    {
-                        targets: 3,
-                        width: "20%"
-                    },
-
-                    {
-                        targets: 4,
-                        width: "10%",
-                        className: "text-center"
-                    },
-
-                    {
-                        targets: 5,
-                        width: "9%",
-                        className: "text-center"
-                    },
-
-                    {
-                        targets: 6,
-                        width: "10%",
-                        className: "text-center"
-                    },
-
-                    {
-                        targets: 7,
-                        width: "10%"
-                    },
-
-                    {
-                        targets: 8,
-                        width: "90px",
-                        className: "text-center"
-                    }
-
-                ],
-
-                columns: [
-
-                    {
-                        data: 'DT_RowIndex',
-                        searchable: false,
-                        orderable: false
-                    },
-
-                    {
-                        data: null,
-                        render: function(data) {
-
-                            return `
-                                <div class="cell-kegiatan">
-
-                                    <div
-                                        class="nama-kegiatan"
-                                        title="${data.nama_kegiatan}">
-                                        ${data.nama_kegiatan}
-                                    </div>
-
-                                    <div class="meta-badge">
-
-                                        <span class="badge-soft badge-${data.bidang_prestasi?.toLowerCase().replace(' ', '-')}">
-                                            ${data.bidang_prestasi}
-                                        </span>
-
-                                        <span class="dot"></span>
-
-                                        <span class="badge-soft tingkat-${data.tingkat?.toLowerCase()}">
-                                            ${data.tingkat}
-                                        </span>
-
-                                    </div>
-
-                                </div>
-                            `;
-                        }
-                    },
-
-                    {
-                        data: null,
-                        className: "text-center",
-                        render: function(data) {
-
-                            let juaraClass = "juara-default";
-
-                            if (data.juara?.includes("1"))
-                                juaraClass = "juara-gold";
-
-                            else if (data.juara?.includes("2"))
-                                juaraClass = "juara-silver";
-
-                            else if (data.juara?.includes("3"))
-                                juaraClass = "juara-bronze";
-
-                            return `
-                                <div class="cell-detail">
-
-                                    <div class="kategori">
-                                        ${data.kategori_kegiatan}
-                                    </div>
-
-                                    <span class="badge-soft ${juaraClass}">
-                                        ${data.juara}
-                                    </span>
-
-                                </div>
-                            `;
-                        }
-                    },
-
-                    {
-                        data: null,
-                        render: function(data) {
-
-                            return `
-                                <div class="cell-penyelenggara">
-
-                                    <div class="kategori-penyelenggara">
-                                        ${data.kategori_penyelenggara ?? '-'}
-                                    </div>
-
-                                    <div
-                                        class="nama-penyelenggara"
-                                        title="${data.lembaga_penyelenggara ?? '-'}">
-
-                                        ${data.lembaga_penyelenggara ?? '-'}
-
-                                    </div>
-
-                                </div>
-                            `;
-                        }
-                    },
-
-                    {
-                        data: 'waktu_kegiatan'
-                    },
-
-                    {
-                        data: null,
-                        render: function(data) {
-
-                            if (data.skor === null || data.skor === undefined) {
-                                return '-';
-                            }
-
-                            const isLuring = data.metode_pelaksanaan === 'Luring';
-
-                            return `
-                                <span class="badge ${isLuring ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'} border">
-                                    ${isLuring ? 'L' : 'D'} ${data.skor}
-                                </span>
-                            `;
-                        }
-                    },
-
-                    {
-                        data: 'link_drive_bukti',
-                        searchable: false,
-                        orderable: false,
-
-                        render: function(data) {
-
-                            if (!data)
-                                return "-";
-
-                            return `
-                                <a
-                                    href="${data}"
-                                    target="_blank"
-                                    class="btn btn-drive">
-
-                                    <i class="bi bi-box-arrow-up-right"></i>
-
-                                    Bukti
-
-                                </a>
-                            `;
-                        }
-                    },
-
-                    {
-                        data: 'keterangan'
-                    },
-
-                    {
-                        data: 'id',
-                        searchable: false,
-                        orderable: false,
-                        className: "text-center",
-
-                        render: function(data) {
-
-                            if (!canInput) {
-                                return `
-                                    <div class="d-flex justify-content-center">
-                                        <span class="badge bg-secondary-subtle text-secondary border" title="Data terkunci, tidak dapat diubah">
-                                            <i class="bi bi-lock-fill"></i>
-                                        </span>
-                                    </div>
-                                `;
-                            }
-
-                            const editUrl =
-                                "{{ route('prestasi.edit', ['jenis' => $jenis, 'id' => ':id']) }}"
-                                .replace(':id', data);
-
-                            const deleteUrl =
-                                "{{ route('prestasi.destroy', ['jenis' => $jenis, 'id' => ':id']) }}"
-                                .replace(':id', data);
-
-                            return `
-                                <div class="d-flex justify-content-center gap-1">
-
-                                    <a
-                                        href="${editUrl}"
-                                        class="btn btn-sm btn-warning">
-
-                                        <i class="bi bi-pencil-square"></i>
-
-                                    </a>
-
-                                    <form
-                                        action="${deleteUrl}"
-                                        method="POST"
-                                        class="form-delete">
-
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button
-                                            type="submit"
-                                            class="btn btn-sm btn-danger">
-
-                                            <i class="bi bi-trash"></i>
-
-                                        </button>
-
-                                    </form>
-
-                                </div>
-                            `;
-                        }
-                    }
-
-                ]
+                columns: columns
 
             });
+
 
         });
     </script>

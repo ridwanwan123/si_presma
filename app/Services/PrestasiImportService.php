@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ImportTerlaluBanyakBarisException;
 use App\Imports\PrestasiSiswaImport;
 use App\Models\PrestasiSiswa;
 use Carbon\Carbon;
@@ -52,6 +53,17 @@ class PrestasiImportService
 
     /*
     |--------------------------------------------------------------------------
+    | BATAS MAKSIMAL BARIS PER IMPORT
+    |--------------------------------------------------------------------------
+    | Diteruskan ke PrestasiSiswaImport, yang akan menghentikan pembacaan
+    | file SAAT ITU JUGA begitu batas ini terlampaui -- bukan menunggu
+    | seluruh file selesai dibaca dulu baru ketahuan kelebihan di akhir.
+    |--------------------------------------------------------------------------
+    */
+    private const MAKS_BARIS_IMPORT = 7000;
+
+    /*
+    |--------------------------------------------------------------------------
     | DISK & PATH UNTUK TEMPORARY STORAGE (PENGGANTI SESSION)
     |--------------------------------------------------------------------------
     | Data hasil validasi import (bisa ribuan baris) TIDAK disimpan di session
@@ -78,13 +90,35 @@ class PrestasiImportService
         $errors = [];
         $result = [];
 
-        $import = new PrestasiSiswaImport();
+        $import = new PrestasiSiswaImport(self::MAKS_BARIS_IMPORT);
 
         // Titik utama optimasi memory: PrestasiSiswaImport sekarang
         // WithChunkReading, jadi Excel::import() ini membaca file secara
         // bertahap (per 500 baris), bukan memuat seluruh spreadsheet ke
         // memory sekaligus.
-        Excel::import($import, $file);
+        //
+        // FATAL: Kalau baris yang terbaca melebihi MAKS_BARIS_IMPORT,
+        // PrestasiSiswaImport melempar ImportTerlaluBanyakBarisException
+        // DI TENGAH proses baca (bukan menunggu file selesai dibaca dulu)
+        // -- ditangkap di sini supaya file yang jelas kelewat besar
+        // langsung dihentikan lebih awal, bukan diproses penuh dulu baru
+        // ketahuan di akhir.
+        try {
+            Excel::import($import, $file);
+        } catch (ImportTerlaluBanyakBarisException $e) {
+            return [
+                'result' => [],
+                'errors' => [
+                    [
+                        'column' => 'general',
+                        'message' => 'File melebihi batas maksimal ' . number_format($e->batasMaksimal, 0, ',', '.')
+                            . ' baris. Pembacaan file dihentikan begitu batas ini terlampaui (tidak perlu menunggu '
+                            . 'seluruh file selesai dibaca). Silakan pecah file menjadi beberapa bagian.',
+                        'rows' => [],
+                    ],
+                ],
+            ];
+        }
 
         $data = $import->rows;
 

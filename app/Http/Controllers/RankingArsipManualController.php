@@ -73,10 +73,37 @@ class RankingArsipManualController extends Controller
     |--------------------------------------------------------------------------
     | Dipakai baik untuk arsip manual maupun arsip hasil tombol "Arsipkan" --
     | keduanya struktur datanya sama persis.
+    |
+    | Filter Jenjang di sini MENYARING baris yang ditampilkan/diedit (beda
+    | dari index arsip yang cuma menyaring angka statistik) -- berguna kalau
+    | satu arsip berisi puluhan/ratusan madrasah lintas jenjang sekaligus.
+    |
+    | $peringkatPerBidang dihitung terpisah dari kolom 'peringkat' yang
+    | tersimpan -- karena juara sekarang ditentukan per Bidang x Jenjang,
+    | bukan satu peringkat gabungan. Kolom 'peringkat' tersimpan TETAP ada
+    | (dipakai sebagai peringkat referensi/gabungan, konsisten dengan
+    | "Total Keseluruhan" di halaman Ranking Live), tapi peringkat per
+    | bidang di sini dihitung ulang di tempat (tidak disimpan), memakai
+    | aturan potongan yang sama seperti Dashboard: Keterlambatan dibagi
+    | rata 5 bidang, Aduan Masyarakat cuma menyunat Lembaga.
+    |--------------------------------------------------------------------------
     */
-    public function kelola(RankingArsip $ranking_arsip)
+    public function kelola(Request $request, RankingArsip $ranking_arsip)
     {
-        $detail = $ranking_arsip->details()->orderBy('peringkat')->get();
+        $jenjangFilter = $request->query('jenjang');
+
+        $detail = $ranking_arsip->details()
+            ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+            ->orderBy('peringkat')
+            ->get();
+
+        $daftarJenjangArsip = $ranking_arsip->details()
+            ->whereNotNull('jenjang_madrasah')
+            ->distinct()
+            ->orderBy('jenjang_madrasah')
+            ->pluck('jenjang_madrasah');
+
+        $peringkatPerBidang = $this->hitungPeringkatPerBidang($ranking_arsip, $jenjangFilter);
 
         $daftarMadrasah = Madrasah::orderBy('nama_madrasah')
             ->get(['id', 'nama_madrasah', 'npsn', 'jenjang_madrasah', 'kota']);
@@ -86,7 +113,70 @@ class RankingArsipManualController extends Controller
             'Kelola Periode ' . $ranking_arsip->periode
         ]);
 
-        return view('ranking-arsip.kelola', compact('ranking_arsip', 'detail', 'daftarMadrasah', 'breadcrumb'));
+        return view('ranking-arsip.kelola', compact(
+            'ranking_arsip',
+            'detail',
+            'daftarMadrasah',
+            'daftarJenjangArsip',
+            'jenjangFilter',
+            'peringkatPerBidang',
+            'breadcrumb'
+        ));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PERINGKAT PER BIDANG (ON-THE-FLY, TIDAK DISIMPAN)
+    |--------------------------------------------------------------------------
+    | Dihitung dalam lingkup jenjang yang sedang difilter -- kalau "Semua
+    | Jenjang" dipilih, dihitung dalam lingkup satu arsip penuh (lintas
+    | jenjang, cuma buat kelengkapan tampilan; peringkat resmi JMA tetap
+    | per jenjang, jadi sebaiknya admin filter ke satu jenjang dulu waktu
+    | mengecek juara sesungguhnya).
+    |--------------------------------------------------------------------------
+    */
+    private function hitungPeringkatPerBidang(RankingArsip $arsip, ?string $jenjangFilter): array
+    {
+        $bidangKolom = [
+            'Akademik'     => 'nilai_akademik',
+            'Non Akademik' => 'nilai_non_akademik',
+            'Keagamaan'    => 'nilai_keagamaan',
+            'GTK'          => 'nilai_gtk',
+            'Lembaga'      => 'nilai_lembaga',
+        ];
+
+        $baris = $arsip->details()
+            ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+            ->get([
+                'id', 'madrasah_id', 'nilai_akademik', 'nilai_non_akademik',
+                'nilai_keagamaan', 'nilai_gtk', 'nilai_lembaga',
+                'potongan_aduan', 'potongan_keterlambatan',
+            ]);
+
+        $hasil = [];
+
+        foreach ($bidangKolom as $label => $kolom) {
+
+            $urutan = $baris
+                ->filter(fn ($row) => $row->$kolom > 0)
+                ->map(function ($row) use ($kolom, $label) {
+                    $potonganKeterlambatanBidang = round($row->potongan_keterlambatan / 5, 2);
+                    $potonganAduanBidang = $label === 'Lembaga' ? $row->potongan_aduan : 0;
+
+                    return [
+                        'detail_id'          => $row->id,
+                        'nilai_akhir_bidang' => max(0, $row->$kolom - $potonganKeterlambatanBidang - $potonganAduanBidang),
+                    ];
+                })
+                ->sortByDesc('nilai_akhir_bidang')
+                ->values();
+
+            foreach ($urutan as $index => $row) {
+                $hasil[$row['detail_id']][$label] = $index + 1;
+            }
+        }
+
+        return $hasil;
     }
 
     /*

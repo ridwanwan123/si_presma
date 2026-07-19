@@ -75,7 +75,7 @@
         {{-- =========================================================
             BIDANG PRESTASI
         ========================================================== --}}
-        @if ($user->hasRole('Madrasah'))
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
             <div class="menu-title">BIDANG PRESTASI</div>
         @endif
 
@@ -94,7 +94,7 @@
         {{-- Prestasi Madrasah -- Administrator (lihat semua madrasah) + Madrasah
              (lihat prestasi miliknya sendiri). TETAP tampil di status apapun,
              karena ini cuma melihat data (read), bukan menambah. --}}
-        @if ($user->hasRole('Madrasah'))
+        @if ($user->hasRole(['Administrator', 'Madrasah']))
             <a href="#"
                 class="menu-item has-submenu {{ request()->routeIs('prestasi.index', 'prestasi.data', 'prestasi.edit', 'prestasi.update', 'prestasi.destroy') ? 'open' : '' }}">
                 <i class="bi bi-trophy"></i>

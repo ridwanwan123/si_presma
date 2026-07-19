@@ -143,44 +143,18 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+        {{-- Titipan variabel dari server ke base.js. Sengaja cuma data,
+             semua logic (submit modal, submenu, loader, dst) sekarang
+             tinggal di satu tempat: assets/js/base.js --}}
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-
-                const tampilkanModalPeriode = @json(session('show_periode_modal', false));
-
-                if (tampilkanModalPeriode) {
-
-                    const modalEl = document.getElementById('modalPeriodeAktif');
-
-                    if (modalEl) {
-                        new bootstrap.Modal(modalEl).show();
-                    }
-                }
-
-            });
+            window.PRESMA = window.PRESMA || {};
+            window.PRESMA.showPeriodeModal = @json(session('show_periode_modal', false));
         </script>
 
         <!-- Bootstrap -->
         @stack('scripts')
         <!-- JS -->
         <script src="{{ asset('assets/js/base.js') }}"></script>
-        <script>
-            document.querySelectorAll('.has-submenu').forEach(menu => {
-
-                menu.addEventListener('click', function(e) {
-
-                    e.preventDefault();
-
-                    const submenu = this.nextElementSibling;
-
-                    submenu.classList.toggle('show');
-
-                    this.classList.toggle('open');
-
-                });
-
-            });
-        </script>
 </body>
 
 </html>

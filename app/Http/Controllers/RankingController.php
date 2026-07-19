@@ -13,6 +13,14 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class RankingController extends Controller
 {
+    private const URUTAN_BIDANG = [
+        'Akademik',
+        'Non Akademik',
+        'Keagamaan',
+        'GTK',
+        'Lembaga',
+    ];
+
     public function __construct(
         private PenguranganPoinService $penguranganPoinService
     ) {
@@ -22,10 +30,12 @@ class RankingController extends Controller
     |--------------------------------------------------------------------------
     | HASIL & RANKING (SISI ADMINISTRATOR)
     |--------------------------------------------------------------------------
-    | Hanya menampilkan madrasah yang siklus prestasinya untuk periode terkait
-    | sudah berstatus FINISHED (sudah selesai dinilai asesor & difinalisasi).
-    | Madrasah yang masih OPEN/SUBMITTED/ASSESSMENT tidak relevan untuk
-    | ranking karena nilai belum final.
+    | JMA menentukan juara PER BIDANG x PER JENJANG -- bukan satu papan
+    | peringkat gabungan. Jadi halaman ini menampilkan 5 papan sekaligus
+    | (satu per bidang), semuanya sudah terfilter ke jenjang yang dipilih.
+    | "Total Keseluruhan" tetap dihitung sebagai referensi/statistik saja,
+    | BUKAN penentu juara.
+    |--------------------------------------------------------------------------
     */
     public function index(Request $request)
     {
@@ -34,14 +44,14 @@ class RankingController extends Controller
 
         $daftarPeriode = $this->daftarPeriodeFinished($periode);
         $daftarJenjang = $this->daftarJenjangFinished($periode);
-        $ranking = $this->hitungRanking($periode, $jenjangFilter);
+        $hasil = $this->hitungRankingPerBidang($periode, $jenjangFilter);
 
         $breadcrumb = breadcrumb([
             'Hasil & Ranking'
         ]);
 
         return view('ranking.index', compact(
-            'ranking',
+            'hasil',
             'daftarJenjang',
             'jenjangFilter',
             'daftarPeriode',
@@ -52,8 +62,9 @@ class RankingController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | EXPORT EXCEL — ranking LIVE (dihitung ulang saat itu juga), bukan arsip.
-    | Mengikuti filter periode & jenjang yang sedang aktif di halaman.
+    | EXPORT EXCEL — satu file, beberapa SHEET (satu sheet per bidang +
+    | satu sheet Total Keseluruhan). Mengikuti filter periode & jenjang
+    | yang sedang aktif di halaman.
     |--------------------------------------------------------------------------
     */
     public function export(Request $request)
@@ -61,14 +72,14 @@ class RankingController extends Controller
         $periode = $request->integer('periode') ?: PeriodeAktif::aktif();
         $jenjangFilter = $request->query('jenjang');
 
-        $ranking = $this->hitungRanking($periode, $jenjangFilter);
+        $hasil = $this->hitungRankingPerBidang($periode, $jenjangFilter);
 
         $namaFile = 'Ranking-Prestasi-Periode-' . $periode
             . ($jenjangFilter ? '-' . str_replace('/', '-', $jenjangFilter) : '')
             . '.xlsx';
 
         return Excel::download(
-            new RankingLiveExport($ranking, $periode, $jenjangFilter),
+            new RankingLiveExport($hasil, $periode, $jenjangFilter),
             $namaFile
         );
     }
@@ -76,10 +87,6 @@ class RankingController extends Controller
     /*
     |--------------------------------------------------------------------------
     | DAFTAR PERIODE UNTUK DROPDOWN
-    |--------------------------------------------------------------------------
-    | Cuma periode yang benar-benar punya madrasah FINISHED yang ditampilkan
-    | di dropdown -- supaya tidak ada pilihan periode yang ranking-nya
-    | pasti kosong.
     |--------------------------------------------------------------------------
     */
     private function daftarPeriodeFinished(int $periodeAktif)
@@ -114,92 +121,144 @@ class RankingController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | HITUNG RANKING — dipakai bareng oleh index() (tampilan) dan export()
-    | (Excel), supaya logicnya cuma ditulis SEKALI dan selalu konsisten.
-    | FILTER JENJANG (toggle) — kosong = semua jenjang digabung jadi satu
-    | ranking, diisi = ranking dihitung ulang hanya di dalam jenjang itu.
+    | HITUNG RANKING PER BIDANG — dipakai bareng oleh index() dan export(),
+    | supaya logicnya cuma ditulis SEKALI dan selalu konsisten.
+    |--------------------------------------------------------------------------
+    | Mengembalikan:
+    | - 'per_bidang' => 5 papan terpisah (Akademik, Non Akademik, dst),
+    |    masing-masing sudah diurutkan & diberi peringkat SENDIRI
+    |    berdasarkan nilai_akhir bidang itu saja (bukan total gabungan).
+    |    Madrasah yang nilai mentahnya 0 di bidang itu TIDAK dimasukkan ke
+    |    papan itu (tidak ada yang mau di-ranking kalau memang tidak ikut).
+    | - 'total' => tabel referensi total gabungan semua bidang, BUKAN
+    |    dasar penentuan juara.
     |--------------------------------------------------------------------------
     */
-    private function hitungRanking(int $periode, ?string $jenjangFilter)
+    private function hitungRankingPerBidang(int $periode, ?string $jenjangFilter): array
     {
         $madrasahIdsFinished = $this->madrasahIdsFinished($periode);
 
         /*
         |--------------------------------------------------------------------------
-        | Total nilai akhir per madrasah, diagregasi langsung di database
-        | (SUM), bukan di-loop di PHP.
+        | Nilai per (madrasah, bidang) -- satu query agregat untuk semua
+        | madrasah & semua bidang sekaligus.
         |--------------------------------------------------------------------------
         */
-        $totals = DB::table('penilaian_prestasis')
+        $rows = DB::table('penilaian_prestasis')
             ->join('prestasi_siswas', 'prestasi_siswas.id', '=', 'penilaian_prestasis.prestasi_siswa_id')
             ->where('penilaian_prestasis.status', 'completed')
             ->whereIn('prestasi_siswas.madrasah_id', $madrasahIdsFinished)
             ->where('prestasi_siswas.periode', $periode)
-            ->groupBy('prestasi_siswas.madrasah_id')
+            ->groupBy('prestasi_siswas.madrasah_id', 'prestasi_siswas.bidang_prestasi')
             ->selectRaw('
                 prestasi_siswas.madrasah_id,
-                SUM(penilaian_prestasis.nilai_akhir) as total_nilai_akhir,
-                COUNT(*) as jumlah_dinilai
+                prestasi_siswas.bidang_prestasi,
+                SUM(penilaian_prestasis.nilai_akhir) as total_nilai,
+                COUNT(*) as jumlah
             ')
             ->get()
-            ->keyBy('madrasah_id');
+            ->groupBy('madrasah_id');
 
-        /*
-        |--------------------------------------------------------------------------
-        | SUBTOTAL KHUSUS BIDANG LEMBAGA — dipakai sebagai basis perhitungan
-        | potongan Aduan Masyarakat (persen), yang cuma menyunat bidang ini.
-        |--------------------------------------------------------------------------
-        */
-        $totalsLembaga = DB::table('penilaian_prestasis')
-            ->join('prestasi_siswas', 'prestasi_siswas.id', '=', 'penilaian_prestasis.prestasi_siswa_id')
-            ->where('penilaian_prestasis.status', 'completed')
-            ->whereIn('prestasi_siswas.madrasah_id', $madrasahIdsFinished)
-            ->where('prestasi_siswas.periode', $periode)
-            ->where('prestasi_siswas.bidang_prestasi', 'Lembaga')
-            ->groupBy('prestasi_siswas.madrasah_id')
-            ->selectRaw('
-                prestasi_siswas.madrasah_id,
-                SUM(penilaian_prestasis.nilai_akhir) as total_lembaga
-            ')
-            ->get()
-            ->keyBy('madrasah_id');
-
-        return Madrasah::whereIn('id', $madrasahIdsFinished)
+        $madrasahs = Madrasah::whereIn('id', $madrasahIdsFinished)
             ->when($jenjangFilter, function ($q) use ($jenjangFilter) {
                 $q->where('jenjang_madrasah', $jenjangFilter);
             })
-            ->get()
-            ->map(function ($madrasah) use ($totals, $totalsLembaga, $periode) {
-                $t = $totals->get($madrasah->id);
-                $totalMentah = round($t->total_nilai_akhir ?? 0, 2);
-                $totalLembaga = round($totalsLembaga->get($madrasah->id)->total_lembaga ?? 0, 2);
+            ->get();
 
-                $hasilPotongan = $this->penguranganPoinService->hitungSetelahPotongan(
-                    $madrasah->id,
-                    $periode,
-                    $totalLembaga,
-                    $totalMentah
-                );
+        /*
+        |--------------------------------------------------------------------------
+        | Data lengkap per madrasah: nilai mentah + potongan + nilai akhir,
+        | SEMUANYA sudah dipecah per bidang.
+        |--------------------------------------------------------------------------
+        */
+        $dataLengkap = $madrasahs->map(function ($madrasah) use ($rows, $periode) {
 
-                return (object) [
-                    'id'               => $madrasah->id,
-                    'nama_madrasah'    => $madrasah->nama_madrasah,
-                    'npsn'             => $madrasah->npsn,
-                    'jenjang_madrasah' => $madrasah->jenjang_madrasah,
-                    'kota'             => $madrasah->kota,
-                    'total_nilai'      => $hasilPotongan['total_akhir'],
-                    'total_sebelum_potongan' => $hasilPotongan['total_sebelum_potongan'],
-                    'potongan_aduan'   => $hasilPotongan['potongan_aduan'],
-                    'potongan_keterlambatan' => $hasilPotongan['potongan_keterlambatan'],
-                    'total_potongan'   => $hasilPotongan['total_potongan'],
-                    'jumlah_dinilai'   => $t->jumlah_dinilai ?? 0,
-                ];
-            })
-            ->sortByDesc('total_nilai')
+            $barisBidang = $rows->get($madrasah->id, collect());
+
+            $nilaiPerBidang = collect(self::URUTAN_BIDANG)->mapWithKeys(function ($bidang) use ($barisBidang) {
+                $match = $barisBidang->first(fn ($r) => $r->bidang_prestasi === $bidang);
+
+                return [$bidang => (float) ($match->total_nilai ?? 0)];
+            })->toArray();
+
+            $jumlahDinilai = $barisBidang->sum('jumlah');
+
+            $hasilPotongan = $this->penguranganPoinService->hitungSetelahPotonganPerBidang(
+                $madrasah->id,
+                $periode,
+                $nilaiPerBidang
+            );
+
+            return (object) [
+                'madrasah_id'        => $madrasah->id,
+                'nama_madrasah'      => $madrasah->nama_madrasah,
+                'npsn'               => $madrasah->npsn,
+                'jenjang_madrasah'   => $madrasah->jenjang_madrasah,
+                'kota'               => $madrasah->kota,
+                'jumlah_dinilai'     => $jumlahDinilai,
+                'per_bidang'         => $hasilPotongan['per_bidang'],
+                'total_nilai_mentah' => $hasilPotongan['total_nilai_mentah'],
+                'total_potongan'     => $hasilPotongan['total_potongan'],
+                'total_nilai_akhir'  => $hasilPotongan['total_nilai_akhir'],
+            ];
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5 PAPAN TERPISAH -- diurutkan & diberi peringkat MASING-MASING
+        | berdasarkan nilai_akhir bidang itu sendiri.
+        |--------------------------------------------------------------------------
+        */
+        $rankingPerBidang = collect(self::URUTAN_BIDANG)->mapWithKeys(function ($bidang) use ($dataLengkap) {
+
+            $papan = $dataLengkap
+                ->map(function ($item) use ($bidang) {
+                    $b = $item->per_bidang[$bidang];
+
+                    return (object) [
+                        'madrasah_id'            => $item->madrasah_id,
+                        'nama_madrasah'          => $item->nama_madrasah,
+                        'npsn'                   => $item->npsn,
+                        'jenjang_madrasah'       => $item->jenjang_madrasah,
+                        'kota'                   => $item->kota,
+                        'jumlah_dinilai'         => $item->jumlah_dinilai,
+                        'nilai_mentah'           => $b['nilai_mentah'],
+                        'potongan_aduan'         => $b['potongan_aduan'],
+                        'potongan_keterlambatan' => $b['potongan_keterlambatan'],
+                        'total_potongan'         => $b['total_potongan'],
+                        'nilai_akhir'            => $b['nilai_akhir'],
+                    ];
+                })
+                // Madrasah yang tidak punya prestasi sama sekali di bidang
+                // ini tidak usah muncul di papan bidang itu.
+                ->filter(fn ($row) => $row->nilai_mentah > 0)
+                ->sortByDesc('nilai_akhir')
+                ->values()
+                ->map(function ($row, $index) {
+                    $row->peringkat = $index + 1;
+                    return $row;
+                });
+
+            return [$bidang => $papan];
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | TABEL TOTAL KESELURUHAN -- referensi/statistik saja, BUKAN dasar
+        | penentuan juara (juara ditentukan per bidang di atas).
+        |--------------------------------------------------------------------------
+        */
+        $rankingTotal = $dataLengkap
+            ->sortByDesc('total_nilai_akhir')
             ->values()
             ->map(function ($item, $index) {
                 $item->peringkat = $index + 1;
                 return $item;
             });
+
+        return [
+            'per_bidang' => $rankingPerBidang,
+            'total'      => $rankingTotal,
+        ];
     }
 }

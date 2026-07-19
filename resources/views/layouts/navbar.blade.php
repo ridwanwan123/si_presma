@@ -21,13 +21,45 @@
     </div>
 
     <!-- RIGHT -->
-    <div class="right d-flex align-items-center gap-3">
+    <div class="right d-flex align-items-center gap-2">
 
-        <!-- NOTIFICATION -->
-        <div class="icon position-relative" style="cursor:pointer;">
-            <i class="bi bi-bell fs-5"></i>
-            <!-- optional badge -->
-            <!-- <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">3</span> -->
+        <!-- BANTUAN / CUSTOMER SERVICE -->
+        <div class="dropdown">
+            <button type="button" class="icon-btn" id="btnBantuan" data-bs-toggle="dropdown" aria-expanded="false"
+                title="Bantuan">
+                <i class="bi bi-headset fs-5"></i>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-end help-menu" aria-labelledby="btnBantuan">
+
+                <div class="help-menu-header">
+                    <i class="bi bi-headset"></i>
+                    <div>
+                        <div class="help-menu-title">Butuh Bantuan?</div>
+                        <div class="help-menu-subtitle">Tim Tendik siap membantu Anda</div>
+                    </div>
+                </div>
+
+                <div class="help-contact">
+                    <div class="help-contact-avatar">MR</div>
+                    <div class="help-contact-info">
+                        <div class="help-contact-name">Muhamad Ridwan</div>
+                        <div class="help-contact-role">Tim Tendik</div>
+                    </div>
+                </div>
+
+                <a href="https://wa.me/6281381752590" target="_blank" rel="noopener"
+                    class="help-contact-action help-contact-wa">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>081381752590</span>
+                </a>
+
+                <a href="tel:081381752590" class="help-contact-action help-contact-call">
+                    <i class="bi bi-telephone"></i>
+                    <span>Telepon Langsung</span>
+                </a>
+
+            </div>
         </div>
 
         <!-- LOGOUT -->
@@ -35,7 +67,7 @@
             @csrf
             <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
                 <i class="bi bi-box-arrow-right"></i>
-                Logout
+                <span class="btn-label">Logout</span>
             </button>
         </form>
 

@@ -68,6 +68,11 @@
             min-width: 320px;
         }
 
+        .dash-col-6 {
+            flex: 1 1 48%;
+            min-width: 300px;
+        }
+
         .dash-col-5 {
             flex: 1 1 34%;
             min-width: 280px;
@@ -283,6 +288,50 @@
                 </div>
             </div>
 
+            {{-- FILTER GLOBAL — berlaku ke SELURUH dashboard (Bagian 1 & 2) --}}
+            <div class="content-card mb-4">
+                <form method="GET" class="filter-form">
+                    <div>
+                        <label class="form-label">Jenjang</label>
+                        <select name="jenjang" class="form-select" onchange="this.form.submit()">
+                            <option value="" {{ !$jenjangFilter ? 'selected' : '' }}>Semua Jenjang</option>
+                            @foreach ($opsiFilter['jenjang'] as $item)
+                                <option value="{{ $item }}" {{ $jenjangFilter == $item ? 'selected' : '' }}>
+                                    {{ $item }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Status Madrasah</label>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="" {{ !$statusFilter ? 'selected' : '' }}>Semua Status</option>
+                            @foreach ($opsiFilter['status'] as $item)
+                                <option value="{{ $item }}" {{ $statusFilter == $item ? 'selected' : '' }}>
+                                    {{ $item }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Kota</label>
+                        <select name="kota" class="form-select" onchange="this.form.submit()">
+                            <option value="" {{ !$kotaFilter ? 'selected' : '' }}>Semua Kota</option>
+                            @foreach ($opsiFilter['kota'] as $item)
+                                <option value="{{ $item }}" {{ $kotaFilter == $item ? 'selected' : '' }}>
+                                    {{ $item }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    @if ($jenjangFilter || $statusFilter || $kotaFilter)
+                        <a href="{{ route('dashboard', ['jenjang' => '']) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    @endif
+                </form>
+            </div>
+
             {{-- =========================================================================
              BAGIAN 1: RINGKASAN GLOBAL (untuk laporan ke Kabid/Kakanwil)
         ========================================================================== --}}
@@ -374,7 +423,7 @@
                         <div class="card-title-row">
                             <div class="title"><i class="bi bi-table text-primary"></i> Perbandingan Prestasi per Tingkat,
                                 Tahun ke Tahun</div>
-                            <a href="{{ route('dashboard.export', ['tipe' => 'perbandingan-tingkat']) }}"
+                            <a href="{{ route('dashboard.export', ['tipe' => 'perbandingan-tingkat', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
                                 class="btn btn-outline-success btn-export-mini">
                                 <i class="bi bi-file-earmark-excel"></i> Export
                             </a>
@@ -435,12 +484,14 @@
                 </div>
             @else
                 <div class="dash-row">
-                    <div class="dash-col-7">
+                    <div class="dash-col-6">
                         <div class="content-card h-100">
                             <div class="card-title-row">
-                                <div class="title"><i class="bi bi-graph-up-arrow text-primary"></i> Tren Total Prestasi
-                                    Sistem</div>
-                                <a href="{{ route('dashboard.export', ['tipe' => 'tren-sistem']) }}"
+                                <div class="title">
+                                    <i class="bi bi-graph-up-arrow text-primary"></i>
+                                    Tren Total Prestasi Sistem
+                                </div>
+                                <a href="{{ route('dashboard.export', ['tipe' => 'tren-sistem', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
                                     class="btn btn-outline-success btn-export-mini">
                                     <i class="bi bi-file-earmark-excel"></i> Export
                                 </a>
@@ -451,12 +502,14 @@
                         </div>
                     </div>
 
-                    <div class="dash-col-5">
+                    <div class="dash-col-6">
                         <div class="content-card h-100">
                             <div class="card-title-row">
-                                <div class="title"><i class="bi bi-bar-chart-steps text-primary"></i> Rata-rata Nilai per
-                                    Jenjang</div>
-                                <a href="{{ route('dashboard.export', ['tipe' => 'rata-jenjang']) }}"
+                                <div class="title">
+                                    <i class="bi bi-bar-chart-steps text-primary"></i>
+                                    Rata-rata Nilai per Jenjang
+                                </div>
+                                <a href="{{ route('dashboard.export', ['tipe' => 'rata-jenjang', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
                                     class="btn btn-outline-success btn-export-mini">
                                     <i class="bi bi-file-earmark-excel"></i> Export
                                 </a>
@@ -479,10 +532,10 @@
                         <div class="dash-col-7" style="flex-basis:49%">
                             <div class="content-card h-100">
                                 <div class="card-title-row">
-                                    <div class="title"><i class="bi bi-arrow-up-circle text-success"></i> Kenaikan Terbesar
-                                        ({{ $periodePembanding['sebelumnya'] }} → {{ $periodePembanding['sekarang'] }})
-                                    </div>
-                                    <a href="{{ route('dashboard.export', ['tipe' => 'kenaikan']) }}"
+                                    <div class="title"><i class="bi bi-arrow-up-circle text-success"></i> Kenaikan
+                                        Terbesar ({{ $periodePembanding['sebelumnya'] }} →
+                                        {{ $periodePembanding['sekarang'] }})</div>
+                                    <a href="{{ route('dashboard.export', ['tipe' => 'kenaikan', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
                                         class="btn btn-outline-success btn-export-mini">
                                         <i class="bi bi-file-earmark-excel"></i> Export
                                     </a>
@@ -522,7 +575,7 @@
                                 <div class="card-title-row">
                                     <div class="title"><i class="bi bi-arrow-down-circle text-danger"></i> Penurunan
                                         Terbesar</div>
-                                    <a href="{{ route('dashboard.export', ['tipe' => 'penurunan']) }}"
+                                    <a href="{{ route('dashboard.export', ['tipe' => 'penurunan', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
                                         class="btn btn-outline-success btn-export-mini">
                                         <i class="bi bi-file-earmark-excel"></i> Export
                                     </a>
@@ -565,6 +618,9 @@
                     </div>
 
                     <form method="GET" class="filter-form mb-2">
+                        <input type="hidden" name="jenjang" value="{{ $jenjangFilter }}">
+                        <input type="hidden" name="status" value="{{ $statusFilter }}">
+                        <input type="hidden" name="kota" value="{{ $kotaFilter }}">
                         <div>
                             <label class="form-label">Pilih Madrasah</label>
                             <select name="madrasah_id" class="form-select" onchange="this.form.submit()">
@@ -609,7 +665,7 @@
                     <div class="content-card">
                         <div class="card-title-row">
                             <div class="title"><i class="bi bi-table text-primary"></i> Histori Lengkap</div>
-                            <a href="{{ route('dashboard.export', ['tipe' => 'profil-madrasah', 'madrasah_id' => $madrasahIdFilter]) }}"
+                            <a href="{{ route('dashboard.export', ['tipe' => 'profil-madrasah', 'madrasah_id' => $madrasahIdFilter, 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
                                 class="btn btn-outline-success btn-export-mini">
                                 <i class="bi bi-file-earmark-excel"></i> Export
                             </a>
@@ -680,7 +736,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            const warnaJenjang = ['#1d4ed8', '#38bdf8', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444'];
+            const warnaJenjang = {
+                'RA': '#ef4444', // Merah
+                'MI': '#eab308', // Kuning
+                'MTs': '#16a34a', // Hijau
+                'MA': '#2563eb', // Biru
+            };
+            const warnaJenjangDefault = '#94a3b8'; // fallback abu-abu kalau ada jenjang di luar 4 ini
             const warnaBidang = {
                 'Akademik': '#2563eb',
                 'Non Akademik': '#38bdf8',
@@ -735,32 +797,39 @@
             @endif
 
             @if ($daftarArsip->isNotEmpty())
-                /* ============ TREN SISTEM ============ */
-                const labelTrenSistem = @json($trenSistem->pluck('periode'));
-                const dataTrenSistem = @json($trenSistem->pluck('total_nilai'));
+                const labelPeriode = @json($daftarArsip->pluck('periode'));
+
+                /* ============ TREN TOTAL PRESTASI SISTEM — PER JENJANG ============ */
+                const trenPerJenjang = @json($trenSistem['per_jenjang']);
+
+                const datasetsTrenSistem = trenPerJenjang.map((row) => ({
+                    label: row.jenjang,
+                    data: labelPeriode.map(p => row.per_tahun[p] ?? 0),
+                    borderColor: warnaJenjang[row.jenjang] || warnaJenjangDefault,
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    tension: .35,
+                    pointRadius: 4,
+                }));
 
                 new Chart(document.getElementById('chartTrenSistem'), {
                     type: 'line',
                     data: {
-                        labels: labelTrenSistem,
-                        datasets: [{
-                            label: 'Total Nilai Sistem',
-                            data: dataTrenSistem,
-                            borderColor: '#0f8a43',
-                            backgroundColor: 'rgba(15,138,67,.12)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: .35,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#0f8a43',
-                        }]
+                        labels: labelPeriode,
+                        datasets: datasetsTrenSistem
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 10,
+                                    boxHeight: 10,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
                             }
                         },
                         scales: {
@@ -780,13 +849,12 @@
                 });
 
                 /* ============ RATA-RATA PER JENJANG ============ */
-                const labelPeriode = @json($daftarArsip->pluck('periode'));
                 const rataJenjang = @json($rataJenjang);
 
-                const datasetsJenjang = rataJenjang.map((row, idx) => ({
+                const datasetsJenjang = rataJenjang.map((row) => ({
                     label: row.jenjang,
                     data: labelPeriode.map(p => row.per_tahun[p] ?? 0),
-                    borderColor: warnaJenjang[idx % warnaJenjang.length],
+                    borderColor: warnaJenjang[row.jenjang] || warnaJenjangDefault,
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: .3,

@@ -22,7 +22,12 @@ class PrestasiTemplateExport implements FromArray, WithHeadings
             'skor',
             'link_drive_bukti',
             'keterangan',
-            'periode',
+            // 'periode' SENGAJA DIHAPUS -- kolom ini tidak pernah dibaca oleh
+            // PrestasiSiswaImport (lihat collection(), yang cuma memetakan 12
+            // kolom di atas), dan nilai periode SELALU diambil dari
+            // PeriodeAktif::aktif() di PrestasiController, bukan dari isi
+            // file Excel. Mempertahankan kolom ini di template cuma bikin
+            // user salah kira bisa menentukan periode sendiri lewat Excel.
         ];
     }
 

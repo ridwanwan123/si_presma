@@ -36,6 +36,34 @@
             margin-bottom: 1.25rem;
         }
 
+        /* ============ FILTER ============ */
+
+        .filter-bar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.1rem 1.25rem;
+        }
+
+        .filter-field label {
+            display: block;
+            font-size: .76rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: .35rem;
+        }
+
+        .filter-field select {
+            min-width: 240px;
+            border-radius: 10px;
+        }
+
+        .filter-bar .btn-outline-secondary {
+            border-radius: 10px;
+        }
+
         /* ============ STAT STRIP ============ */
 
         .stat-row {
@@ -171,6 +199,27 @@
         </div>
 
         <div class="container-fluid">
+
+            {{-- FILTER JENJANG --}}
+            <div class="content-card">
+                <form method="GET" class="filter-bar">
+                    <div class="filter-field">
+                        <label>Filter Jenjang</label>
+                        <select name="jenjang" class="form-select" onchange="this.form.submit()">
+                            <option value="">Semua Jenjang</option>
+                            @foreach ($daftarJenjang as $item)
+                                <option value="{{ $item }}" {{ $jenjangFilter == $item ? 'selected' : '' }}>
+                                    {{ $item }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if ($jenjangFilter)
+                        <a href="{{ route('ranking-arsip.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    @endif
+                </form>
+            </div>
 
             {{-- STAT STRIP --}}
             <div class="stat-row">

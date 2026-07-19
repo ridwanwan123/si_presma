@@ -33,20 +33,35 @@ class RankingArsipController extends Controller
     |--------------------------------------------------------------------------
     | DAFTAR ARSIP
     |--------------------------------------------------------------------------
+    | Filter Jenjang di sini TIDAK menyembunyikan baris arsip (1 arsip tetap
+    | 1 baris = 1 periode, snapshot selalu lengkap semua jenjang) -- filter
+    | ini cuma mempersempit angka "Jumlah Madrasah" yang ditampilkan per
+    | baris, supaya bisa lihat "berapa madrasah MI di arsip 2025" tanpa
+    | perlu buka Kelola satu-satu.
+    |--------------------------------------------------------------------------
     */
-    public function index()
+    public function index(Request $request)
     {
-        $daftarArsip = RankingArsip::withCount('details')
+        $jenjangFilter = $request->query('jenjang');
+
+        $daftarArsip = RankingArsip::withCount(['details' => function ($query) use ($jenjangFilter) {
+                $query->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter));
+            }])
             ->with('diarsipkanOleh')
             ->orderByDesc('periode')
             ->get();
+
+        $daftarJenjang = RankingArsipDetail::whereNotNull('jenjang_madrasah')
+            ->distinct()
+            ->orderBy('jenjang_madrasah')
+            ->pluck('jenjang_madrasah');
 
         $breadcrumb = breadcrumb([
             'Hasil & Ranking' => route('ranking.index'),
             'Arsip Ranking'
         ]);
 
-        return view('ranking-arsip.index', compact('daftarArsip', 'breadcrumb'));
+        return view('ranking-arsip.index', compact('daftarArsip', 'daftarJenjang', 'jenjangFilter', 'breadcrumb'));
     }
 
     /*
@@ -132,9 +147,17 @@ class RankingArsipController extends Controller
             ->with('success', 'Ranking periode ' . $periode . ' berhasil diarsipkan (' . $dataRanking->count() . ' madrasah).');
     }
 
-    public function show(RankingArsip $ranking_arsip)
+    public function show(Request $request, RankingArsip $ranking_arsip)
     {
-        $detail = $ranking_arsip->details()->orderBy('peringkat')->get();
+        $jenjangFilter = $request->query('jenjang');
+
+        $daftarJenjangArsip = $ranking_arsip->details()
+            ->whereNotNull('jenjang_madrasah')
+            ->distinct()
+            ->orderBy('jenjang_madrasah')
+            ->pluck('jenjang_madrasah');
+
+        $hasil = $this->hitungPapanArsipPerBidang($ranking_arsip, $jenjangFilter);
 
         $breadcrumb = breadcrumb([
             'Hasil & Ranking' => route('ranking.index'),
@@ -142,7 +165,81 @@ class RankingArsipController extends Controller
             'Periode ' . $ranking_arsip->periode
         ]);
 
-        return view('ranking-arsip.show', compact('ranking_arsip', 'detail', 'breadcrumb'));
+        return view('ranking-arsip.show', compact(
+            'ranking_arsip',
+            'hasil',
+            'daftarJenjangArsip',
+            'jenjangFilter',
+            'breadcrumb'
+        ));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | BANGUN 5 PAPAN PER BIDANG (+ TABEL TOTAL REFERENSI) DARI DATA ARSIP
+    |--------------------------------------------------------------------------
+    | Sama konsepnya dengan RankingController::hitungRankingPerBidang() di
+    | Ranking Live, cuma sumbernya data BEKU (RankingArsipDetail yang sudah
+    | tersimpan), bukan hitung ulang dari penilaian_prestasis. Potongan per
+    | bidang direkonstruksi dari kolom agregat yang tersimpan (potongan_aduan,
+    | potongan_keterlambatan) memakai aturan yang sama seperti Dashboard &
+    | Kelola: Keterlambatan dibagi rata 5 bidang, Aduan cuma menyunat Lembaga.
+    |--------------------------------------------------------------------------
+    */
+    private function hitungPapanArsipPerBidang(RankingArsip $arsip, ?string $jenjangFilter): array
+    {
+        $baris = $arsip->details()
+            ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+            ->get();
+
+        $rankingPerBidang = collect(self::PETA_KOLOM_BIDANG)->mapWithKeys(function ($kolom, $label) use ($baris) {
+
+            $papan = $baris
+                ->filter(fn ($row) => $row->$kolom > 0)
+                ->map(function ($row) use ($kolom, $label) {
+                    $potonganKeterlambatanBidang = round($row->potongan_keterlambatan / 5, 2);
+                    $potonganAduanBidang = $label === 'Lembaga' ? $row->potongan_aduan : 0;
+                    $totalPotonganBidang = round($potonganKeterlambatanBidang + $potonganAduanBidang, 2);
+
+                    return (object) [
+                        'madrasah_id'            => $row->madrasah_id,
+                        'nama_madrasah'          => $row->nama_madrasah,
+                        'npsn'                   => $row->npsn,
+                        'jenjang_madrasah'       => $row->jenjang_madrasah,
+                        'kota'                   => $row->kota,
+                        'nilai_mentah'           => round($row->$kolom, 2),
+                        'potongan_aduan'         => $potonganAduanBidang,
+                        'potongan_keterlambatan' => $potonganKeterlambatanBidang,
+                        'total_potongan'         => $totalPotonganBidang,
+                        'nilai_akhir'            => round(max(0, $row->$kolom - $totalPotonganBidang), 2),
+                    ];
+                })
+                ->sortByDesc('nilai_akhir')
+                ->values()
+                ->map(function ($row, $index) {
+                    $row->peringkat = $index + 1;
+                    return $row;
+                });
+
+            return [$label => $papan];
+        });
+
+        // Tabel referensi -- peringkat dihitung ULANG di lingkup yang
+        // sedang tampil (bukan sekadar mengambil kolom 'peringkat'
+        // tersimpan apa adanya), supaya nomornya tetap runtut 1..N waktu
+        // difilter ke satu jenjang, bukan meloncat sesuai peringkat global.
+        $total = $baris
+            ->sortByDesc('total_nilai_akhir')
+            ->values()
+            ->map(function ($row, $index) {
+                $row->peringkat_tampil = $index + 1;
+                return $row;
+            });
+
+        return [
+            'per_bidang' => $rankingPerBidang,
+            'total'      => $total,
+        ];
     }
 
     public function export(RankingArsip $ranking_arsip)
@@ -223,6 +320,10 @@ class RankingArsipController extends Controller
                     'nilai_lembaga'      => 0.0,
                 ];
 
+                // Versi keyed by LABEL bidang (bukan nama kolom) -- format
+                // yang diharapkan PenguranganPoinService::hitungSetelahPotonganPerBidang()
+                $nilaiPerBidangLabel = [];
+
                 $jumlahDinilai = 0;
 
                 foreach ($barisBidang as $baris) {
@@ -235,13 +336,28 @@ class RankingArsipController extends Controller
                     $jumlahDinilai += (int) $baris->jumlah;
                 }
 
+                foreach (self::PETA_KOLOM_BIDANG as $label => $kolom) {
+                    $nilaiPerBidangLabel[$label] = $nilaiPerBidang[$kolom];
+                }
+
                 $totalSebelumPotongan = round(array_sum($nilaiPerBidang), 2);
 
-                $hasilPotongan = $this->penguranganPoinService->hitungSetelahPotongan(
+                /*
+                |--------------------------------------------------------------------------
+                | Potongan dihitung PER BIDANG (JMA menentukan juara per Bidang,
+                | jadi Aduan Masyarakat & jatah Keterlambatan juga dipecah per
+                | bidang -- Lembaga jadi satu-satunya yang kena keduanya).
+                | Aggregat-nya (potongan_aduan, potongan_keterlambatan,
+                | total_nilai_akhir) TETAP disimpan seperti skema lama -- cuma
+                | dijumlahkan dari hasil per-bidang, bukan dihitung langsung
+                | dari total gabungan seperti sebelumnya. Hasil akhirnya
+                | matematis identik.
+                |--------------------------------------------------------------------------
+                */
+                $hasilPotongan = $this->penguranganPoinService->hitungSetelahPotonganPerBidang(
                     $madrasah->id,
                     $periode,
-                    $nilaiPerBidang['nilai_lembaga'],
-                    $totalSebelumPotongan
+                    $nilaiPerBidangLabel
                 );
 
                 return (object) array_merge($nilaiPerBidang, [
@@ -250,10 +366,13 @@ class RankingArsipController extends Controller
                     'npsn'                    => $madrasah->npsn,
                     'jenjang_madrasah'        => $madrasah->jenjang_madrasah,
                     'kota'                    => $madrasah->kota,
-                    'total_nilai_asesor'      => $hasilPotongan['total_sebelum_potongan'],
-                    'potongan_aduan'          => $hasilPotongan['potongan_aduan'],
-                    'potongan_keterlambatan'  => $hasilPotongan['potongan_keterlambatan'],
-                    'total_nilai_akhir'       => $hasilPotongan['total_akhir'],
+                    'total_nilai_asesor'      => $totalSebelumPotongan,
+                    'potongan_aduan'          => $hasilPotongan['per_bidang']['Lembaga']['potongan_aduan'],
+                    'potongan_keterlambatan'  => round(
+                        collect($hasilPotongan['per_bidang'])->sum('potongan_keterlambatan'),
+                        2
+                    ),
+                    'total_nilai_akhir'       => $hasilPotongan['total_nilai_akhir'],
                     'jumlah_prestasi_dinilai' => $jumlahDinilai,
                 ]);
             })

@@ -30,19 +30,42 @@ class DashboardController extends Controller
         'Internasional',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | JUMLAH PERIODE TERAKHIR YANG DITAMPILKAN
+    |--------------------------------------------------------------------------
+    */
+    private const JUMLAH_PERIODE_DITAMPILKAN = 5;
+
+    /*
+    |--------------------------------------------------------------------------
+    | DEFAULT FILTER JENJANG
+    |--------------------------------------------------------------------------
+    | Permintaan eksplisit: begitu halaman pertama dibuka (belum ada query
+    | string sama sekali), langsung tampil jenjang MI -- BUKAN "Semua
+    | Jenjang". Opsi "Semua Jenjang" tetap tersedia di dropdown untuk
+    | jaga-jaga, tinggal dipilih manual.
+    |--------------------------------------------------------------------------
+    */
+    private const DEFAULT_JENJANG = 'MI';
+
     public function index(Request $request)
     {
+        [$jenjangFilter, $statusFilter, $kotaFilter] = $this->bacaFilter($request);
+        $opsiFilter = $this->opsiFilter();
+
+        // Daftar id madrasah sesuai status (Negeri/Swasta) -- dihitung
+        // SEKALI di sini, dipakai berulang di semua method di bawah,
+        // supaya tidak query Madrasah berkali-kali untuk hal yang sama.
+        $madrasahIdsStatus = $this->madrasahIdsByStatus($statusFilter);
+
         /*
         |--------------------------------------------------------------------------
         | BAGIAN 1 — RINGKASAN GLOBAL (untuk laporan ke Kabid/Kakanwil)
         |--------------------------------------------------------------------------
-        | SELALU bisa dihitung walau baru ada 1 periode berjalan -- sumbernya
-        | data prestasi MENTAH (prestasi_siswas), bukan arsip, jadi tidak perlu
-        | nunggu proses assign-nilai-finalisasi-arsip selesai dulu.
-        |--------------------------------------------------------------------------
         */
-        $matrixTingkat = $this->hitungPerbandinganTingkat();
-        $ringkasanPeriode = $this->hitungRingkasanPeriodeBerjalan();
+        $matrixTingkat = $this->hitungPerbandinganTingkat($jenjangFilter, $kotaFilter, $madrasahIdsStatus);
+        $ringkasanPeriode = $this->hitungRingkasanPeriodeBerjalan($jenjangFilter, $kotaFilter, $madrasahIdsStatus);
         $persenPeningkatan = $this->hitungPersenPeningkatan($matrixTingkat);
 
         /*
@@ -50,9 +73,9 @@ class DashboardController extends Controller
         | BAGIAN 2 — PERKEMBANGAN MADRASAH (lintas tahun, butuh data arsip)
         |--------------------------------------------------------------------------
         */
-        $daftarArsip = RankingArsip::orderBy('periode')->get();
+        $daftarArsip = $this->daftarArsipTerbatas();
 
-        $trenSistem = collect();
+        $trenSistem = ['agregat' => collect(), 'per_jenjang' => collect()];
         $rataJenjang = collect();
         $periodePembanding = null;
         $kenaikanTerbesar = collect();
@@ -63,13 +86,21 @@ class DashboardController extends Controller
 
         if ($daftarArsip->isNotEmpty()) {
 
-            $trenSistem = $this->hitungTrenSistem($daftarArsip);
-            $rataJenjang = $this->hitungRataJenjang($daftarArsip);
+            $trenSistem = $this->hitungTrenSistem($daftarArsip, $jenjangFilter, $kotaFilter, $madrasahIdsStatus);
+            $rataJenjang = $this->hitungRataJenjang($daftarArsip, $jenjangFilter, $kotaFilter, $madrasahIdsStatus);
 
-            [$periodePembanding, $kenaikanTerbesar, $penurunanTerbesar] = $this->hitungPerubahan($daftarArsip);
+            [$periodePembanding, $kenaikanTerbesar, $penurunanTerbesar] = $this->hitungPerubahan(
+                $daftarArsip,
+                $jenjangFilter,
+                $kotaFilter,
+                $madrasahIdsStatus
+            );
 
             $daftarMadrasah = RankingArsipDetail::select('madrasah_id', 'nama_madrasah')
                 ->whereNotNull('madrasah_id')
+                ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+                ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('madrasah_id', $madrasahIdsStatus))
                 ->distinct()
                 ->orderBy('nama_madrasah')
                 ->get();
@@ -94,23 +125,31 @@ class DashboardController extends Controller
             'daftarMadrasah',
             'madrasahIdFilter',
             'profilMadrasah',
+            'jenjangFilter',
+            'statusFilter',
+            'kotaFilter',
+            'opsiFilter',
             'breadcrumb'
         ));
     }
 
     /*
     |--------------------------------------------------------------------------
-    | EXPORT — satu method, beda "tipe" per komponen/card.
+    | EXPORT — satu method, beda "tipe" per komponen/card. Filter yang
+    | sedang aktif di halaman TETAP diikutkan (dikirim balik dari blade
+    | lewat query string), supaya isi Excel konsisten sama yang di layar.
     |--------------------------------------------------------------------------
     */
     public function export(Request $request)
     {
         $tipe = $request->query('tipe');
+        [$jenjangFilter, $statusFilter, $kotaFilter] = $this->bacaFilter($request);
+        $madrasahIdsStatus = $this->madrasahIdsByStatus($statusFilter);
 
         switch ($tipe) {
 
             case 'perbandingan-tingkat':
-                $matrixTingkat = $this->hitungPerbandinganTingkat();
+                $matrixTingkat = $this->hitungPerbandinganTingkat($jenjangFilter, $kotaFilter, $madrasahIdsStatus);
 
                 $data = $matrixTingkat['matrix']->map(function ($row) use ($matrixTingkat) {
                     $baris = [$row['tingkat']];
@@ -141,22 +180,35 @@ class DashboardController extends Controller
                 break;
 
             case 'tren-sistem':
-                $daftarArsip = RankingArsip::orderBy('periode')->get();
+                $daftarArsip = $this->daftarArsipTerbatas();
+                $trenSistem = $this->hitungTrenSistem($daftarArsip, $jenjangFilter, $kotaFilter, $madrasahIdsStatus);
 
-                $data = $this->hitungTrenSistem($daftarArsip)->map(fn ($row) => [
-                    $row->periode,
-                    $row->jumlah_madrasah,
-                    $row->total_nilai,
-                    $row->rata_rata,
-                ]);
+                $data = $trenSistem['agregat']->map(function ($row) use ($trenSistem) {
+                    $baris = [
+                        $row->periode,
+                        $row->jumlah_madrasah,
+                        $row->total_nilai,
+                        $row->rata_rata,
+                    ];
 
-                $headings = ['Periode', 'Jumlah Madrasah', 'Total Nilai Sistem', 'Rata-rata Nilai'];
+                    foreach ($trenSistem['per_jenjang'] as $dataJenjang) {
+                        $baris[] = $dataJenjang['per_tahun'][$row->periode] ?? 0;
+                    }
+
+                    return $baris;
+                });
+
+                $headings = array_merge(
+                    ['Periode', 'Jumlah Madrasah', 'Total Nilai Sistem', 'Rata-rata Nilai'],
+                    $trenSistem['per_jenjang']->map(fn ($row) => 'Total ' . $row['jenjang'])->toArray()
+                );
+
                 $judul = 'Tren Sistem';
                 break;
 
             case 'rata-jenjang':
-                $daftarArsip = RankingArsip::orderBy('periode')->get();
-                $rataJenjang = $this->hitungRataJenjang($daftarArsip);
+                $daftarArsip = $this->daftarArsipTerbatas();
+                $rataJenjang = $this->hitungRataJenjang($daftarArsip, $jenjangFilter, $kotaFilter, $madrasahIdsStatus);
 
                 $data = $rataJenjang->map(function ($row) {
                     $baris = [$row['jenjang']];
@@ -178,8 +230,13 @@ class DashboardController extends Controller
 
             case 'kenaikan':
             case 'penurunan':
-                $daftarArsip = RankingArsip::orderBy('periode')->get();
-                [$periodePembanding, $kenaikan, $penurunan] = $this->hitungPerubahan($daftarArsip);
+                $daftarArsip = $this->daftarArsipTerbatas();
+                [$periodePembanding, $kenaikan, $penurunan] = $this->hitungPerubahan(
+                    $daftarArsip,
+                    $jenjangFilter,
+                    $kotaFilter,
+                    $madrasahIdsStatus
+                );
                 $dataset = $tipe === 'kenaikan' ? $kenaikan : $penurunan;
 
                 $data = $dataset->map(fn ($row) => [
@@ -201,7 +258,7 @@ class DashboardController extends Controller
                 break;
 
             case 'profil-madrasah':
-                $daftarArsip = RankingArsip::orderBy('periode')->get();
+                $daftarArsip = $this->daftarArsipTerbatas();
                 $madrasahId = $request->integer('madrasah_id');
                 $profil = $this->hitungProfilMadrasah($madrasahId, $daftarArsip);
 
@@ -245,21 +302,110 @@ class DashboardController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | BAGIAN 1: PERBANDINGAN PRESTASI PER TINGKAT, TAHUN KE TAHUN
+    | FILTER: BACA DARI REQUEST
     |--------------------------------------------------------------------------
-    | Dihitung dari data MENTAH prestasi_siswas (bukan arsip) -- jadi selalu
-    | bisa tampil sejak periode pertama, tidak perlu tunggu proses penilaian
-    | & arsip selesai. Ini angka partisipasi program, bukan hasil penilaian.
+    | Jenjang default MI kalau parameter BENAR-BENAR belum pernah dikirim
+    | (kunjungan pertama). Begitu user pilih "Semua Jenjang" (value=""),
+    | itu tetap dihormati sebagai pilihan sadar, bukan balik ke default.
+    | Status & Kota defaultnya "Semua" (string kosong).
     |--------------------------------------------------------------------------
     */
-    private function hitungPerbandinganTingkat(): array
+    private function bacaFilter(Request $request): array
     {
+        $jenjangFilter = $request->has('jenjang') ? $request->query('jenjang') : self::DEFAULT_JENJANG;
+        $statusFilter = $request->query('status', '');
+        $kotaFilter = $request->query('kota', '');
+
+        return [
+            $jenjangFilter ?: null,
+            $statusFilter ?: null,
+            $kotaFilter ?: null,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | OPSI DROPDOWN FILTER (jenjang, status, kota)
+    |--------------------------------------------------------------------------
+    */
+    private function opsiFilter(): array
+    {
+        return [
+            'jenjang' => Madrasah::whereNotNull('jenjang_madrasah')
+                ->distinct()
+                ->orderBy('jenjang_madrasah')
+                ->pluck('jenjang_madrasah'),
+
+            'status' => Madrasah::whereNotNull('status_madrasah')
+                ->distinct()
+                ->orderBy('status_madrasah')
+                ->pluck('status_madrasah'),
+
+            'kota' => Madrasah::whereNotNull('kota')
+                ->distinct()
+                ->orderBy('kota')
+                ->pluck('kota'),
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DAFTAR ID MADRASAH SESUAI STATUS (Negeri/Swasta)
+    |--------------------------------------------------------------------------
+    | null = filter status tidak aktif (semua status, tidak perlu dibatasi).
+    | Dihitung SEKALI per request, dipakai berulang oleh semua method lain
+    | via whereIn('madrasah_id', ...) -- baik untuk query prestasi_siswas
+    | (lewat whereHas madrasah) maupun ranking_arsip_details (yang tidak
+    | menyimpan status_madrasah sendiri, jadi HARUS lewat join/whereIn ini).
+    |--------------------------------------------------------------------------
+    */
+    private function madrasahIdsByStatus(?string $statusFilter): ?Collection
+    {
+        if (!$statusFilter) {
+            return null;
+        }
+
+        return Madrasah::where('status_madrasah', $statusFilter)->pluck('id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | BAGIAN 1: PERBANDINGAN PRESTASI PER TINGKAT, TAHUN KE TAHUN
+    |--------------------------------------------------------------------------
+    */
+    private function daftarArsipTerbatas(): Collection
+    {
+        return RankingArsip::orderByDesc('periode')
+            ->limit(self::JUMLAH_PERIODE_DITAMPILKAN)
+            ->get()
+            ->sortBy('periode')
+            ->values();
+    }
+
+    private function hitungPerbandinganTingkat(?string $jenjangFilter, ?string $kotaFilter, ?Collection $madrasahIdsStatus): array
+    {
+        $filterMadrasah = function ($query) use ($jenjangFilter, $kotaFilter, $madrasahIdsStatus) {
+            $query->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+                ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('id', $madrasahIdsStatus));
+        };
+
+        $periodeList = PrestasiSiswa::visible()
+            ->whereHas('madrasah', $filterMadrasah)
+            ->select('periode')
+            ->distinct()
+            ->orderByDesc('periode')
+            ->limit(self::JUMLAH_PERIODE_DITAMPILKAN)
+            ->pluck('periode')
+            ->sort()
+            ->values();
+
         $rows = PrestasiSiswa::visible()
+            ->whereHas('madrasah', $filterMadrasah)
+            ->whereIn('periode', $periodeList)
             ->groupBy('periode', 'tingkat')
             ->selectRaw('periode, tingkat, COUNT(*) as jumlah')
             ->get();
-
-        $periodeList = $rows->pluck('periode')->unique()->sort()->values();
 
         $matrix = collect(self::URUTAN_TINGKAT)->map(function ($tingkat) use ($rows, $periodeList) {
             $perTahun = $periodeList->mapWithKeys(function ($periode) use ($rows, $tingkat) {
@@ -292,39 +438,50 @@ class DashboardController extends Controller
     | BAGIAN 1: RINGKASAN PERIODE YANG SEDANG BERJALAN
     |--------------------------------------------------------------------------
     */
-    private function hitungRingkasanPeriodeBerjalan(): array
+    private function hitungRingkasanPeriodeBerjalan(?string $jenjangFilter, ?string $kotaFilter, ?Collection $madrasahIdsStatus): array
     {
         $periodeAktif = PeriodeAktif::aktif();
 
+        $filterMadrasah = function ($query) use ($jenjangFilter, $kotaFilter, $madrasahIdsStatus) {
+            $query->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+                ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('id', $madrasahIdsStatus));
+        };
+
         $totalPrestasi = PrestasiSiswa::visible()
+            ->whereHas('madrasah', $filterMadrasah)
             ->where('periode', $periodeAktif)
             ->count();
 
         $madrasahAktif = PrestasiSiswa::visible()
+            ->whereHas('madrasah', $filterMadrasah)
             ->where('periode', $periodeAktif)
             ->distinct('madrasah_id')
             ->count('madrasah_id');
 
-        $totalMadrasahTerdaftar = Madrasah::count();
+        $totalMadrasahTerdaftar = Madrasah::query()
+            ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+            ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+            ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('id', $madrasahIdsStatus))
+            ->count();
 
-        $madrasahFinished = PrestasiSiklus::where('periode', $periodeAktif)
+        $madrasahFinished = PrestasiSiklus::whereHas('madrasah', $filterMadrasah)
+            ->where('periode', $periodeAktif)
             ->where('status', PrestasiSiklus::FINISHED)
             ->count();
 
         return [
-            'periode_aktif'           => $periodeAktif,
-            'total_prestasi'          => $totalPrestasi,
-            'madrasah_aktif'          => $madrasahAktif,
+            'periode_aktif'            => $periodeAktif,
+            'total_prestasi'           => $totalPrestasi,
+            'madrasah_aktif'           => $madrasahAktif,
             'total_madrasah_terdaftar' => $totalMadrasahTerdaftar,
-            'madrasah_finished'       => $madrasahFinished,
+            'madrasah_finished'        => $madrasahFinished,
         ];
     }
 
     /*
     |--------------------------------------------------------------------------
-    | BAGIAN 1: PERSENTASE PENINGKATAN PRESTASI (per tingkat + total),
-    | membandingkan 2 periode TERAKHIR yang datanya ada -- bukan cuma
-    | periode aktif vs periode aktif - 1 (karena bisa saja loncat tahun).
+    | BAGIAN 1: PERSENTASE PENINGKATAN PRESTASI (per tingkat + total)
     |--------------------------------------------------------------------------
     */
     private function hitungPersenPeningkatan(array $matrixTingkat): ?array
@@ -371,11 +528,23 @@ class DashboardController extends Controller
     |--------------------------------------------------------------------------
     | BAGIAN 2: TREN TOTAL PRESTASI SISTEM (dari arsip)
     |--------------------------------------------------------------------------
+    | jenjang_madrasah & kota tersimpan LANGSUNG di ranking_arsip_details
+    | (snapshot beku), jadi bisa difilter langsung tanpa join. status_madrasah
+    | TIDAK tersimpan di sana, jadi filter status HARUS lewat whereIn
+    | madrasah_id ke tabel Madrasah live -- baris arsip manual yang
+    | madrasah_id-nya kosong otomatis tidak ikut kalau filter status aktif
+    | (tidak ada cara mengetahui status Negeri/Swasta-nya).
+    |--------------------------------------------------------------------------
     */
-    private function hitungTrenSistem(Collection $daftarArsip): Collection
+    private function hitungTrenSistem(Collection $daftarArsip, ?string $jenjangFilter, ?string $kotaFilter, ?Collection $madrasahIdsStatus): array
     {
-        return $daftarArsip->map(function ($arsip) {
+        // Agregat keseluruhan per periode (tetap dipertahankan -- dipakai
+        // juga oleh export sebagai kolom ringkasan).
+        $agregat = $daftarArsip->map(function ($arsip) use ($jenjangFilter, $kotaFilter, $madrasahIdsStatus) {
             $agg = RankingArsipDetail::where('ranking_arsip_id', $arsip->id)
+                ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+                ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('madrasah_id', $madrasahIdsStatus))
                 ->selectRaw('SUM(total_nilai_akhir) as total, AVG(total_nilai_akhir) as rata, COUNT(*) as jumlah')
                 ->first();
 
@@ -386,13 +555,60 @@ class DashboardController extends Controller
                 'jumlah_madrasah' => (int) ($agg->jumlah ?? 0),
             ];
         });
+
+        /*
+        |--------------------------------------------------------------------------
+        | BARU: BREAKDOWN TOTAL PER JENJANG, PER PERIODE
+        |--------------------------------------------------------------------------
+        | Struktur hasilnya SENGAJA sama persis dengan hitungRataJenjang()
+        | (array of ['jenjang' => .., 'per_tahun' => [...]]) supaya blade
+        | bisa membangun chart multi-garis dengan cara yang sama, cuma beda
+        | agregasinya: SUM (total) di sini, AVG (rata-rata) di sana.
+        |--------------------------------------------------------------------------
+        */
+        $rows = RankingArsipDetail::whereIn('ranking_arsip_id', $daftarArsip->pluck('id'))
+            ->join('ranking_arsips', 'ranking_arsips.id', '=', 'ranking_arsip_details.ranking_arsip_id')
+            ->whereNotNull('ranking_arsip_details.jenjang_madrasah')
+            ->when($jenjangFilter, fn ($q) => $q->where('ranking_arsip_details.jenjang_madrasah', $jenjangFilter))
+            ->when($kotaFilter, fn ($q) => $q->where('ranking_arsip_details.kota', $kotaFilter))
+            ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('ranking_arsip_details.madrasah_id', $madrasahIdsStatus))
+            ->groupBy('ranking_arsips.periode', 'ranking_arsip_details.jenjang_madrasah')
+            ->selectRaw('
+                ranking_arsips.periode,
+                ranking_arsip_details.jenjang_madrasah,
+                SUM(ranking_arsip_details.total_nilai_akhir) as total
+            ')
+            ->get();
+
+        $jenjangList = $rows->pluck('jenjang_madrasah')->unique()->sort()->values();
+
+        $perJenjang = $jenjangList->map(function ($jenjang) use ($rows, $daftarArsip) {
+            $perTahun = $daftarArsip->mapWithKeys(function ($arsip) use ($rows, $jenjang) {
+                $match = $rows->first(fn ($r) => $r->periode == $arsip->periode && $r->jenjang_madrasah === $jenjang);
+
+                return [$arsip->periode => round($match->total ?? 0, 2)];
+            });
+
+            return [
+                'jenjang'   => $jenjang,
+                'per_tahun' => $perTahun,
+            ];
+        });
+
+        return [
+            'agregat'     => $agregat,
+            'per_jenjang' => $perJenjang,
+        ];
     }
 
-    private function hitungRataJenjang(Collection $daftarArsip): Collection
+    private function hitungRataJenjang(Collection $daftarArsip, ?string $jenjangFilter, ?string $kotaFilter, ?Collection $madrasahIdsStatus): Collection
     {
         $rows = RankingArsipDetail::whereIn('ranking_arsip_id', $daftarArsip->pluck('id'))
             ->join('ranking_arsips', 'ranking_arsips.id', '=', 'ranking_arsip_details.ranking_arsip_id')
             ->whereNotNull('ranking_arsip_details.jenjang_madrasah')
+            ->when($jenjangFilter, fn ($q) => $q->where('ranking_arsip_details.jenjang_madrasah', $jenjangFilter))
+            ->when($kotaFilter, fn ($q) => $q->where('ranking_arsip_details.kota', $kotaFilter))
+            ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('ranking_arsip_details.madrasah_id', $madrasahIdsStatus))
             ->groupBy('ranking_arsips.periode', 'ranking_arsip_details.jenjang_madrasah')
             ->selectRaw('
                 ranking_arsips.periode,
@@ -417,7 +633,7 @@ class DashboardController extends Controller
         });
     }
 
-    private function hitungPerubahan(Collection $daftarArsip): array
+    private function hitungPerubahan(Collection $daftarArsip, ?string $jenjangFilter, ?string $kotaFilter, ?Collection $madrasahIdsStatus): array
     {
         if ($daftarArsip->count() < 2) {
             return [null, collect(), collect()];
@@ -426,11 +642,19 @@ class DashboardController extends Controller
         $terakhir = $daftarArsip->last();
         $sebelumnya = $daftarArsip->slice(-2, 1)->first();
 
+        $filterDetail = function ($query) use ($jenjangFilter, $kotaFilter, $madrasahIdsStatus) {
+            $query->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+                ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('madrasah_id', $madrasahIdsStatus));
+        };
+
         $detailTerakhir = RankingArsipDetail::where('ranking_arsip_id', $terakhir->id)
+            ->tap($filterDetail)
             ->get()
             ->keyBy('madrasah_id');
 
         $detailSebelumnya = RankingArsipDetail::where('ranking_arsip_id', $sebelumnya->id)
+            ->tap($filterDetail)
             ->get()
             ->keyBy('madrasah_id');
 
@@ -497,6 +721,7 @@ class DashboardController extends Controller
                     $arsip->id,
                     $detail->jenjang_madrasah,
                     $kolom,
+                    $labelBidang,
                     $madrasahId
                 );
             }
@@ -524,11 +749,31 @@ class DashboardController extends Controller
         ];
     }
 
-    private function hitungPeringkatBidang(int $rankingArsipId, ?string $jenjang, string $kolom, int $madrasahId): ?int
+    /*
+    |--------------------------------------------------------------------------
+    | PERINGKAT PER BIDANG — direkonstruksi dari nilai SETELAH potongan.
+    |--------------------------------------------------------------------------
+    */
+    private function hitungPeringkatBidang(int $rankingArsipId, ?string $jenjang, string $kolom, string $labelBidang, int $madrasahId): ?int
     {
-        $urutan = RankingArsipDetail::where('ranking_arsip_id', $rankingArsipId)
+        $baris = RankingArsipDetail::where('ranking_arsip_id', $rankingArsipId)
             ->when($jenjang, fn ($q) => $q->where('jenjang_madrasah', $jenjang))
-            ->orderByDesc($kolom)
+            ->get(['madrasah_id', $kolom, 'potongan_aduan', 'potongan_keterlambatan']);
+
+        $urutan = $baris
+            ->map(function ($row) use ($kolom, $labelBidang) {
+                $potonganKeterlambatanBidang = round($row->potongan_keterlambatan / 5, 2);
+                $potonganAduanBidang = $labelBidang === 'Lembaga' ? $row->potongan_aduan : 0;
+
+                $nilaiAkhirBidang = max(0, $row->$kolom - $potonganKeterlambatanBidang - $potonganAduanBidang);
+
+                return [
+                    'madrasah_id'        => $row->madrasah_id,
+                    'nilai_akhir_bidang' => $nilaiAkhirBidang,
+                ];
+            })
+            ->sortByDesc('nilai_akhir_bidang')
+            ->values()
             ->pluck('madrasah_id');
 
         $posisi = $urutan->search($madrasahId);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PrestasiSiswa;
 use App\Models\PeriodeAktif;
+use App\Models\Madrasah;
 use App\Exports\PrestasiMadrasahExport;
 use App\Services\PrestasiImportService;
 use Illuminate\Http\Request;
@@ -59,7 +60,7 @@ class PrestasiController extends Controller
     | INDEX & DATA
     |--------------------------------------------------------------------------
     */
-    public function index($jenis)
+    public function index(Request $request, $jenis)
     {
         $mapping = [
             'akademik' => 'Akademik',
@@ -68,6 +69,9 @@ class PrestasiController extends Controller
             'gtk' => 'GTK',
             'lembaga' => 'Lembaga',
         ];
+
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('Administrator');
 
         $query = PrestasiSiswa::visible()
             ->where('periode', PeriodeAktif::aktif())
@@ -95,7 +99,33 @@ class PrestasiController extends Controller
             $mapping[$jenis]
         ]);
 
-        $siklus = auth()->user()->madrasah->prestasiSiklusAktif();
+        /*
+        |--------------------------------------------------------------------------
+        | SIKLUS PRESTASI — HANYA RELEVAN UNTUK MADRASAH
+        |--------------------------------------------------------------------------
+        | Administrator tidak punya relasi madrasah() sama sekali, dan yang
+        | lebih penting: Admin melihat SEMUA madrasah sekaligus di halaman
+        | ini, masing-masing bisa punya status siklus yang BEDA-BEDA (ada
+        | yang masih OPEN, ada yang sudah FINISHED) -- jadi "satu banner
+        | siklus" untuk semuanya tidak masuk akal buat ditampilkan.
+        |
+        | $canInput SENGAJA dihitung di sini (bukan di blade) supaya sudah
+        | jadi boolean polos, aman dipakai langsung tanpa null-check di view.
+        |--------------------------------------------------------------------------
+        */
+        $siklus = $isAdmin ? null : $user->madrasah->prestasiSiklusAktif();
+        $canInput = $isAdmin ? false : $siklus->canInput();
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER MADRASAH — HANYA UNTUK ADMINISTRATOR
+        |--------------------------------------------------------------------------
+        */
+        $daftarMadrasah = $isAdmin
+            ? Madrasah::orderBy('nama_madrasah')->get(['id', 'nama_madrasah'])
+            : collect();
+
+        $madrasahFilter = $isAdmin ? ($request->integer('madrasah_id') ?: null) : null;
 
         return view(
             'prestasi.index',
@@ -103,12 +133,16 @@ class PrestasiController extends Controller
                 'jenis',
                 'summary',
                 'breadcrumb',
-                'siklus'
+                'siklus',
+                'isAdmin',
+                'canInput',
+                'daftarMadrasah',
+                'madrasahFilter'
             )
         );
     }
 
-    public function data($jenis)
+    public function data(Request $request, $jenis)
     {
         $mapping = [
             'akademik'     => 'Akademik',
@@ -118,14 +152,26 @@ class PrestasiController extends Controller
             'lembaga'      => 'Lembaga',
         ];
 
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('Administrator');
+
         $query = PrestasiSiswa::visible()
+            ->with('madrasah:id,nama_madrasah')
             ->where('periode', PeriodeAktif::aktif())
             ->where('bidang_prestasi', $mapping[$jenis])
+            ->when(
+                $isAdmin && $request->filled('madrasah_id'),
+                fn ($q) => $q->where('madrasah_id', $request->integer('madrasah_id'))
+            )
             ->latest();
 
         return DataTables::of($query)
 
             ->addIndexColumn()
+
+            ->addColumn('nama_madrasah', function ($item) {
+                return optional($item->madrasah)->nama_madrasah ?? '-';
+            })
 
             ->editColumn('waktu_kegiatan', function ($item) {
                 return optional($item->waktu_kegiatan)
@@ -154,7 +200,10 @@ class PrestasiController extends Controller
                             ->orWhere('kategori_penyelenggara', 'like', "%{$keyword}%")
                             ->orWhere('keterangan', 'like', "%{$keyword}%")
                             ->orWhere('bidang_prestasi', 'like', "%{$keyword}%")
-                            ->orWhere('tingkat', 'like', "%{$keyword}%");
+                            ->orWhere('tingkat', 'like', "%{$keyword}%")
+                            ->orWhereHas('madrasah', function ($mq) use ($keyword) {
+                                $mq->where('nama_madrasah', 'like', "%{$keyword}%");
+                            });
                         });
                     }
                 }

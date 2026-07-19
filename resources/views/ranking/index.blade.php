@@ -55,6 +55,81 @@
             border-radius: 10px;
         }
 
+        .info-note {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: .9rem 1.1rem;
+            color: #1e40af;
+            font-size: .85rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+        }
+
+        .info-note i {
+            margin-top: 2px;
+        }
+
+        /* ============ PAPAN PER BIDANG ============ */
+
+        .bidang-card {
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .bidang-card-header {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            padding: 1.1rem 1.4rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .bidang-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .bidang-icon.bidang-akademik {
+            background: #2563eb;
+        }
+
+        .bidang-icon.bidang-non-akademik {
+            background: #38bdf8;
+        }
+
+        .bidang-icon.bidang-keagamaan {
+            background: #f59e0b;
+        }
+
+        .bidang-icon.bidang-gtk {
+            background: #8b5cf6;
+        }
+
+        .bidang-icon.bidang-lembaga {
+            background: #94a3b8;
+        }
+
+        .bidang-card-header .title {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1rem;
+        }
+
+        .bidang-card-header .subtitle {
+            font-size: .78rem;
+            color: #94a3b8;
+        }
+
         .ranking-table {
             width: 100%;
             border-collapse: separate;
@@ -137,6 +212,35 @@
             color: #0f8a43;
             font-size: .95rem;
         }
+
+        /* ============ TABEL TOTAL (REFERENSI) ============ */
+
+        .total-section-divider {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin: 2rem 0 1.25rem;
+        }
+
+        .total-section-divider .label {
+            font-size: .78rem;
+            font-weight: 800;
+            letter-spacing: .05em;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .total-section-divider .line {
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .total-nilai-abu {
+            font-weight: 700;
+            color: #64748b;
+            font-size: .95rem;
+        }
     </style>
 @endpush
 
@@ -146,11 +250,13 @@
         <div class="page-title d-flex align-items-start justify-content-between flex-wrap gap-3">
             <div>
                 <h2>Hasil & Ranking Prestasi</h2>
-                <p>Peringkat madrasah berdasarkan total nilai akhir yang telah difinalisasi asesor, periode {{ $periode }}.</p>
+                <p>Peringkat juara per Bidang, periode
+                    {{ $periode }}{{ $jenjangFilter ? ' — jenjang ' . $jenjangFilter : '' }}.</p>
             </div>
 
             <div class="d-flex gap-2">
-                <a href="{{ route('ranking.export', ['periode' => $periode, 'jenjang' => $jenjangFilter]) }}" class="btn btn-outline-success">
+                <a href="{{ route('ranking.export', ['periode' => $periode, 'jenjang' => $jenjangFilter]) }}"
+                    class="btn btn-outline-success">
                     <i class="bi bi-file-earmark-excel"></i>
                     Export Excel
                 </a>
@@ -184,7 +290,7 @@
                     <div>
                         <label class="form-label">Jenjang Madrasah</label>
                         <select name="jenjang" class="form-select" onchange="this.form.submit()">
-                            <option value="">Semua Jenjang (gabungan)</option>
+                            <option value="">Semua Jenjang</option>
                             @foreach ($daftarJenjang as $item)
                                 <option value="{{ $item }}" {{ $jenjangFilter == $item ? 'selected' : '' }}>
                                     {{ $item }}
@@ -194,7 +300,8 @@
                     </div>
 
                     @if ($jenjangFilter)
-                        <a href="{{ route('ranking.index', ['periode' => $periode]) }}" class="btn btn-outline-secondary btn-reset-filter">
+                        <a href="{{ route('ranking.index', ['periode' => $periode]) }}"
+                            class="btn btn-outline-secondary btn-reset-filter">
                             <i class="bi bi-arrow-counterclockwise"></i>
                             Reset
                         </a>
@@ -202,28 +309,119 @@
                 </form>
             </div>
 
-            {{-- TABEL RANKING --}}
+            <div class="info-note">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>
+                    JMA menentukan juara <strong>per Bidang, per Jenjang</strong> — bukan satu papan gabungan. Setiap
+                    bidang di bawah ini punya peringkatnya sendiri-sendiri. Tabel "Total Keseluruhan" di paling bawah
+                    cuma referensi/statistik, <strong>bukan</strong> dasar penentuan juara.
+                </span>
+            </div>
+
+            {{-- ================= 5 PAPAN PER BIDANG ================= --}}
+            @php
+                $ikonBidang = [
+                    'Akademik' => 'bi-mortarboard',
+                    'Non Akademik' => 'bi-award',
+                    'Keagamaan' => 'bi-book',
+                    'GTK' => 'bi-people',
+                    'Lembaga' => 'bi-building',
+                ];
+            @endphp
+
+            @foreach ($hasil['per_bidang'] as $bidang => $papan)
+                <div class="content-card bidang-card">
+                    <div class="bidang-card-header">
+                        <div class="bidang-icon bidang-{{ str_replace(' ', '-', strtolower($bidang)) }}">
+                            <i class="bi {{ $ikonBidang[$bidang] ?? 'bi-trophy' }}"></i>
+                        </div>
+                        <div>
+                            <div class="title">Juara Bidang {{ $bidang }}</div>
+                            <div class="subtitle">{{ $papan->count() }} madrasah berpartisipasi di bidang ini</div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="ranking-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:70px" class="text-center">Peringkat</th>
+                                    <th>Madrasah</th>
+                                    <th>Jenjang</th>
+                                    <th>Wilayah</th>
+                                    <th class="text-end">Potongan</th>
+                                    <th class="text-end">Nilai Akhir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($papan as $item)
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="rank-badge rank-{{ $item->peringkat }}">
+                                                {{ $item->peringkat }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="madrasah-name">{{ $item->nama_madrasah }}</div>
+                                            <div class="madrasah-npsn">NPSN: {{ $item->npsn }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="jenjang-badge">{{ $item->jenjang_madrasah }}</span>
+                                        </td>
+                                        <td>{{ $item->kota }}</td>
+                                        <td class="text-end">
+                                            @if ($item->total_potongan > 0)
+                                                <span class="text-danger fw-semibold" style="font-size:.8rem"
+                                                    title="Aduan Masyarakat: -{{ number_format($item->potongan_aduan, 2, ',', '.') }} &middot; Jatah Keterlambatan: -{{ number_format($item->potongan_keterlambatan, 2, ',', '.') }}">
+                                                    -{{ number_format($item->total_potongan, 2, ',', '.') }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted" style="font-size:.8rem">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end">
+                                            <span
+                                                class="total-nilai">{{ number_format($item->nilai_akhir, 2, ',', '.') }}</span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            Belum ada madrasah dengan prestasi bidang {{ $bidang }} pada periode ini.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endforeach
+
+            {{-- ================= TABEL TOTAL KESELURUHAN (REFERENSI) ================= --}}
+            <div class="total-section-divider">
+                <span class="label">TOTAL KESELURUHAN (REFERENSI — BUKAN PENENTU JUARA)</span>
+                <span class="line"></span>
+            </div>
+
             <div class="content-card p-0">
                 <div class="table-responsive">
                     <table class="ranking-table">
                         <thead>
                             <tr>
-                                <th style="width:70px" class="text-center">Peringkat</th>
+                                <th style="width:70px" class="text-center">No</th>
                                 <th>Madrasah</th>
                                 <th>Jenjang</th>
                                 <th>Wilayah</th>
                                 <th class="text-center">Prestasi Dinilai</th>
-                                <th class="text-end">Potongan</th>
+                                <th class="text-end">Total Potongan</th>
                                 <th class="text-end">Total Nilai Akhir</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($ranking as $item)
+                            @forelse ($hasil['total'] as $item)
                                 <tr>
                                     <td class="text-center">
-                                        <span class="rank-badge rank-{{ $item->peringkat }}">
-                                            {{ $item->peringkat }}
-                                        </span>
+                                        <span class="rank-badge">{{ $item->peringkat }}</span>
                                     </td>
                                     <td>
                                         <div class="madrasah-name">{{ $item->nama_madrasah }}</div>
@@ -236,8 +434,7 @@
                                     <td class="text-center">{{ $item->jumlah_dinilai }}</td>
                                     <td class="text-end">
                                         @if ($item->total_potongan > 0)
-                                            <span class="text-danger fw-semibold" style="font-size:.8rem"
-                                                title="Aduan Masyarakat: -{{ number_format($item->potongan_aduan, 2, ',', '.') }} &middot; Keterlambatan: -{{ number_format($item->potongan_keterlambatan, 2, ',', '.') }}">
+                                            <span class="text-danger fw-semibold" style="font-size:.8rem">
                                                 -{{ number_format($item->total_potongan, 2, ',', '.') }}
                                             </span>
                                         @else
@@ -245,13 +442,15 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
-                                        <span class="total-nilai">{{ number_format($item->total_nilai, 2, ',', '.') }}</span>
+                                        <span
+                                            class="total-nilai-abu">{{ number_format($item->total_nilai_akhir, 2, ',', '.') }}</span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="7" class="text-center text-muted py-5">
-                                        Belum ada madrasah yang penilaiannya sudah difinalisasi untuk periode {{ $periode }}.
+                                        Belum ada madrasah yang penilaiannya sudah difinalisasi untuk periode
+                                        {{ $periode }}.
                                     </td>
                                 </tr>
                             @endforelse
@@ -262,9 +461,9 @@
 
         </div>
 
-    </main>
-@endsection
-        {{-- MODAL ARSIPKAN RANKING --}}
+        {{-- MODAL ARSIPKAN RANKING — sengaja di dalam <main>...@endsection,
+             sebelumnya sempat berada DI LUAR @endsection sehingga tidak
+             pernah ikut ter-render sama sekali. --}}
         <div class="modal fade" id="modalArsipkan" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -280,7 +479,8 @@
                         <div class="modal-body">
                             <input type="hidden" name="periode" value="{{ $periode }}">
 
-                            <div class="alert-warning-soft mb-3" style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:.9rem 1.1rem;color:#92400e;font-size:.85rem;">
+                            <div class="alert-warning-soft mb-3"
+                                style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:.9rem 1.1rem;color:#92400e;font-size:.85rem;">
                                 <i class="bi bi-info-circle-fill me-1"></i>
                                 Ini akan menyimpan snapshot ranking <strong>SEMUA jenjang gabungan</strong> untuk
                                 periode {{ $periode }} — termasuk nilai mentah per bidang, total nilai asesor,
@@ -293,7 +493,8 @@
                                 placeholder="Mis. Hasil resmi JMA {{ $periode }}"></textarea>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-save"></i> Arsipkan Sekarang
                             </button>
@@ -302,3 +503,6 @@
                 </div>
             </div>
         </div>
+
+    </main>
+@endsection
