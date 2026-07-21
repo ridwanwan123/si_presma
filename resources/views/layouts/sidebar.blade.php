@@ -72,6 +72,16 @@
             </a>
         @endif
 
+        {{-- Rubrik Penilaian -- tabel skor resmi Juknis JMA, dipakai buat
+             mencocokkan skor yang diinput Madrasah di halaman Asesor. --}}
+        @if ($user->hasRole('Administrator'))
+            <a href="{{ route('rubrik-penilaian.index') }}"
+                class="menu-item {{ request()->routeIs('rubrik-penilaian.*') ? 'active' : '' }}">
+                <i class="bi bi-journal-text"></i>
+                <span>Rubrik Penilaian</span>
+            </a>
+        @endif
+
         {{-- =========================================================
             BIDANG PRESTASI
         ========================================================== --}}

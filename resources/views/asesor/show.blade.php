@@ -2,16 +2,34 @@
 
 @push('styles')
     <style>
-        /* ==========================================================
-                                                                                   GENERAL
-                                                                                ========================================================== */
+        /* ===========================================================
+                   PENILAIAN MADRASAH (asesor/show.blade.php)
+                   Token disamakan dengan assets/css/prestasi/index.css dan
+                   assets/css/rubrik-penilaian/index.css (--presma-*) supaya
+                   satu sistem desain PRESMA. Kalau nanti dipindah ke base.css
+                   secara global, blok :root ini boleh dihapus dari sini.
+                   =========================================================== */
+        :root {
+            --presma-primary: #0f8a43;
+            --presma-primary-soft: #eaf6ef;
+            --presma-text: #1e293b;
+            --presma-text-light: #64748b;
+            --presma-border: #e8edf5;
+            --presma-border-dark: #d9e2ec;
+            --presma-bg: #ffffff;
+            --presma-bg-soft: #f8fafc;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        /* ===== GENERAL ===== */
         .content {
             background-color: #f5f7fb;
         }
 
-        /* ==========================================================
-                                                                                   PAGE HEADER
-                                                                                ========================================================== */
+        /* ===== PAGE HEADER ===== */
         .page-header {
             display: flex;
             align-items: flex-start;
@@ -110,9 +128,7 @@
             color: #fff;
         }
 
-        /* ==========================================================
-                                                                                   INFO CARD (KOLOM KIRI) - sticky
-                                                                                ========================================================== */
+        /* ===== INFO CARD (KOLOM KIRI) - sticky ===== */
         .info-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -210,9 +226,7 @@
             color: #157347;
         }
 
-        /* ==========================================================
-                                                                                   QUICK STATS STRIP
-                                                                                ========================================================== */
+        /* ===== QUICK STATS STRIP ===== */
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -253,9 +267,7 @@
             }
         }
 
-        /* ==========================================================
-                                                                                   FILTER CARD
-                                                                                ========================================================== */
+        /* ===== FILTER CARD ===== */
         .filter-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -315,9 +327,7 @@
             color: #495057;
         }
 
-        /* ==========================================================
-                                                                                   PANDUAN PENILAIAN - inline alert bar
-                                                                                ========================================================== */
+        /* ===== PANDUAN PENILAIAN - inline alert bar ===== */
         .panduan-bar {
             display: flex;
             align-items: center;
@@ -360,9 +370,71 @@
             color: #fff;
         }
 
-        /* ==========================================================
-                                                                                   ASSESSMENT CARD (KOLOM KANAN)
-                                                                                ========================================================== */
+        /* ============ MODAL LIHAT RUBRIK ============ */
+        .rubrik-tab-btn {
+            font-size: .82rem;
+            font-weight: 600;
+            border-radius: 999px;
+            color: #64748b;
+            background: #f1f5f9;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .rubrik-tab-btn.active {
+            background: #198754 !important;
+            color: #fff !important;
+        }
+
+        .rubrik-ref-table {
+            font-size: .84rem;
+        }
+
+        .rubrik-ref-table th,
+        .rubrik-ref-table td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 8px 10px;
+        }
+
+        .rubrik-ref-table thead th {
+            font-size: .74rem;
+            font-weight: 700;
+            text-transform: none;
+            letter-spacing: 0;
+            color: #334155;
+            background: #e2e8f0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .rubrik-ref-table tbody td {
+            color: #1e293b;
+        }
+
+        .rubrik-tingkat-cell {
+            background: #f8fafc;
+            vertical-align: middle;
+        }
+
+        .rubrik-ref-table tbody tr:hover td {
+            background: #f0fdf4;
+        }
+
+        .rubrik-penyelenggara-label {
+            font-size: .8rem;
+            font-weight: 700;
+            color: #0f8a43;
+            margin-bottom: .5rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .rubrik-penyelenggara-label:not(:first-child) {
+            margin-top: 1.5rem;
+        }
+
+        /* ===== ASSESSMENT CARD (KOLOM KANAN) ===== */
         .assessment-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -466,6 +538,38 @@
             font-size: 0.82rem;
         }
 
+        /* ============ BADGE KECOCOKAN RUBRIK ============ */
+        /* Sengaja SANGAT compact -- ditaruh DI DALAM kolom Skor Dasar yang
+                                   sudah ada, tidak menambah kolom baru, supaya tabel tidak makin
+                                   lebar (menghindari scroll ke samping). */
+        .rubrik-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 999px;
+            margin-top: 3px;
+            white-space: nowrap;
+            cursor: help;
+        }
+
+        .rubrik-badge.rubrik-cocok {
+            background: #d1f2de;
+            color: #0f8a43;
+        }
+
+        .rubrik-badge.rubrik-tidak-cocok {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .rubrik-badge.rubrik-tidak-ada {
+            background: #f1f5f9;
+            color: #94a3b8;
+        }
+
         .nilai-akhir-value {
             font-weight: 700;
             color: #198754;
@@ -558,9 +662,7 @@
             font-weight: 500;
         }
 
-        /* ==========================================================
-                                                                                   MODAL NILAI PRESTASI
-                                                                                ========================================================== */
+        /* ===== MODAL NILAI PRESTASI ===== */
         .nilai-modal .modal-content {
             border-radius: 20px;
             border: none;
@@ -779,16 +881,16 @@
 
         /* Active */
         .pagination .page-item.active .page-link {
-            background: #2563eb;
-            border-color: #2563eb;
+            background: var(--presma-primary);
+            border-color: var(--presma-primary);
             color: white;
         }
 
         /* Hover */
 
         .pagination .page-link:hover {
-            background: #eff6ff;
-            color: #2563eb;
+            background: var(--presma-primary-soft);
+            color: var(--presma-primary);
         }
     </style>
 @endpush
@@ -884,7 +986,7 @@
                         <i class="bi bi-info-circle-fill"></i>
                         Nilai setiap prestasi satu per satu sesuai bukti yang telah diunggah oleh madrasah.
                     </div>
-                    <button type="button" class="btn btn-rubrik">
+                    <button type="button" class="btn btn-rubrik" data-bs-toggle="modal" data-bs-target="#modalLihatRubrik">
                         <i class="bi bi-journal-text me-1"></i> Lihat Rubrik
                     </button>
                 </div>
@@ -1031,6 +1133,25 @@
                                                         {{ $prestasi['sumber_skor'] }}
                                                     </div>
                                                     <span class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
+                                                    @if ($prestasi['rubrik_status'] === 'cocok')
+                                                        <div class="rubrik-badge rubrik-cocok" data-bs-toggle="tooltip"
+                                                            title="Sesuai rubrik Juknis">
+                                                            <i class="bi bi-check-circle-fill"></i> Sesuai
+                                                        </div>
+                                                    @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
+                                                        <div class="rubrik-badge rubrik-tidak-cocok"
+                                                            data-bs-toggle="tooltip"
+                                                            title="Skor rubrik Juknis: {{ $prestasi['rubrik_skor'] }}">
+                                                            <i class="bi bi-exclamation-triangle-fill"></i> Beda:
+                                                            {{ $prestasi['rubrik_skor'] }}
+                                                        </div>
+                                                    @else
+                                                        <div class="rubrik-badge rubrik-tidak-ada"
+                                                            data-bs-toggle="tooltip"
+                                                            title="Kombinasi kriteria ini belum ada di tabel rubrik">
+                                                            <i class="bi bi-dash-circle"></i> N/A
+                                                        </div>
+                                                    @endif
                                                 </td>
                                                 <td class="text-center">
                                                     @if ($sudah)
@@ -1062,8 +1183,15 @@
                                 </table>
                             </div>
 
-                            <div class="mt-3 d-flex justify-content-center">
-                                {{ $daftarPrestasi->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            <div class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="text-muted" style="font-size:.85rem">
+                                    Menampilkan <strong>{{ $daftarPrestasi->firstItem() ?? 0 }}</strong> sampai
+                                    <strong>{{ $daftarPrestasi->lastItem() ?? 0 }}</strong> dari
+                                    <strong>{{ $daftarPrestasi->total() }}</strong> hasil
+                                </div>
+                                <div>
+                                    {{ $daftarPrestasi->onEachSide(1)->links('pagination::bootstrap-5') }}
+                                </div>
                             </div>
                         </div>
 
@@ -1117,6 +1245,180 @@
 
     </main>
 @endsection
+{{-- MODAL LIHAT RUBRIK -- referensi manual, Asesor bisa cek nilai
+             rubrik Juknis tanpa perlu buka dokumen/scroll PDF terpisah.
+             Tabel "Lomba" ditampilkan PERSIS format resmi Juknis: Tingkat
+             digabung (rowspan), kolom Skor dipecah Individu/Beregu x
+             Luring/Daring, dan dipisah per Penyelenggara Pemerintah/Non
+             Pemerintah (2 tabel terpisah, sesuai dokumen aslinya). --}}
+<div class="modal fade" id="modalLihatRubrik" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-journal-text text-success me-1"></i> Rubrik Penilaian Juknis
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+
+                @if ($daftarRubrikReferensi->isEmpty())
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox"
+                            style="font-size:2rem;color:#cbd5e1;display:block;margin-bottom:.5rem;"></i>
+                        Belum ada rubrik yang tersedia untuk bidang/periode ini.
+                    </div>
+                @else
+                    <ul class="nav nav-pills mb-3 flex-wrap" id="rubrikTabNav">
+                        @foreach ($daftarRubrikReferensi as $bidang => $dataBidang)
+                            <li class="nav-item">
+                                <button type="button"
+                                    class="nav-link rubrik-tab-btn {{ $loop->first ? 'active' : '' }}"
+                                    data-target="#rubrikPane-{{ Str::slug($bidang) }}">
+                                    {{ $bidang }}
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <div class="tab-content" style="max-height:65vh; overflow-y:auto;">
+                        @foreach ($daftarRubrikReferensi as $bidang => $dataBidang)
+                            <div class="rubrik-tab-pane {{ $loop->first ? '' : 'd-none' }}"
+                                id="rubrikPane-{{ Str::slug($bidang) }}">
+
+                                {{-- TABEL "LOMBA" -- satu tabel per Penyelenggara --}}
+                                @foreach ($dataBidang['lomba'] as $penyelenggara => $dataPivot)
+                                    <div class="rubrik-penyelenggara-label">
+                                        <i class="bi bi-bank2"></i> Penyelenggara: {{ $penyelenggara }}
+                                    </div>
+
+                                    <div class="table-responsive mb-4">
+                                        <table
+                                            class="table table-bordered rubrik-ref-table align-middle text-center mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2">Tingkat</th>
+                                                    <th rowspan="2">Juara</th>
+                                                    @if ($dataPivot['ada_metode'])
+                                                        <th colspan="2">Skor Individu</th>
+                                                        <th colspan="2">Skor Beregu</th>
+                                                    @else
+                                                        <th rowspan="2">Skor Individu</th>
+                                                        <th rowspan="2">Skor Beregu</th>
+                                                    @endif
+                                                </tr>
+                                                @if ($dataPivot['ada_metode'])
+                                                    <tr>
+                                                        <th>Luring</th>
+                                                        <th>Daring</th>
+                                                        <th>Luring</th>
+                                                        <th>Daring</th>
+                                                    </tr>
+                                                @endif
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($dataPivot['grup'] as $grupTingkat)
+                                                    @foreach ($grupTingkat['baris'] as $i => $baris)
+                                                        <tr>
+                                                            @if ($i === 0)
+                                                                <td rowspan="{{ $grupTingkat['rowspan'] }}"
+                                                                    class="fw-semibold rubrik-tingkat-cell">
+                                                                    {{ $grupTingkat['tingkat'] }}
+                                                                </td>
+                                                            @endif
+                                                            <td>{{ $baris->juara }}</td>
+                                                            @if ($dataPivot['ada_metode'])
+                                                                <td>{{ number_format($baris->individu_luring ?? 0, 0, ',', '.') }}
+                                                                </td>
+                                                                <td>{{ number_format($baris->individu_daring ?? 0, 0, ',', '.') }}
+                                                                </td>
+                                                                <td>{{ number_format($baris->beregu_luring ?? 0, 0, ',', '.') }}
+                                                                </td>
+                                                                <td>{{ number_format($baris->beregu_daring ?? 0, 0, ',', '.') }}
+                                                                </td>
+                                                            @else
+                                                                <td>{{ number_format($baris->individu ?? 0, 0, ',', '.') }}
+                                                                </td>
+                                                                <td>{{ number_format($baris->beregu ?? 0, 0, ',', '.') }}
+                                                                </td>
+                                                            @endif
+                                                        </tr>
+                                                    @endforeach
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endforeach
+
+                                {{-- TABEL "LAINNYA" -- Karya/Kelembagaan/Hafalan (kriteria bebas) --}}
+                                @if ($dataBidang['lainnya']->isNotEmpty())
+                                    <div class="rubrik-penyelenggara-label">
+                                        <i class="bi bi-list-check"></i> Kriteria Lainnya
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered rubrik-ref-table align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Jenis</th>
+                                                    <th>Kriteria</th>
+                                                    <th class="text-end">Skor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($dataBidang['lainnya'] as $rubrik)
+                                                    <tr>
+                                                        <td>{{ $rubrik->jenis_rubrik }}</td>
+                                                        <td>
+                                                            {{ $rubrik->kriteria_khusus ?? '-' }}
+                                                            @if ($rubrik->nilai_min !== null)
+                                                                <span
+                                                                    class="text-muted">({{ $rubrik->nilai_min }}–{{ $rubrik->nilai_max }})</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="text-end fw-bold text-success">
+                                                            {{ number_format($rubrik->skor, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
+
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+    <script>
+        // Tab switch sederhana buat modal Lihat Rubrik -- sengaja custom
+        // (bukan Bootstrap native tabs) supaya tidak perlu utak-atik
+        // atribut data-bs-toggle="tab" di banyak tempat.
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.rubrik-tab-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const target = this.dataset.target;
+
+                    document.querySelectorAll('.rubrik-tab-btn').forEach(b => b.classList.remove(
+                        'active'));
+                    this.classList.add('active');
+
+                    document.querySelectorAll('.rubrik-tab-pane').forEach(pane => pane.classList
+                        .add('d-none'));
+                    document.querySelector(target).classList.remove('d-none');
+                });
+            });
+        });
+    </script>
+@endpush
 
 {{-- ================================================================
          MODAL FINALISASI - konfirmasi Kumpulkan Penilaian
@@ -1238,6 +1540,20 @@
                         <div class="preview-item">
                             <div class="preview-value">{{ $prestasi['bobot'] }}%</div>
                             <div class="preview-label">Skor Dasar &middot; {{ $prestasi['sumber_skor'] }}</div>
+                            @if ($prestasi['rubrik_status'] === 'cocok')
+                                <div class="rubrik-badge rubrik-cocok mt-1">
+                                    <i class="bi bi-check-circle-fill"></i> Sesuai rubrik
+                                </div>
+                            @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
+                                <div class="rubrik-badge rubrik-tidak-cocok mt-1">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Rubrik:
+                                    {{ $prestasi['rubrik_skor'] }}
+                                </div>
+                            @else
+                                <div class="rubrik-badge rubrik-tidak-ada mt-1">
+                                    <i class="bi bi-dash-circle"></i> Belum ada di rubrik
+                                </div>
+                            @endif
                         </div>
                         <div class="preview-divider"></div>
                         <div class="preview-item">
@@ -1256,7 +1572,8 @@
                         <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Tutup</button>
                     @else
                         <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" form="formNilai{{ $index }}" class="btn btn-modal-save">Simpan
+                        <button type="submit" form="formNilai{{ $index }}"
+                            class="btn btn-modal-save">Simpan
                             Nilai</button>
                     @endif
                 </div>

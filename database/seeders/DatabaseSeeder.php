@@ -77,7 +77,8 @@ class DatabaseSeeder extends Seeder
         */
 
         $this->call([
-            MadrasahSeeder::class
+            MadrasahSeeder::class,
+            RubrikPenilaianSeeder::class
         ]);
 
         /*

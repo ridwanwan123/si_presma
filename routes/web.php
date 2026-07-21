@@ -21,6 +21,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AssignAsesorController;
 use App\Http\Controllers\AsesorController;
 use App\Http\Controllers\DashboardAsesorController;
+use App\Http\Controllers\RubrikPenilaianController;
 // use App\Http\Controllers\WilayahPengawasController;
 
 use Illuminate\Support\Facades\Route;
@@ -208,6 +209,9 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('keterlambatan-berkas', KeterlambatanBerkasController::class)
             ->only(['index', 'store', 'destroy']);
+        
+        Route::resource('rubrik-penilaian', RubrikPenilaianController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
     });
     
     /*

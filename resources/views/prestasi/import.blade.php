@@ -227,8 +227,8 @@
         }
 
         /* ===========================
-                       MODAL ERROR IMPORT (SweetAlert)
-                    =========================== */
+                   MODAL ERROR IMPORT (SweetAlert)
+                =========================== */
 
         .import-error-summary {
             display: flex;
@@ -488,7 +488,7 @@
                         data-bs-toggle="collapse" data-bs-target="#panduanDetail" aria-expanded="false"
                         aria-controls="panduanDetail">
                         <i class="bi bi-chevron-down" id="iconTogglePanduan"></i>
-                        BUKA PANDUAN
+                        Tampilkan Detail Panduan
                     </button>
                 </div>
 
@@ -543,8 +543,7 @@
                                     </td>
                                     <td>Isi salah satu: <strong>Akademik</strong>, <strong>Non Akademik</strong>,
                                         <strong>Keagamaan</strong>, <strong>GTK</strong>, atau <strong>Lembaga</strong>.
-                                        Boleh beda-beda tiap baris — satu file boleh campuran semua bidang.
-                                    </td>
+                                        Boleh beda-beda tiap baris — satu file boleh campuran semua bidang.</td>
                                     <td class="panduan-contoh">Akademik</td>
                                 </tr>
                                 <tr>
@@ -562,8 +561,7 @@
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
                                     <td>Isi salah satu: <strong>Kabupaten/Kota</strong>, <strong>Provinsi</strong>,
-                                        <strong>Nasional</strong>, atau <strong>Internasional</strong>.
-                                    </td>
+                                        <strong>Nasional</strong>, atau <strong>Internasional</strong>.</td>
                                     <td class="panduan-contoh">Nasional</td>
                                 </tr>
                                 <tr>
@@ -579,7 +577,9 @@
                                         <div class="panduan-kolom-nama">juara</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Teks bebas, sesuai hasil yang diperoleh — tidak ada format baku.</td>
+                                    <td>Isi salah satu: <strong>Juara 1/2/3</strong> atau <strong>Harapan 1/2/3</strong>.
+                                        Boleh ditulis angka biasa ("Juara 1") atau angka romawi ("Juara I") — dua-duanya
+                                        diterima, otomatis disamakan ke bentuk angka.</td>
                                     <td class="panduan-contoh">Juara 1 / Harapan 2</td>
                                 </tr>
                                 <tr>
@@ -596,8 +596,9 @@
                                         <div class="panduan-kolom-nama">kategori_penyelenggara</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Teks bebas, mis. jenis instansi penyelenggara. <strong>Maksimal 255
-                                            karakter</strong>.</td>
+                                    <td>Isi salah satu: <strong>Pemerintah</strong> atau <strong>Non Pemerintah</strong>.
+                                        Harus persis salah satu dari dua ini, bukan teks bebas (mis. jangan tulis "Dinas
+                                        Pendidikan" atau "Pemerintah Kota").</td>
                                     <td class="panduan-contoh">Pemerintah</td>
                                 </tr>
                                 <tr>
@@ -627,8 +628,7 @@
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
                                     <td>Harus <strong>angka</strong> (bukan teks), tanpa titik/koma ribuan. Maksimal
-                                        <strong>999.999,99</strong>.
-                                    </td>
+                                        <strong>999.999,99</strong>.</td>
                                     <td class="panduan-contoh">87.5</td>
                                 </tr>
                                 <tr>
@@ -805,12 +805,12 @@
 
             panduanDetail.addEventListener('show.bs.collapse', function() {
                 iconToggle.classList.replace('bi-chevron-down', 'bi-chevron-up');
-                btnToggle.lastChild.textContent = ' TUTUP PANDUAN';
+                btnToggle.lastChild.textContent = ' Sembunyikan Detail Panduan';
             });
 
             panduanDetail.addEventListener('hide.bs.collapse', function() {
                 iconToggle.classList.replace('bi-chevron-up', 'bi-chevron-down');
-                btnToggle.lastChild.textContent = ' BUKA PANDUAN';
+                btnToggle.lastChild.textContent = ' Tampilkan Detail Panduan';
             });
         })();
 
@@ -917,7 +917,7 @@
                             let errorHtml = response.errors.map(err => {
 
                                 const kolom = kolomInfo[err.column] || kolomInfo
-                                    .general;
+                                .general;
                                 const rows = err.rows || [];
                                 const barisTampil = rows.slice(0, MAKS_BARIS_TAMPIL)
                                     .join(', ');

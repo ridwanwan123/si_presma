@@ -46,9 +46,54 @@ class PrestasiImportService
         'beregu' => 'Beregu',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | BARU: JUARA -- ikut konvensi 6 tingkatan yang sudah ada di dropdown
+    | form input manual (Juara 1-3, Harapan 1-3; "Harapan 3" sendiri di
+    | luar Juknis resmi, tapi sudah jadi standar produk).
+    |
+    | DITERIMA DUA BENTUK: angka biasa ("Juara 1") MAUPUN angka romawi
+    | ("Juara I") -- romawi memang tulisan resmi di dokumen Juknis, jadi
+    | tidak masuk akal ditolak. Berapa pun bentuk yang diketik user, yang
+    | TERSIMPAN ke database selalu bentuk angka (nilai di kanan setiap
+    | baris mapping ini) supaya konsisten satu standar.
+    |--------------------------------------------------------------------------
+    */
+    private const VALID_JUARA = [
+        // Bentuk angka (kanonik)
+        'juara1' => 'Juara 1',
+        'juara2' => 'Juara 2',
+        'juara3' => 'Juara 3',
+        'harapan1' => 'Harapan 1',
+        'harapan2' => 'Harapan 2',
+        'harapan3' => 'Harapan 3',
+
+        // Bentuk angka romawi -- otomatis dipetakan ke bentuk angka di atas
+        'juarai' => 'Juara 1',
+        'juaraii' => 'Juara 2',
+        'juaraiii' => 'Juara 3',
+        'harapani' => 'Harapan 1',
+        'harapanii' => 'Harapan 2',
+        'harapaniii' => 'Harapan 3',
+    ];
+
     private const VALID_METODE_PELAKSANAAN = [
         'luring' => 'Luring',
         'daring' => 'Daring',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | BARU: KATEGORI PENYELENGGARA -- sebelumnya kolom ini bebas teks sama
+    | sekali (tidak ada validasi nilai), akibatnya isinya bisa bervariasi
+    | ("Pemerintah Kota", "Dinas Pendidikan", dst) walau maksudnya sama.
+    | Ini bikin pencocokan rubrik Juknis (yang butuh nilai PERSIS "Pemerintah"
+    | atau "Non Pemerintah") gagal terus walau datanya sebenarnya valid.
+    |--------------------------------------------------------------------------
+    */
+    private const VALID_KATEGORI_PENYELENGGARA = [
+        'pemerintah' => 'Pemerintah',
+        'nonpemerintah' => 'Non Pemerintah',
     ];
 
     /*
@@ -220,6 +265,57 @@ class PrestasiImportService
             }
 
             $row['kategori_kegiatan'] = self::VALID_KATEGORI_KEGIATAN[$kategori];
+
+            /*
+            |--------------------------------------------------------------------------
+            | BARU: Validasi Juara
+            |--------------------------------------------------------------------------
+            | Menerima bentuk angka ("Juara 1") ATAU angka romawi ("Juara I") --
+            | dua-duanya dipetakan ke bentuk angka yang sama (lihat VALID_JUARA).
+            |--------------------------------------------------------------------------
+            */
+
+            $juara = $this->normalizeKey($row['juara']);
+
+            if (!isset(self::VALID_JUARA[$juara])) {
+
+                $errors[] = [
+                    'row' => $index + 2,
+                    'column' => 'juara',
+                    'error' => 'Juara harus salah satu dari: Juara 1/2/3 atau Harapan 1/2/3 (boleh ditulis angka biasa atau angka romawi)'
+                ];
+
+                continue;
+            }
+
+            $row['juara'] = self::VALID_JUARA[$juara];
+
+            /*
+            |--------------------------------------------------------------------------
+            | BARU: Validasi Kategori Penyelenggara
+            |--------------------------------------------------------------------------
+            | Sebelumnya kolom ini lolos apapun isinya (asal tidak kosong).
+            | Sekarang dibatasi PERSIS 2 pilihan, sama seperti dropdown yang
+            | sudah ada di form input manual -- supaya bisa dicocokkan ke
+            | rubrik Juknis (yang butuh nilai "Pemerintah"/"Non Pemerintah"
+            | persis, bukan variasi bebas seperti "Dinas Pendidikan").
+            |--------------------------------------------------------------------------
+            */
+
+            $penyelenggara = $this->normalizeKey($row['kategori_penyelenggara']);
+
+            if (!isset(self::VALID_KATEGORI_PENYELENGGARA[$penyelenggara])) {
+
+                $errors[] = [
+                    'row' => $index + 2,
+                    'column' => 'kategori_penyelenggara',
+                    'error' => 'Kategori penyelenggara harus Pemerintah atau Non Pemerintah'
+                ];
+
+                continue;
+            }
+
+            $row['kategori_penyelenggara'] = self::VALID_KATEGORI_PENYELENGGARA[$penyelenggara];
 
             /*
             |--------------------------------------------------------------------------

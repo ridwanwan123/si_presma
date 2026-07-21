@@ -7,7 +7,9 @@ use App\Models\Madrasah;
 use App\Models\PenilaianPrestasi;
 use App\Models\PrestasiSiklus;
 use App\Models\PrestasiSiswa;
+use App\Models\RubrikPenilaian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\ActivityLogger;
@@ -441,11 +443,29 @@ class AsesorController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $daftarPrestasi = $prestasiPaginator->through(function ($prestasi) {
+        $daftarPrestasi = $prestasiPaginator->through(function ($prestasi) use ($periodeAssignment) {
             $penilaian = $prestasi->penilaianPrestasi;
 
             // Skor Awal & metode pelaksanaan langsung dari kolom skor / metode_pelaksanaan.
             $skorAwal = $prestasi->skor ?? 0;
+
+            /*
+            |--------------------------------------------------------------------------
+            | COCOKKAN KE RUBRIK JUKNIS -- murni bantu visual buat Asesor (kalau
+            | cocok, badge hijau, tinggal fokus cek link Drive). TIDAK menolak/
+            | mengubah skor apapun -- keputusan akhir tetap 100% di tangan Asesor.
+            |--------------------------------------------------------------------------
+            */
+            $kecocokanRubrik = RubrikPenilaian::statusKecocokan(
+                bidangPrestasi: $prestasi->bidang_prestasi,
+                tingkat: $prestasi->tingkat,
+                juara: $prestasi->juara,
+                kategoriKegiatan: $prestasi->kategori_kegiatan,
+                metodePelaksanaan: $prestasi->metode_pelaksanaan,
+                kategoriPenyelenggara: $prestasi->kategori_penyelenggara,
+                tahun: (int) $periodeAssignment,
+                skorMadrasah: (float) $skorAwal
+            );
 
             return [
                 'id' => $prestasi->id,
@@ -469,6 +489,8 @@ class AsesorController extends Controller
                 'nilai_akhir' => $penilaian->nilai_akhir ?? null,
                 'catatan' => $penilaian->catatan ?? null,
                 'ada_penilaian' => $penilaian !== null,
+                'rubrik_status' => $kecocokanRubrik['status'], // 'cocok' | 'tidak_cocok' | 'tidak_ada'
+                'rubrik_skor' => $kecocokanRubrik['skor_rubrik'],
             ];
         });
 
@@ -477,6 +499,36 @@ class AsesorController extends Controller
             ->map(fn ($kata) => strtoupper(substr($kata, 0, 1)))
             ->join('');
         $inisialAsesor = substr($inisialAsesor, 0, 2);
+
+        /*
+        |--------------------------------------------------------------------------
+        | REFERENSI RUBRIK -- buat tombol "Lihat Rubrik" jadi fungsional.
+        | Cuma ambil rubrik yang RELEVAN (bidang yang benar-benar ada di
+        | halaman ini + tahun_berlaku sesuai periode assignment), bukan
+        | seluruh isi tabel rubrik -- supaya tidak berat & tidak
+        | membingungkan (Asesor cuma perlu lihat bidang yang lagi dia nilai).
+        |
+        | Data mentahnya tersimpan per-baris (satu baris = satu kombinasi
+        | Tingkat x Juara x Individu/Beregu x Luring/Daring), tapi biar
+        | tampilannya PERSIS seperti tabel resmi Juknis (Tingkat digabung,
+        | kolom Skor dipecah Individu/Beregu x Luring/Daring), datanya
+        | di-"pivot" dulu di sini -- lihat pivotRubrikLomba().
+        |--------------------------------------------------------------------------
+        */
+        $daftarRubrikReferensi = RubrikPenilaian::whereIn('bidang_prestasi', $daftarBidang)
+            ->where('tahun_berlaku', $periodeAssignment)
+            ->orderBy('bidang_prestasi')
+            ->orderBy('jenis_rubrik')
+            ->orderByRaw("FIELD(tingkat, 'Internasional', 'Nasional', 'Provinsi', 'Kabupaten/Kota')")
+            ->orderByRaw("FIELD(juara, 'Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3')")
+            ->get()
+            ->groupBy('bidang_prestasi')
+            ->map(function ($rowsBidang) {
+                return [
+                    'lomba' => $this->pivotRubrikLomba($rowsBidang->where('jenis_rubrik', 'Lomba')),
+                    'lainnya' => $rowsBidang->where('jenis_rubrik', '!=', 'Lomba')->values(),
+                ];
+            });
 
         return view('asesor.show', [
             'madrasah' => [
@@ -503,7 +555,78 @@ class AsesorController extends Controller
             'daftarBidang' => $daftarBidang,
             'daftarPenyelenggara' => $daftarPenyelenggara,
             'statusPenilaian' => $statusPenilaian,
+            'daftarRubrikReferensi' => $daftarRubrikReferensi,
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | "PUTAR" DATA RUBRIK LOMBA JADI FORMAT TABEL RESMI JUKNIS
+    |--------------------------------------------------------------------------
+    | Data mentah RubrikPenilaian tersimpan per-baris (satu baris = satu
+    | kombinasi Tingkat x Juara x Individu/Beregu x Luring/Daring). Tapi
+    | tabel resmi Juknis formatnya BEDA -- satu baris per Tingkat x Juara,
+    | dengan 4 kolom skor sekaligus (Individu-Luring, Individu-Daring,
+    | Beregu-Luring, Beregu-Daring) berdampingan.
+    |
+    | Method ini menggabungkan beberapa baris RubrikPenilaian jadi satu
+    | "baris tampilan", plus menghitung berapa baris Juara di bawah tiap
+    | Tingkat (buat rowspan di Blade nanti).
+    |
+    | GTK tidak punya dimensi Luring/Daring (kolom metode_pelaksanaan-nya
+    | NULL) -- makanya $adaMetode dideteksi dulu, supaya Blade tahu harus
+    | render header 4 kolom (Akademik/Non Akademik) atau 2 kolom (GTK).
+    |--------------------------------------------------------------------------
+    */
+    private function pivotRubrikLomba(Collection $rubrikLomba): array
+    {
+        if ($rubrikLomba->isEmpty()) {
+            return [];
+        }
+
+        // Juknis aslinya memang 2 tabel terpisah per bidang (Pemerintah vs
+        // Non Pemerintah), jadi dipecah dulu di level ini SEBELUM di-pivot
+        // per Tingkat x Juara.
+        return $rubrikLomba
+            ->groupBy('kategori_penyelenggara')
+            ->map(function ($rows) {
+                $adaMetode = $rows->contains(fn ($r) => $r->metode_pelaksanaan !== null);
+
+                $perTingkatJuara = $rows
+                    ->groupBy(fn ($r) => $r->tingkat . '||' . $r->juara)
+                    ->map(function ($items) use ($adaMetode) {
+                        $baris = [
+                            'tingkat' => $items->first()->tingkat,
+                            'juara' => $items->first()->juara,
+                        ];
+
+                        foreach ($items as $item) {
+                            $kolom = $adaMetode
+                                ? strtolower($item->kategori_kegiatan) . '_' . strtolower($item->metode_pelaksanaan)
+                                : strtolower($item->kategori_kegiatan);
+
+                            $baris[$kolom] = $item->skor;
+                        }
+
+                        return (object) $baris;
+                    })
+                    ->values();
+
+                $perTingkat = $perTingkatJuara
+                    ->groupBy('tingkat')
+                    ->map(fn ($baris, $tingkat) => [
+                        'tingkat' => $tingkat,
+                        'rowspan' => $baris->count(),
+                        'baris' => $baris->values(),
+                    ])
+                    ->values();
+
+                return [
+                    'ada_metode' => $adaMetode,
+                    'grup' => $perTingkat,
+                ];
+            })
+            ->toArray();
     }
 
     /*

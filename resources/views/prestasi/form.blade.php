@@ -4,8 +4,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                                                                                                                                                                               FORM MADRASAH
-                                                                                                                                                                                                                                                                                                                            ========================= */
+                                                                                                                                                                                                                                                                                                                                   FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                                ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -325,30 +325,25 @@
                                 ];
 
                                 $selected = old('juara', $prestasi->juara ?? '');
-                                $isOther = !in_array($selected, $juaraOptions) && !empty($selected);
                             @endphp
 
-                            <select name="juara_select" id="juara_select" class="form-control">
-                                <option value="">Pilih Juara</option>
+                            {{-- Sengaja TIDAK ada opsi "Lainnya"/input bebas lagi --
+                                 juara itu tingkatan yang jumlahnya tetap (cuma 6
+                                 kemungkinan), tidak ada alasan bisnis butuh nilai
+                                 di luar ini. Dropdown murni mencegah variasi
+                                 penulisan (mis. "Juara I" romawi) yang bikin
+                                 pencocokan ke rubrik Juknis gagal padahal
+                                 datanya sebenarnya sama. --}}
+                            <select name="juara" id="juara_select" class="form-control" required>
+                                <option value="" disabled {{ empty($selected) ? 'selected' : '' }}>Pilih Juara
+                                </option>
 
                                 @foreach ($juaraOptions as $option)
                                     <option value="{{ $option }}" {{ $selected == $option ? 'selected' : '' }}>
                                         {{ $option }}
                                     </option>
                                 @endforeach
-
-                                <option value="other" {{ $isOther ? 'selected' : '' }}>
-                                    Lainnya...
-                                </option>
                             </select>
-
-                            <input type="text" name="juara" id="juara_other" class="form-control mt-2"
-                                placeholder="Masukkan juara lainnya" value="{{ $isOther ? $selected : '' }}"
-                                style="{{ $isOther ? '' : 'display:none;' }}" {{ $isOther ? 'required' : '' }}>
-
-                            @if (!$isOther)
-                                <input type="hidden" name="juara" id="juara_hidden" value="{{ $selected }}">
-                            @endif
                         </div>
 
                         {{-- LEMBAGA --}}
@@ -547,33 +542,6 @@
                 });
 
             });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const select = document.getElementById('juara_select');
-            const other = document.getElementById('juara_other');
-            const hidden = document.getElementById('juara_hidden');
-
-            function toggleOther() {
-                if (select.value === 'other') {
-                    other.style.display = 'block';
-                    other.required = true;
-
-                    if (hidden) hidden.disabled = true;
-                } else {
-                    other.style.display = 'none';
-                    other.required = false;
-                    other.value = '';
-
-                    if (hidden) {
-                        hidden.disabled = false;
-                        hidden.value = select.value;
-                    }
-                }
-            }
-
-            select.addEventListener('change', toggleOther);
-            toggleOther();
         });
     </script>
 @endpush
