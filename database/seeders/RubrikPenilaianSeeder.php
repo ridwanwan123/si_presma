@@ -11,21 +11,25 @@ class RubrikPenilaianSeeder extends Seeder
 
     /*
     |--------------------------------------------------------------------------
-    | CATATAN: Seeder ini BARU mengisi kategori yang strukturnya jelas
-    | (kombinasi Tingkat x Juara): Prestasi Siswa (Akademik/Non Akademik) dan
-    | Prestasi GTK jenis Lomba, plus Hafalan Qur'an (linear per Juz).
-    |
-    | BELUM diisi: GTK jenis Karya Tulis (Penulis Jurnal, dst) dan Lembaga
-    | (Adiwiyata, Zona Integritas, dst) -- keduanya heterogen banget, tiap
-    | baris kriterianya beda nama & logic sendiri, jadi didata manual satu
-    | per satu nanti kalau sudah disepakati cara input-nya di sisi Madrasah.
+    | SEMUA 5 BIDANG SEKARANG TERISI:
+    | - Akademik & Non Akademik  -> jenis_rubrik 'Lomba' (Tingkat x Juara)
+    | - GTK                      -> jenis_rubrik 'Lomba' (kompetisi) DAN
+    |                                'Karya' (karya tulis/publikasi)
+    | - Keagamaan                -> jenis_rubrik 'Hafalan' (linear per Juz)
+    | - Lembaga                  -> jenis_rubrik 'Kelembagaan' (paling
+    |                                heterogen, lihat catatan di
+    |                                seedLembaga() soal beberapa item yang
+    |                                rentang angkanya perlu dikonfirmasi
+    |                                ulang ke Anda)
     |--------------------------------------------------------------------------
     */
     public function run(): void
     {
         $this->seedPrestasiSiswa();
         $this->seedPrestasiGtkLomba();
+        $this->seedGtkKarya();
         $this->seedHafalanQuran();
+        $this->seedLembaga();
     }
 
     /*
@@ -176,6 +180,209 @@ class RubrikPenilaianSeeder extends Seeder
             }
         }
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | GTK -- JENIS KARYA TULIS/PUBLIKASI (bidang sama dengan GTK Lomba di
+    | atas, cuma jenis_rubrik-nya 'Karya' -- kriterianya nama tetap, bukan
+    | kombinasi Tingkat x Juara, jadi pakai kriteria_khusus).
+    |
+    | CATATAN: dokumen Juknis cuma kasih tabel ini sampai tingkat Provinsi
+    | -- tidak ada baris Kabupaten/Kota untuk kategori Karya Tulis GTK.
+    | Kalau ternyata memang ada, tambahkan manual lewat halaman Kelola
+    | Rubrik nanti.
+    |--------------------------------------------------------------------------
+    */
+    private function seedGtkKarya(): void
+    {
+        $data = [
+            'Internasional' => [
+                'Penulis Jurnal ISSN Terindeks Scopus' => 650,
+                'Penulis Buku Tunggal ISBN' => 550,
+                'Penulis Jurnal ISSN Belum Bereputasi Tinggi' => 450,
+                'Karya Tulis Ilmiah' => 400,
+                'Antologi Ber-ISBN' => 200,
+            ],
+            'Nasional' => [
+                'Jurnal Nasional Terakreditasi Sinta 1-2 (Diakui Kemendikbudristek)' => 500,
+                'Penulis Buku Tunggal ISBN' => 450,
+                'Jurnal Nasional Terakreditasi Sinta 3-6 (Diakui Kemendikbudristek)' => 300,
+                'Karya Tulis Ilmiah' => 250,
+                'Antologi Ber-ISBN' => 75,
+            ],
+            'Provinsi' => [
+                'Prosiding Terpublikasi (Belum Sekuat Jurnal)' => 250,
+                'Artikel Populer Edukatif / Artikel Ilmiah Populer (Media Massa, Blog Ilmiah, Buletin Edukatif)' => 200,
+                'Karya Tulis Ilmiah' => 150,
+                'Antologi Ber-ISBN' => 50,
+            ],
+        ];
+
+        foreach ($data as $tingkat => $daftarKriteria) {
+            foreach ($daftarKriteria as $kriteria => $skor) {
+                RubrikPenilaian::create([
+                    'bidang_prestasi' => 'GTK',
+                    'jenis_rubrik' => 'Karya',
+                    'tingkat' => $tingkat,
+                    'kriteria_khusus' => $kriteria,
+                    'skor' => $skor,
+                    'tahun_berlaku' => self::TAHUN_BERLAKU,
+                ]);
+            }
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LEMBAGA -- paling heterogen di seluruh Juknis. Sebagian besar item
+    | punya skor TETAP (tinggal kriteria_khusus + skor), tapi beberapa
+    | berbasis RENTANG ANGKA (nilai_min/nilai_max) -- persentase serapan,
+    | jumlah siswa PASKIBRAKA, dst.
+    |
+    | !! PENTING -- MOHON DICEK ULANG !!
+    | Beberapa rentang di bawah ini saya isi berdasarkan pembacaan dokumen
+    | yang menurut saya BATASNYA SEDIKIT AMBIGU (kemungkinan ada bagian
+    | yang kepotong/kurang jelas pas dokumennya di-scan):
+    | 1. PASKIBRAKA: tertulis "9 > Lebih banyak" (saya baca sebagai >=9)
+    |    DAN "7 - 9" sebagai tingkatan terpisah -- keduanya sama-sama
+    |    menyentuh angka 9, jadi kalau persis 9 orang, bisa masuk 2
+    |    kategori sekaligus. Saya set tingkatan pertama jadi >9 (bukan >=9)
+    |    supaya tidak tumpang tindih, TAPI ini asumsi saya, bukan angka
+    |    pasti dari dokumen.
+    | 2. Sekolah Tinggi Kedinasan & MAN IC: tertulis "Diterima sampai 20%"
+    |    di tengah antara ">30%" dan "kurang 10%" -- saya asumsikan
+    |    maksudnya rentang 10%-30%, tapi dokumennya sendiri tidak
+    |    menyebutkan batas bawah PERSIS jadi ini juga tebakan saya yang
+    |    paling masuk akal, bukan kepastian.
+    |--------------------------------------------------------------------------
+    */
+    private function seedLembaga(): void
+    {
+        // ---------- Item dengan SKOR TETAP (nama kriteria x tingkat) ----------
+        $itemTetap = [
+            'Nasional' => [
+                'Zona Integritas/WBK - Lolos Penilaian Pendahuluan (Pendis)' => 150,
+                'Zona Integritas/WBK - Lolos Tim Penilai Internal (Itjen)' => 350,
+                'Zona Integritas/WBK - Lolos Tim Penilai Nasional (Predikat WBK)' => 500,
+                'Adiwiyata' => 500,
+                'Sekolah Sehat' => 400,
+                'Ramah Anak' => 350,
+            ],
+            'Provinsi' => [
+                'Adiwiyata' => 400,
+                'Sekolah Sehat' => 350,
+                'Ramah Anak' => 300,
+            ],
+            'Kabupaten/Kota' => [
+                'Adiwiyata' => 150,
+                'Sekolah Sehat' => 150,
+                'Ramah Anak' => 150,
+                'Madrasah Digital - Pelayanan' => 50,
+                'Madrasah Digital - Pembelajaran' => 50,
+                'Madrasah Digital - Asesmen' => 50,
+                'IKPA Provinsi (KPPN)' => 150,
+                'Donasi Tertinggi PMI/ZIS - Terbaik 1' => 100,
+                'Donasi Tertinggi PMI/ZIS - Terbaik 2' => 75,
+                'Donasi Tertinggi PMI/ZIS - Terbaik 3' => 50,
+            ],
+        ];
+
+        foreach ($itemTetap as $tingkat => $daftarKriteria) {
+            foreach ($daftarKriteria as $kriteria => $skor) {
+                RubrikPenilaian::create([
+                    'bidang_prestasi' => 'Lembaga',
+                    'jenis_rubrik' => 'Kelembagaan',
+                    'tingkat' => $tingkat,
+                    'kriteria_khusus' => $kriteria,
+                    'skor' => $skor,
+                    'tahun_berlaku' => self::TAHUN_BERLAKU,
+                ]);
+            }
+        }
+
+        // ---------- Item berbasis RENTANG ANGKA ----------
+
+        // Siswa MA masuk PASKIBRAKA Tingkat Provinsi -- rentang JUMLAH SISWA
+        $paskibraka = [
+            ['Lebih dari 9 orang', 9, 999, 250],
+            ['7 - 8 orang', 7, 8, 200],
+            ['4 - 6 orang', 4, 6, 150],
+            ['1 - 3 orang', 1, 3, 100],
+        ];
+        foreach ($paskibraka as [$label, $min, $max, $skor]) {
+            RubrikPenilaian::create([
+                'bidang_prestasi' => 'Lembaga',
+                'jenis_rubrik' => 'Kelembagaan',
+                'tingkat' => 'Provinsi',
+                'kriteria_khusus' => 'Siswa MA masuk PASKIBRAKA (' . $label . ')',
+                'nilai_min' => $min,
+                'nilai_max' => $max,
+                'skor' => $skor,
+                'tahun_berlaku' => self::TAHUN_BERLAKU,
+            ]);
+        }
+
+        // Lulusan MA diterima di PTN/PTKI/PT LN -- rentang PERSENTASE SERAPAN
+        $serapanPtn = [
+            ['Serapan >= 90%', 90, 100, 350],
+            ['Serapan 80% - 89,99%', 80, 89.99, 300],
+            ['Serapan 70% - 79,99%', 70, 79.99, 250],
+            ['Serapan 60% - 69,99%', 60, 69.99, 200],
+            ['Serapan 50% - 59,99%', 50, 59.99, 150],
+            ['Serapan 25% - 49,99%', 25, 49.99, 100],
+        ];
+        foreach ($serapanPtn as [$label, $min, $max, $skor]) {
+            RubrikPenilaian::create([
+                'bidang_prestasi' => 'Lembaga',
+                'jenis_rubrik' => 'Kelembagaan',
+                'tingkat' => 'Kabupaten/Kota',
+                'kriteria_khusus' => 'Lulusan MA diterima PTN/PTKI/PT LN (' . $label . ')',
+                'nilai_min' => $min,
+                'nilai_max' => $max,
+                'skor' => $skor,
+                'tahun_berlaku' => self::TAHUN_BERLAKU,
+            ]);
+        }
+
+        // Lulusan MA diterima di Sekolah Tinggi Kedinasan -- rentang % (LIHAT CATATAN AMBIGUITAS DI ATAS)
+        $sekolahDinas = [
+            ['Diterima > 30%', 30.01, 100, 200],
+            ['Diterima 10% - 30%', 10, 30, 150],
+            ['Diterima < 10%', 0, 9.99, 100],
+        ];
+        foreach ($sekolahDinas as [$label, $min, $max, $skor]) {
+            RubrikPenilaian::create([
+                'bidang_prestasi' => 'Lembaga',
+                'jenis_rubrik' => 'Kelembagaan',
+                'tingkat' => 'Kabupaten/Kota',
+                'kriteria_khusus' => 'Lulusan MA diterima Sekolah Tinggi Kedinasan (' . $label . ')',
+                'nilai_min' => $min,
+                'nilai_max' => $max,
+                'skor' => $skor,
+                'tahun_berlaku' => self::TAHUN_BERLAKU,
+            ]);
+        }
+
+        // Lulusan MTs diterima di MAN IC -- rentang % (LIHAT CATATAN AMBIGUITAS DI ATAS)
+        $manIc = [
+            ['Diterima > 30%', 30.01, 100, 200],
+            ['Diterima 10% - 30%', 10, 30, 150],
+            ['Diterima < 10%', 0, 9.99, 100],
+        ];
+        foreach ($manIc as [$label, $min, $max, $skor]) {
+            RubrikPenilaian::create([
+                'bidang_prestasi' => 'Lembaga',
+                'jenis_rubrik' => 'Kelembagaan',
+                'tingkat' => 'Kabupaten/Kota',
+                'kriteria_khusus' => 'Lulusan MTs diterima MAN IC (' . $label . ')',
+                'nilai_min' => $min,
+                'nilai_max' => $max,
+                'skor' => $skor,
+                'tahun_berlaku' => self::TAHUN_BERLAKU,
+            ]);
+        }
+    }
+
 
     /*
     |--------------------------------------------------------------------------
