@@ -3,12 +3,12 @@
 @push('styles')
     <style>
         /* ===========================================================
-       RUBRIK PENILAIAN — DESIGN TOKENS
-       Dipakai token yang sama dengan assets/css/prestasi/index.css
-       (--presma-*) supaya konsisten satu sistem desain PRESMA.
-       Kalau nanti token ini sudah dipindah ke base.css secara
-       global, blok :root di bawah ini boleh dihapus.
-       =========================================================== */
+                                       RUBRIK PENILAIAN — DESIGN TOKENS
+                                       Dipakai token yang sama dengan assets/css/prestasi/index.css
+                                       (--presma-*) supaya konsisten satu sistem desain PRESMA.
+                                       Kalau nanti token ini sudah dipindah ke base.css secara
+                                       global, blok :root di bawah ini boleh dihapus.
+                                       =========================================================== */
         :root {
             --presma-primary: #0f8a43;
             --presma-primary-soft: #eaf6ef;
@@ -155,6 +155,58 @@
         }
 
         /* ===== TABLE ===== */
+        /* ============ MODE BROWSE: TABEL PIVOT ALA JUKNIS ============ */
+        .rubrik-bidang-tab-btn {
+            font-size: .82rem;
+            font-weight: 600;
+            border-radius: 999px;
+            color: #64748b;
+            background: #f1f5f9;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            border: none;
+            padding: 6px 16px;
+        }
+
+        .rubrik-bidang-tab-btn.active {
+            background: #198754 !important;
+            color: #fff !important;
+        }
+
+        .rubrik-pivot-table {
+            font-size: .84rem;
+        }
+
+        .rubrik-pivot-table th,
+        .rubrik-pivot-table td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 8px 10px;
+        }
+
+        .rubrik-pivot-table thead th {
+            font-size: .74rem;
+            font-weight: 700;
+            color: #334155;
+            background: #e2e8f0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .rubrik-tingkat-cell {
+            background: #f8fafc;
+            vertical-align: middle;
+        }
+
+        .rubrik-penyelenggara-label {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #0f8a43;
+            margin-bottom: .75rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
         .rubrik-table {
             width: 100%;
             border-collapse: separate;
@@ -408,7 +460,7 @@
         }
 
         /* Panel khusus untuk grup kondisional (Lomba / Bebas) supaya jelas
-               terpisah secara visual dari section Klasifikasi & Hasil */
+                                               terpisah secara visual dari section Klasifikasi & Hasil */
         .form-panel {
             border: 1px solid var(--presma-border);
             background: #f8fafc;
@@ -572,120 +624,306 @@
                 </form>
             </div>
 
-            {{-- TABEL --}}
-            <div class="content-card p-0">
-                <div class="table-responsive">
-                    <table class="rubrik-table">
-                        <thead>
-                            <tr>
-                                <th>Bidang</th>
-                                <th>Jenis</th>
-                                <th>Kriteria</th>
-                                <th class="text-end">Skor</th>
-                                <th class="text-center">Tahun</th>
-                                <th class="text-center" style="width:90px">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($daftarRubrik as $rubrik)
+            {{-- ================= MODE CARI: TABEL FLAT + PAGINASI (SEPERTI SEMULA) ================= --}}
+            @if ($sedangCari)
+                <div class="content-card p-0">
+                    <div class="table-responsive">
+                        <table class="rubrik-table">
+                            <thead>
                                 <tr>
-                                    <td class="bidang-label">{{ $rubrik->bidang_prestasi }}</td>
-                                    <td>
-                                        <span
-                                            class="jenis-badge jenis-{{ strtolower($rubrik->jenis_rubrik) }}">{{ $rubrik->jenis_rubrik }}</span>
-                                    </td>
-                                    <td>
-                                        @if ($rubrik->jenis_rubrik === 'Lomba')
-                                            <div class="kriteria-main">{{ $rubrik->tingkat }} &middot;
-                                                {{ $rubrik->juara }}</div>
-                                            <div class="kriteria-detail">
-                                                {{ $rubrik->kategori_kegiatan }}
-                                                {{ $rubrik->metode_pelaksanaan ? '· ' . $rubrik->metode_pelaksanaan : '' }}
-                                                · {{ $rubrik->kategori_penyelenggara }}
-                                            </div>
-                                        @else
-                                            <div class="kriteria-main">{{ $rubrik->kriteria_khusus ?? '-' }}</div>
-                                            @if ($rubrik->nilai_min !== null)
-                                                <div class="kriteria-detail">Rentang: {{ $rubrik->nilai_min }} –
-                                                    {{ $rubrik->nilai_max }}</div>
-                                            @endif
-                                        @endif
-                                    </td>
-                                    <td class="text-end">
-                                        <span class="skor-value">
-                                            <i class="bi bi-star-fill" style="font-size:.65rem"></i>
-                                            {{ number_format($rubrik->skor, 2, ',', '.') }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center"><span class="tahun-chip">{{ $rubrik->tahun_berlaku }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="action-btns justify-content-center">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                data-bs-toggle="modal" data-bs-target="#modalEdit{{ $rubrik->id }}"
-                                                title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <form action="{{ route('rubrik-penilaian.destroy', $rubrik->id) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('Hapus rubrik ini?')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                    <th>Bidang</th>
+                                    <th>Jenis</th>
+                                    <th>Kriteria</th>
+                                    <th class="text-end">Skor</th>
+                                    <th class="text-center">Tahun</th>
+                                    <th class="text-center" style="width:90px">Aksi</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($daftarRubrik as $rubrik)
+                                    <tr>
+                                        <td class="bidang-label">{{ $rubrik->bidang_prestasi }}</td>
+                                        <td>
+                                            <span
+                                                class="jenis-badge jenis-{{ strtolower($rubrik->jenis_rubrik) }}">{{ $rubrik->jenis_rubrik }}</span>
+                                        </td>
+                                        <td>
+                                            @if ($rubrik->jenis_rubrik === 'Lomba')
+                                                <div class="kriteria-main">{{ $rubrik->tingkat }} &middot;
+                                                    {{ $rubrik->juara }}</div>
+                                                <div class="kriteria-detail">
+                                                    {{ $rubrik->kategori_kegiatan }}
+                                                    {{ $rubrik->metode_pelaksanaan ? '· ' . $rubrik->metode_pelaksanaan : '' }}
+                                                    · {{ $rubrik->kategori_penyelenggara }}
+                                                </div>
+                                            @else
+                                                <div class="kriteria-main">{{ $rubrik->kriteria_khusus ?? '-' }}</div>
+                                                @if ($rubrik->nilai_min !== null)
+                                                    <div class="kriteria-detail">Rentang: {{ $rubrik->nilai_min }} –
+                                                        {{ $rubrik->nilai_max }}</div>
+                                                @endif
+                                            @endif
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="skor-value">
+                                                <i class="bi bi-star-fill" style="font-size:.65rem"></i>
+                                                {{ number_format($rubrik->skor, 2, ',', '.') }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center"><span
+                                                class="tahun-chip">{{ $rubrik->tahun_berlaku }}</span></td>
+                                        <td>
+                                            <div class="action-btns justify-content-center">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                    data-bs-toggle="modal" data-bs-target="#modalEdit{{ $rubrik->id }}"
+                                                    title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form action="{{ route('rubrik-penilaian.destroy', $rubrik->id) }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Hapus rubrik ini?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="rp-empty">
+                                                <i class="bi bi-inbox"></i>
+                                                <p>Tidak ada rubrik yang cocok dengan kata kunci ini.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 border-top" style="border-color:var(--presma-border) !important">
+                        {{ $daftarRubrik->links() }}
+                    </div>
+                </div>
 
-                                {{-- MODAL EDIT --}}
-                                <div class="modal fade" id="modalEdit{{ $rubrik->id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                                        <div class="modal-content">
-                                            <form action="{{ route('rubrik-penilaian.update', $rubrik->id) }}"
-                                                method="POST" class="form-rubrik">
-                                                @csrf @method('PUT')
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Edit Rubrik</h5>
-                                                    <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    @include('rubrik-penilaian.form', [
-                                                        'rubrik' => $rubrik,
-                                                    ])
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline-secondary"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit" class="btn btn-success">Simpan
-                                                        Perubahan</button>
-                                                </div>
-                                            </form>
-                                        </div>
+                {{-- ================= MODE BROWSE (DEFAULT): FORMAT PIVOT ALA JUKNIS ================= --}}
+            @else
+                @if ($rubrikTerkelompok->isEmpty())
+                    <div class="content-card">
+                        <div class="rp-empty">
+                            <i class="bi bi-inbox"></i>
+                            <p>Belum ada rubrik yang cocok dengan filter ini.</p>
+                        </div>
+                    </div>
+                @else
+                    <ul class="nav nav-pills mb-3 flex-wrap" id="rubrikBidangTabNav">
+                        @foreach ($rubrikTerkelompok as $bidang => $dataBidang)
+                            <li class="nav-item">
+                                <button type="button"
+                                    class="nav-link rubrik-bidang-tab-btn {{ $loop->first ? 'active' : '' }}"
+                                    data-target="#bidangPane-{{ Str::slug($bidang) }}">
+                                    {{ $bidang }}
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    @foreach ($rubrikTerkelompok as $bidang => $dataBidang)
+                        <div class="rubrik-bidang-pane {{ $loop->first ? '' : 'd-none' }}"
+                            id="bidangPane-{{ Str::slug($bidang) }}">
+
+                            {{-- TABEL "LOMBA" -- satu tabel per Penyelenggara --}}
+                            @foreach ($dataBidang['lomba'] as $penyelenggara => $dataPivot)
+                                <div class="content-card">
+                                    <div class="rubrik-penyelenggara-label">
+                                        <i class="bi bi-bank2"></i> Penyelenggara: {{ $penyelenggara }}
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table
+                                            class="table table-bordered rubrik-pivot-table align-middle text-center mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2">Tingkat</th>
+                                                    <th rowspan="2">Juara</th>
+                                                    @if ($dataPivot['ada_metode'])
+                                                        <th colspan="2">Skor Individu</th>
+                                                        <th colspan="2">Skor Beregu</th>
+                                                    @else
+                                                        <th rowspan="2">Skor Individu</th>
+                                                        <th rowspan="2">Skor Beregu</th>
+                                                    @endif
+                                                    <th rowspan="2" style="width:70px">Aksi</th>
+                                                </tr>
+                                                @if ($dataPivot['ada_metode'])
+                                                    <tr>
+                                                        <th>Luring</th>
+                                                        <th>Daring</th>
+                                                        <th>Luring</th>
+                                                        <th>Daring</th>
+                                                    </tr>
+                                                @endif
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($dataPivot['grup'] as $grupTingkat)
+                                                    @foreach ($grupTingkat['baris'] as $i => $baris)
+                                                        @php
+                                                            $selPertama = $dataPivot['ada_metode']
+                                                                ? $baris->individu_luring ??
+                                                                    ($baris->individu_daring ??
+                                                                        ($baris->beregu_luring ??
+                                                                            ($baris->beregu_daring ?? null)))
+                                                                : $baris->individu ?? ($baris->beregu ?? null);
+                                                        @endphp
+                                                        <tr>
+                                                            @if ($i === 0)
+                                                                <td rowspan="{{ $grupTingkat['rowspan'] }}"
+                                                                    class="fw-semibold rubrik-tingkat-cell">
+                                                                    {{ $grupTingkat['tingkat'] }}
+                                                                </td>
+                                                            @endif
+                                                            <td>{{ $baris->juara }}</td>
+                                                            @if ($dataPivot['ada_metode'])
+                                                                <td>{!! isset($baris->individu_luring)
+                                                                    ? number_format($baris->individu_luring->skor, 0, ',', '.')
+                                                                    : '<span class="text-muted">-</span>' !!}</td>
+                                                                <td>{!! isset($baris->individu_daring)
+                                                                    ? number_format($baris->individu_daring->skor, 0, ',', '.')
+                                                                    : '<span class="text-muted">-</span>' !!}</td>
+                                                                <td>{!! isset($baris->beregu_luring)
+                                                                    ? number_format($baris->beregu_luring->skor, 0, ',', '.')
+                                                                    : '<span class="text-muted">-</span>' !!}</td>
+                                                                <td>{!! isset($baris->beregu_daring)
+                                                                    ? number_format($baris->beregu_daring->skor, 0, ',', '.')
+                                                                    : '<span class="text-muted">-</span>' !!}</td>
+                                                            @else
+                                                                <td>{!! isset($baris->individu)
+                                                                    ? number_format($baris->individu->skor, 0, ',', '.')
+                                                                    : '<span class="text-muted">-</span>' !!}</td>
+                                                                <td>{!! isset($baris->beregu)
+                                                                    ? number_format($baris->beregu->skor, 0, ',', '.')
+                                                                    : '<span class="text-muted">-</span>' !!}</td>
+                                                            @endif
+                                                            <td>
+                                                                @if ($selPertama)
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-outline-secondary"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#modalEdit{{ $selPertama->id }}"
+                                                                        title="Edit baris ini">
+                                                                        <i class="bi bi-pencil"></i>
+                                                                    </button>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <p class="text-muted mt-2 mb-0" style="font-size:.72rem">
+                                        <i class="bi bi-info-circle"></i> Klik ikon pensil untuk mengedit salah satu skor
+                                        pada baris tersebut (Individu/Beregu/Luring/Daring dianggap satu kelompok data
+                                        terkait).
+                                    </p>
+                                </div>
+                            @endforeach
+
+                            {{-- TABEL "LAINNYA" -- Karya/Kelembagaan/Hafalan (kriteria bebas) --}}
+                            @if ($dataBidang['lainnya']->isNotEmpty())
+                                <div class="content-card">
+                                    <div class="rubrik-penyelenggara-label">
+                                        <i class="bi bi-list-check"></i> Kriteria Lainnya (Karya / Kelembagaan / Hafalan)
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered rubrik-pivot-table align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Jenis</th>
+                                                    <th>Kriteria</th>
+                                                    <th class="text-end">Skor</th>
+                                                    <th class="text-center" style="width:90px">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($dataBidang['lainnya'] as $rubrik)
+                                                    <tr>
+                                                        <td>{{ $rubrik->jenis_rubrik }}</td>
+                                                        <td>
+                                                            {{ $rubrik->kriteria_khusus ?? '-' }}
+                                                            @if ($rubrik->nilai_min !== null)
+                                                                <span
+                                                                    class="text-muted">({{ $rubrik->nilai_min }}–{{ $rubrik->nilai_max }})</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="text-end fw-bold text-success">
+                                                            {{ number_format($rubrik->skor, 0, ',', '.') }}</td>
+                                                        <td class="text-center">
+                                                            <div class="action-btns justify-content-center">
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#modalEdit{{ $rubrik->id }}"
+                                                                    title="Edit">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                </button>
+                                                                <form
+                                                                    action="{{ route('rubrik-penilaian.destroy', $rubrik->id) }}"
+                                                                    method="POST" class="d-inline"
+                                                                    onsubmit="return confirm('Hapus rubrik ini?')">
+                                                                    @csrf @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="btn btn-sm btn-outline-danger"
+                                                                        title="Hapus">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                            @empty
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="rp-empty">
-                                            <i class="bi bi-inbox"></i>
-                                            <p>Belum ada rubrik yang cocok dengan filter ini.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="p-3 border-top" style="border-color:var(--presma-border) !important">
-                    {{ $daftarRubrik->links() }}
-                </div>
-            </div>
-        </div>
+                            @endif
 
+                        </div>
+                    @endforeach
+                @endif
+            @endif
+        </div>
     </main>
 @endsection
+
+@foreach ($semuaRubrikUntukModal as $rubrik)
+    <div class="modal fade" id="modalEdit{{ $rubrik->id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form action="{{ route('rubrik-penilaian.update', $rubrik->id) }}" method="POST"
+                    class="form-rubrik">
+                    @csrf @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Rubrik</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @include('rubrik-penilaian.form', ['rubrik' => $rubrik])
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
+
 {{-- MODAL TAMBAH --}}
 <div class="modal fade" id="modalTambah" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -734,6 +972,21 @@
                 toggleGrupRubrik(select);
                 select.addEventListener('change', function() {
                     toggleGrupRubrik(this);
+                });
+            });
+
+            // Tab switch untuk Bidang di mode Browse (tampilan pivot)
+            document.querySelectorAll('.rubrik-bidang-tab-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const target = this.dataset.target;
+
+                    document.querySelectorAll('.rubrik-bidang-tab-btn').forEach(b => b.classList
+                        .remove('active'));
+                    this.classList.add('active');
+
+                    document.querySelectorAll('.rubrik-bidang-pane').forEach(pane => pane.classList
+                        .add('d-none'));
+                    document.querySelector(target).classList.remove('d-none');
                 });
             });
         });

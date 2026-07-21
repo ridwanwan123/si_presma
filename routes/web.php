@@ -22,6 +22,7 @@ use App\Http\Controllers\AssignAsesorController;
 use App\Http\Controllers\AsesorController;
 use App\Http\Controllers\DashboardAsesorController;
 use App\Http\Controllers\RubrikPenilaianController;
+use App\Http\Controllers\ExportCenterController;
 // use App\Http\Controllers\WilayahPengawasController;
 
 use Illuminate\Support\Facades\Route;
@@ -212,6 +213,11 @@ Route::middleware('auth')->group(function () {
         
         Route::resource('rubrik-penilaian', RubrikPenilaianController::class)
             ->only(['index', 'store', 'update', 'destroy']);
+
+        Route::get('export-center', [ExportCenterController::class, 'index'])
+            ->name('export-center.index');
+        Route::get('export-center/export', [ExportCenterController::class, 'export'])
+            ->name('export-center.export');
     });
     
     /*
