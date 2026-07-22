@@ -274,6 +274,48 @@
             background: #eef2f7;
             color: #475569;
         }
+
+        /* ============ BADGE PERINGKAT BERTINGKAT (EMAS/PERAK/PERUNGGU) ============ */
+        /* Dipakai di Kenaikan/Penurunan DAN Profil Madrasah -- satu gaya
+           konsisten di semua tempat yang menampilkan peringkat, bukan cuma
+           di satu modul. */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .rank-badge.tier-1 { background: #fef3c7; color: #92400e; }
+        .rank-badge.tier-2 { background: #e2e8f0; color: #334155; }
+        .rank-badge.tier-3 { background: #fde8d7; color: #9a3412; }
+        .rank-badge.tier-lain { background: #eef2f7; color: #64748b; }
+
+        .rank-arrow-naik { color: #16a34a; }
+        .rank-arrow-turun { color: #dc2626; }
+        .rank-arrow-tetap { color: #94a3b8; }
+
+        /* ============ TAB BIDANG (KENAIKAN/PENURUNAN) ============ */
+        .bidang-tab-btn {
+            font-size: .8rem;
+            font-weight: 600;
+            border-radius: 999px;
+            color: #64748b;
+            background: #f1f5f9;
+            border: none;
+            padding: 6px 16px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .bidang-tab-btn.active {
+            background: #0f8a43 !important;
+            color: #fff !important;
+        }
     </style>
 @endpush
 
@@ -521,95 +563,143 @@
                     </div>
                 </div>
 
-                @if (is_null($periodePembanding))
+                @if (is_null($hasilPerubahan['periode']))
                     <div class="content-card mb-4 empty-note">
                         <i class="bi bi-info-circle"></i>
                         Perbandingan kenaikan/penurunan butuh minimal 2 periode yang sudah diarsipkan. Baru ada
                         {{ $daftarArsip->count() }} arsip saat ini.
                     </div>
                 @else
-                    <div class="dash-row">
-                        <div class="dash-col-7" style="flex-basis:49%">
-                            <div class="content-card h-100">
-                                <div class="card-title-row">
-                                    <div class="title"><i class="bi bi-arrow-up-circle text-success"></i> Kenaikan
-                                        Terbesar ({{ $periodePembanding['sebelumnya'] }} →
-                                        {{ $periodePembanding['sekarang'] }})</div>
-                                    <a href="{{ route('dashboard.export', ['tipe' => 'kenaikan', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                        class="btn btn-outline-success btn-export-mini">
-                                        <i class="bi bi-file-earmark-excel"></i> Export
-                                    </a>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="mini-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align:left">Madrasah</th>
-                                                <th>Selisih</th>
-                                                <th>Peringkat</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @forelse ($kenaikanTerbesar as $item)
-                                                <tr>
-                                                    <td>{{ $item->nama_madrasah }}</td>
-                                                    <td class="selisih-naik">
-                                                        +{{ number_format($item->selisih, 2, ',', '.') }}</td>
-                                                    <td><span class="rank-pill">#{{ $item->peringkat_sebelumnya }} →
-                                                            #{{ $item->peringkat_sekarang }}</span></td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="3" class="text-center text-muted py-3">Tidak ada data.
-                                                    </td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                    <ul class="nav nav-pills mb-3 flex-wrap" id="perubahanBidangTabNav">
+                        @foreach ($hasilPerubahan['per_bidang'] as $bidang => $dataBidang)
+                            <li class="nav-item">
+                                <button type="button" class="bidang-tab-btn perubahan-tab-btn {{ $loop->first ? 'active' : '' }}"
+                                    data-target="#perubahanPane-{{ Str::slug($bidang) }}">
+                                    {{ $bidang }}
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
 
-                        <div class="dash-col-5" style="flex-basis:49%">
-                            <div class="content-card h-100">
-                                <div class="card-title-row">
-                                    <div class="title"><i class="bi bi-arrow-down-circle text-danger"></i> Penurunan
-                                        Terbesar</div>
-                                    <a href="{{ route('dashboard.export', ['tipe' => 'penurunan', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                        class="btn btn-outline-success btn-export-mini">
-                                        <i class="bi bi-file-earmark-excel"></i> Export
-                                    </a>
+                    @foreach ($hasilPerubahan['per_bidang'] as $bidang => $dataBidang)
+                        <div class="perubahan-pane {{ $loop->first ? '' : 'd-none' }}" id="perubahanPane-{{ Str::slug($bidang) }}">
+                            <div class="dash-row">
+                                <div class="dash-col-7" style="flex-basis:49%">
+                                    <div class="content-card h-100">
+                                        <div class="card-title-row">
+                                            <div class="title"><i class="bi bi-arrow-up-circle text-success"></i> Kenaikan
+                                                Terbesar &middot; {{ $bidang }}
+                                                <div class="text-muted" style="font-size:.7rem;font-weight:400">{{ $hasilPerubahan['periode']['sebelumnya'] }} → {{ $hasilPerubahan['periode']['sekarang'] }}</div>
+                                            </div>
+                                            <a href="{{ route('dashboard.export', ['tipe' => 'kenaikan', 'bidang' => $bidang, 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
+                                                class="btn btn-outline-success btn-export-mini">
+                                                <i class="bi bi-file-earmark-excel"></i> Export
+                                            </a>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="mini-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="text-align:left">Madrasah</th>
+                                                        <th>Jenjang</th>
+                                                        <th>Selisih</th>
+                                                        <th>Peringkat</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse ($dataBidang['kenaikan'] as $item)
+                                                        <tr>
+                                                            <td>{{ $item->nama_madrasah }}</td>
+                                                            <td>{{ $item->jenjang_madrasah }}</td>
+                                                            <td class="selisih-naik">
+                                                                +{{ number_format($item->selisih, 2, ',', '.') }}</td>
+                                                            <td>
+                                                                @php $tier = $item->peringkat_sekarang <= 3 ? 'tier-' . $item->peringkat_sekarang : 'tier-lain'; @endphp
+                                                                <span class="rank-badge {{ $tier }}">
+                                                                    #{{ $item->peringkat_sebelumnya }}
+                                                                    <i class="bi bi-arrow-right"></i>
+                                                                    #{{ $item->peringkat_sekarang }}
+                                                                    @if ($item->peringkat_sekarang < $item->peringkat_sebelumnya)
+                                                                        <i class="bi bi-caret-up-fill rank-arrow-naik"></i>
+                                                                    @elseif ($item->peringkat_sekarang > $item->peringkat_sebelumnya)
+                                                                        <i class="bi bi-caret-down-fill rank-arrow-turun"></i>
+                                                                    @else
+                                                                        <i class="bi bi-dash rank-arrow-tetap"></i>
+                                                                    @endif
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="4" class="text-center text-muted py-3">Tidak ada data.
+                                                            </td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="table-responsive">
-                                    <table class="mini-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align:left">Madrasah</th>
-                                                <th>Selisih</th>
-                                                <th>Peringkat</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @forelse ($penurunanTerbesar as $item)
-                                                <tr>
-                                                    <td>{{ $item->nama_madrasah }}</td>
-                                                    <td class="selisih-turun">
-                                                        {{ number_format($item->selisih, 2, ',', '.') }}</td>
-                                                    <td><span class="rank-pill">#{{ $item->peringkat_sebelumnya }} →
-                                                            #{{ $item->peringkat_sekarang }}</span></td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="3" class="text-center text-muted py-3">Tidak ada data.
-                                                    </td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
+
+                                <div class="dash-col-5" style="flex-basis:49%">
+                                    <div class="content-card h-100">
+                                        <div class="card-title-row">
+                                            <div class="title"><i class="bi bi-arrow-down-circle text-danger"></i> Penurunan
+                                                Terbesar &middot; {{ $bidang }}
+                                                <div class="text-muted" style="font-size:.7rem;font-weight:400">{{ $hasilPerubahan['periode']['sebelumnya'] }} → {{ $hasilPerubahan['periode']['sekarang'] }}</div>
+                                            </div>
+                                            <a href="{{ route('dashboard.export', ['tipe' => 'penurunan', 'bidang' => $bidang, 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
+                                                class="btn btn-outline-success btn-export-mini">
+                                                <i class="bi bi-file-earmark-excel"></i> Export
+                                            </a>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="mini-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="text-align:left">Madrasah</th>
+                                                        <th>Jenjang</th>
+                                                        <th>Selisih</th>
+                                                        <th>Peringkat</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse ($dataBidang['penurunan'] as $item)
+                                                        <tr>
+                                                            <td>{{ $item->nama_madrasah }}</td>
+                                                            <td>{{ $item->jenjang_madrasah }}</td>
+                                                            <td class="selisih-turun">
+                                                                {{ number_format($item->selisih, 2, ',', '.') }}</td>
+                                                            <td>
+                                                                @php $tier = $item->peringkat_sekarang <= 3 ? 'tier-' . $item->peringkat_sekarang : 'tier-lain'; @endphp
+                                                                <span class="rank-badge {{ $tier }}">
+                                                                    #{{ $item->peringkat_sebelumnya }}
+                                                                    <i class="bi bi-arrow-right"></i>
+                                                                    #{{ $item->peringkat_sekarang }}
+                                                                    @if ($item->peringkat_sekarang < $item->peringkat_sebelumnya)
+                                                                        <i class="bi bi-caret-up-fill rank-arrow-naik"></i>
+                                                                    @elseif ($item->peringkat_sekarang > $item->peringkat_sebelumnya)
+                                                                        <i class="bi bi-caret-down-fill rank-arrow-turun"></i>
+                                                                    @else
+                                                                        <i class="bi bi-dash rank-arrow-tetap"></i>
+                                                                    @endif
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="4" class="text-center text-muted py-3">Tidak ada data.
+                                                            </td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endforeach
                 @endif
 
                 <div class="content-card mb-4">
@@ -687,26 +777,29 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($profilMadrasah->histori as $row)
+                                        @php
+                                            $tierBidang = fn ($p) => $p && $p <= 3 ? 'tier-' . $p : 'tier-lain';
+                                        @endphp
                                         <tr>
                                             <td class="fw-semibold">{{ $row->periode }}</td>
                                             <td>{{ number_format($row->nilai_akademik, 2, ',', '.') }} <span
-                                                    class="rank-pill">#{{ $row->peringkat_per_bidang['Akademik'] ?? '-' }}</span>
+                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Akademik'] ?? null) }}">#{{ $row->peringkat_per_bidang['Akademik'] ?? '-' }}</span>
                                             </td>
                                             <td>{{ number_format($row->nilai_non_akademik, 2, ',', '.') }} <span
-                                                    class="rank-pill">#{{ $row->peringkat_per_bidang['Non Akademik'] ?? '-' }}</span>
+                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Non Akademik'] ?? null) }}">#{{ $row->peringkat_per_bidang['Non Akademik'] ?? '-' }}</span>
                                             </td>
                                             <td>{{ number_format($row->nilai_keagamaan, 2, ',', '.') }} <span
-                                                    class="rank-pill">#{{ $row->peringkat_per_bidang['Keagamaan'] ?? '-' }}</span>
+                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Keagamaan'] ?? null) }}">#{{ $row->peringkat_per_bidang['Keagamaan'] ?? '-' }}</span>
                                             </td>
                                             <td>{{ number_format($row->nilai_gtk, 2, ',', '.') }} <span
-                                                    class="rank-pill">#{{ $row->peringkat_per_bidang['GTK'] ?? '-' }}</span>
+                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['GTK'] ?? null) }}">#{{ $row->peringkat_per_bidang['GTK'] ?? '-' }}</span>
                                             </td>
                                             <td>{{ number_format($row->nilai_lembaga, 2, ',', '.') }} <span
-                                                    class="rank-pill">#{{ $row->peringkat_per_bidang['Lembaga'] ?? '-' }}</span>
+                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Lembaga'] ?? null) }}">#{{ $row->peringkat_per_bidang['Lembaga'] ?? '-' }}</span>
                                             </td>
                                             <td class="fw-bold text-success">
                                                 {{ number_format($row->total_nilai_akhir, 2, ',', '.') }}</td>
-                                            <td><span class="rank-pill">#{{ $row->peringkat_keseluruhan }}</span></td>
+                                            <td><span class="rank-badge {{ $tierBidang($row->peringkat_keseluruhan ?? null) }}">#{{ $row->peringkat_keseluruhan }}</span></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -735,6 +828,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // Tab switch untuk Bidang di Kenaikan/Penurunan
+            document.querySelectorAll('.perubahan-tab-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const target = this.dataset.target;
+
+                    document.querySelectorAll('.perubahan-tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    document.querySelectorAll('.perubahan-pane').forEach(pane => pane.classList.add('d-none'));
+                    document.querySelector(target).classList.remove('d-none');
+                });
+            });
 
             const warnaJenjang = {
                 'RA': '#ef4444', // Merah

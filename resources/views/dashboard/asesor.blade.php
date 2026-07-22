@@ -162,6 +162,58 @@
             height: 210px;
         }
 
+        /* ============ KECOCOKAN RUBRIK ============ */
+        .rubrik-callout {
+            font-size: .82rem;
+            color: #334155;
+            line-height: 1.5;
+            margin-bottom: .6rem;
+        }
+
+        .rubrik-callout strong {
+            color: #0f8a43;
+        }
+
+        .rubrik-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+
+        .rubrik-legend-item {
+            font-size: .74rem;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rubrik-legend .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-sesuai {
+            background: #16a34a;
+        }
+
+        .dot-beda {
+            background: #f59e0b;
+        }
+
+        .dot-na {
+            background: #94a3b8;
+        }
+
+        .rubrik-beda-title {
+            font-size: .78rem;
+            font-weight: 700;
+            color: #92400e;
+            margin: 1rem 0 .5rem;
+        }
+
         .content-card.h-100 {
             display: flex;
             flex-direction: column;
@@ -407,17 +459,77 @@
                 </div>
             </div>
 
-            {{-- TREN + STATUS ASSIGNMENT --}}
+            {{-- KECOCOKAN RUBRIK JUKNIS + STATUS ASSIGNMENT --}}
             <div class="dash-row">
                 <div class="dash-col-7">
                     <div class="content-card h-100">
                         <div class="card-title-row">
-                            <div class="title"><i class="bi bi-bar-chart text-primary"></i> Tren Penilaian Selesai (14
-                                Hari Terakhir)</div>
+                            <div class="title"><i class="bi bi-journal-check text-primary"></i> Kecocokan dengan Rubrik
+                                Juknis</div>
                         </div>
-                        <div class="chart-box">
-                            <canvas id="chartTren"></canvas>
-                        </div>
+
+                        @if ($kecocokanRubrikRingkasan['total'] === 0)
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-inbox"
+                                    style="font-size:1.6rem;color:#cbd5e1;display:block;margin-bottom:.4rem"></i>
+                                Belum ada prestasi yang Anda nilai.
+                            </div>
+                        @else
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="chart-box" style="width:140px;height:140px;flex-shrink:0">
+                                    <canvas id="chartRubrik"></canvas>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="rubrik-callout">
+                                        <strong>{{ $kecocokanRubrikRingkasan['persen_sesuai'] }}%</strong>
+                                        penilaian Anda ({{ $kecocokanRubrikRingkasan['sesuai'] }} dari
+                                        {{ $kecocokanRubrikRingkasan['total'] }})
+                                        sudah <strong>sesuai</strong> rubrik resmi Juknis.
+                                    </div>
+                                    <div class="rubrik-legend">
+                                        <span class="rubrik-legend-item"><span class="dot dot-sesuai"></span> Sesuai
+                                            ({{ $kecocokanRubrikRingkasan['sesuai'] }})</span>
+                                        <span class="rubrik-legend-item"><span class="dot dot-beda"></span> Beda
+                                            ({{ $kecocokanRubrikRingkasan['beda'] }})</span>
+                                        <span class="rubrik-legend-item"><span class="dot dot-na"></span> Belum Ada Rubrik
+                                            ({{ $kecocokanRubrikRingkasan['belum_ada'] }})</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if ($daftarBedaRubrik->isNotEmpty())
+                                <div class="rubrik-beda-title">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Perlu Dicek Ulang — Beda
+                                    dari Rubrik
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="mini-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:left">Madrasah / Kegiatan</th>
+                                                <th>Skor Anda</th>
+                                                <th>Rubrik</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($daftarBedaRubrik as $item)
+                                                <tr>
+                                                    <td style="text-align:left">
+                                                        <div class="fw-semibold" style="font-size:.8rem">
+                                                            {{ $item->nama_madrasah }}</div>
+                                                        <div class="text-muted" style="font-size:.72rem">
+                                                            {{ $item->nama_kegiatan }}</div>
+                                                    </td>
+                                                    <td>{{ number_format($item->skor_madrasah, 0, ',', '.') }}</td>
+                                                    <td class="text-warning fw-bold">
+                                                        {{ number_format($item->skor_rubrik, 0, ',', '.') }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        @endif
                     </div>
                 </div>
 
@@ -623,65 +735,34 @@
 
             Chart.register(centerTextPlugin);
 
-            /* ============ TREN PENILAIAN SELESAI ============ */
-            const labelTanggal = @json($labelTanggal);
-            const trenPenilaian = @json($trenPenilaian->values());
+            /* ============ KECOCOKAN RUBRIK JUKNIS ============ */
+            const rubrikRingkasan = @json($kecocokanRubrikRingkasan);
 
-            new Chart(document.getElementById('chartTren'), {
-                type: 'line',
-                data: {
-                    labels: labelTanggal,
-                    datasets: [{
-                        label: 'Penilaian Selesai',
-                        data: trenPenilaian,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, .12)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: .35,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#2563eb',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            top: 6,
-                            right: 6,
-                            bottom: 0,
-                            left: 0
-                        }
+            if (rubrikRingkasan.total > 0) {
+                new Chart(document.getElementById('chartRubrik'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Sesuai', 'Beda', 'Belum Ada Rubrik'],
+                        datasets: [{
+                            data: [rubrikRingkasan.sesuai, rubrikRingkasan.beda, rubrikRingkasan
+                                .belum_ada
+                            ],
+                            backgroundColor: ['#16a34a', '#f59e0b', '#94a3b8'],
+                            borderWidth: 0,
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: '#0f172a',
-                            padding: 10,
-                            cornerRadius: 8
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            },
-                            grid: {
-                                color: '#f1f5f9'
-                            }
-                        },
-                        x: {
-                            grid: {
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: {
                                 display: false
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
             /* ============ STATUS ASSIGNMENT (DONUT) ============ */
             new Chart(document.getElementById('chartStatus'), {

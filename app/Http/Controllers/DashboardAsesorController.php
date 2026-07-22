@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignAsesor;
 use App\Models\PrestasiSiswa;
-use Carbon\Carbon;
+use App\Models\RubrikPenilaian;
 use Illuminate\Http\Request;
 
 class DashboardAsesorController extends Controller
@@ -26,13 +26,6 @@ class DashboardAsesorController extends Controller
     ];
 
     private const WARNA_PERSENTASE = ['#1d4ed8', '#38bdf8', '#f59e0b', '#8b5cf6', '#10b981', '#94a3b8'];
-
-    /*
-    |--------------------------------------------------------------------------
-    | JUMLAH HARI UNTUK GRAFIK TREN PENILAIAN
-    |--------------------------------------------------------------------------
-    */
-    private const JUMLAH_HARI_TREN = 14;
 
     public function index(Request $request)
     {
@@ -151,21 +144,70 @@ class DashboardAsesorController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | TREN PENILAIAN SELESAI (14 HARI TERAKHIR, BERDASARKAN dinilai_pada)
+        | KECOCOKAN DENGAN RUBRIK JUKNIS (menggantikan tren 14 hari yang lama --
+        | itu cuma laporan historis "berapa dinilai per hari", tidak actionable.
+        | Ini lebih berguna: dari semua yang SUDAH Anda nilai, berapa yang
+        | skornya cocok/beda/belum ada rubriknya -- dan yang "beda" itu
+        | ditampilkan detailnya supaya bisa langsung dicek ulang.
         |--------------------------------------------------------------------------
         */
-        $rentangTanggal = collect(range(self::JUMLAH_HARI_TREN - 1, 0))
-            ->map(fn ($i) => now()->subDays($i)->format('Y-m-d'));
+        $prestasiSudahDinilai = $semuaPrestasi->filter(fn ($p) => $p->penilaianPrestasi !== null);
 
-        $penilaianPerHari = $semuaPrestasi
-            ->pluck('penilaianPrestasi')
-            ->filter()
-            ->filter(fn ($p) => $p->dinilai_pada !== null)
-            ->groupBy(fn ($p) => Carbon::parse($p->dinilai_pada)->format('Y-m-d'));
+        // Lookup nama madrasah dari data assignment yang sudah di-load (hindari
+        // query tambahan per prestasi).
+        $namaMadrasahById = $assignments->pluck('madrasah.nama_madrasah', 'madrasah_id');
 
-        $trenPenilaian = $rentangTanggal->map(fn ($tanggal) => $penilaianPerHari->get($tanggal, collect())->count());
+        $kecocokanRubrik = $prestasiSudahDinilai->map(function ($p) use ($namaMadrasahById) {
+            $hasil = RubrikPenilaian::statusKecocokan(
+                bidangPrestasi: $p->bidang_prestasi,
+                tingkat: $p->tingkat,
+                juara: $p->juara,
+                kategoriKegiatan: $p->kategori_kegiatan,
+                metodePelaksanaan: $p->metode_pelaksanaan,
+                kategoriPenyelenggara: $p->kategori_penyelenggara,
+                tahun: (int) $p->periode,
+                skorMadrasah: (float) ($p->skor ?? 0)
+            );
 
-        $labelTanggal = $rentangTanggal->map(fn ($tanggal) => Carbon::parse($tanggal)->translatedFormat('d M'));
+            return (object) [
+                'nama_kegiatan'  => $p->nama_kegiatan,
+                'nama_madrasah'  => $namaMadrasahById->get($p->madrasah_id, '-'),
+                'bidang'         => $p->bidang_prestasi,
+                'status'         => $hasil['status'], // 'cocok' | 'tidak_cocok' | 'tidak_ada'
+                'skor_madrasah'  => $p->skor,
+                'skor_rubrik'    => $hasil['skor_rubrik'],
+            ];
+        });
+
+        $totalDinilaiUntukRubrik = $kecocokanRubrik->count();
+        $jumlahSesuaiRubrik      = $kecocokanRubrik->where('status', 'cocok')->count();
+        $jumlahBedaRubrik        = $kecocokanRubrik->where('status', 'tidak_cocok')->count();
+        $jumlahBelumAdaRubrik    = $kecocokanRubrik->where('status', 'tidak_ada')->count();
+
+        $persenSesuaiRubrik = $totalDinilaiUntukRubrik > 0
+            ? round($jumlahSesuaiRubrik / $totalDinilaiUntukRubrik * 100)
+            : 0;
+
+        // Daftar yang BEDA dari rubrik -- paling actionable, batasi 8 biar
+        // ringkas, urutkan dari selisih terbesar supaya yang paling
+        // mencolok muncul duluan.
+        $daftarBedaRubrik = $kecocokanRubrik
+            ->where('status', 'tidak_cocok')
+            ->map(function ($item) {
+                $item->selisih = abs($item->skor_madrasah - $item->skor_rubrik);
+                return $item;
+            })
+            ->sortByDesc('selisih')
+            ->take(8)
+            ->values();
+
+        $kecocokanRubrikRingkasan = [
+            'total'          => $totalDinilaiUntukRubrik,
+            'sesuai'         => $jumlahSesuaiRubrik,
+            'beda'           => $jumlahBedaRubrik,
+            'belum_ada'      => $jumlahBelumAdaRubrik,
+            'persen_sesuai'  => $persenSesuaiRubrik,
+        ];
 
         /*
         |--------------------------------------------------------------------------
@@ -192,8 +234,8 @@ class DashboardAsesorController extends Controller
             'daftarMadrasah',
             'progresPerBidang',
             'distribusiPersentase',
-            'labelTanggal',
-            'trenPenilaian',
+            'kecocokanRubrikRingkasan',
+            'daftarBedaRubrik',
             'insight'
         ));
     }

@@ -39,15 +39,13 @@ class DashboardController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | DEFAULT FILTER JENJANG
+    | FILTER JENJANG
     |--------------------------------------------------------------------------
-    | Permintaan eksplisit: begitu halaman pertama dibuka (belum ada query
-    | string sama sekali), langsung tampil jenjang MI -- BUKAN "Semua
-    | Jenjang". Opsi "Semua Jenjang" tetap tersedia di dropdown untuk
-    | jaga-jaga, tinggal dipilih manual.
+    | Default-nya sekarang "Semua Jenjang" (tidak ada filter jenjang aktif
+    | sama sekali) begitu halaman pertama dibuka -- sesuai permintaan,
+    | tidak lagi otomatis ke MI.
     |--------------------------------------------------------------------------
     */
-    private const DEFAULT_JENJANG = 'MI';
 
     public function index(Request $request)
     {
@@ -77,9 +75,7 @@ class DashboardController extends Controller
 
         $trenSistem = ['agregat' => collect(), 'per_jenjang' => collect()];
         $rataJenjang = collect();
-        $periodePembanding = null;
-        $kenaikanTerbesar = collect();
-        $penurunanTerbesar = collect();
+        $hasilPerubahan = ['periode' => null, 'per_bidang' => collect()];
         $daftarMadrasah = collect();
         $profilMadrasah = null;
         $madrasahIdFilter = $request->integer('madrasah_id') ?: null;
@@ -89,7 +85,7 @@ class DashboardController extends Controller
             $trenSistem = $this->hitungTrenSistem($daftarArsip, $jenjangFilter, $kotaFilter, $madrasahIdsStatus);
             $rataJenjang = $this->hitungRataJenjang($daftarArsip, $jenjangFilter, $kotaFilter, $madrasahIdsStatus);
 
-            [$periodePembanding, $kenaikanTerbesar, $penurunanTerbesar] = $this->hitungPerubahan(
+            $hasilPerubahan = $this->hitungPerubahan(
                 $daftarArsip,
                 $jenjangFilter,
                 $kotaFilter,
@@ -119,9 +115,7 @@ class DashboardController extends Controller
             'daftarArsip',
             'trenSistem',
             'rataJenjang',
-            'periodePembanding',
-            'kenaikanTerbesar',
-            'penurunanTerbesar',
+            'hasilPerubahan',
             'daftarMadrasah',
             'madrasahIdFilter',
             'profilMadrasah',
@@ -231,13 +225,16 @@ class DashboardController extends Controller
             case 'kenaikan':
             case 'penurunan':
                 $daftarArsip = $this->daftarArsipTerbatas();
-                [$periodePembanding, $kenaikan, $penurunan] = $this->hitungPerubahan(
+                $hasilPerubahan = $this->hitungPerubahan(
                     $daftarArsip,
                     $jenjangFilter,
                     $kotaFilter,
                     $madrasahIdsStatus
                 );
-                $dataset = $tipe === 'kenaikan' ? $kenaikan : $penurunan;
+
+                $bidangDipilih = $request->query('bidang') ?: array_key_first(self::BIDANG_KOLOM);
+                $kunciDataset = $tipe === 'kenaikan' ? 'kenaikan' : 'penurunan';
+                $dataset = $hasilPerubahan['per_bidang'][$bidangDipilih][$kunciDataset] ?? collect();
 
                 $data = $dataset->map(fn ($row) => [
                     $row->nama_madrasah,
@@ -254,7 +251,7 @@ class DashboardController extends Controller
                     'Selisih', 'Peringkat Sebelumnya', 'Peringkat Sekarang',
                 ];
 
-                $judul = $tipe === 'kenaikan' ? 'Kenaikan Terbesar' : 'Penurunan Terbesar';
+                $judul = ($tipe === 'kenaikan' ? 'Kenaikan Terbesar' : 'Penurunan Terbesar') . ' - ' . $bidangDipilih;
                 break;
 
             case 'profil-madrasah':
@@ -312,7 +309,7 @@ class DashboardController extends Controller
     */
     private function bacaFilter(Request $request): array
     {
-        $jenjangFilter = $request->has('jenjang') ? $request->query('jenjang') : self::DEFAULT_JENJANG;
+        $jenjangFilter = $request->query('jenjang', '');
         $statusFilter = $request->query('status', '');
         $kotaFilter = $request->query('kota', '');
 
@@ -633,62 +630,119 @@ class DashboardController extends Controller
         });
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | KENAIKAN/PENURUNAN -- DIROMBAK jadi PER BIDANG (bukan cuma total
+    | gabungan seperti sebelumnya). Peringkat yang ditampilkan juga
+    | direkonstruksi PER BIDANG (pakai aturan sama seperti
+    | hitungPeringkatBidang()/Ranking Live: Keterlambatan dibagi rata 5
+    | bidang, Aduan cuma menyunat Lembaga) -- bukan kolom 'peringkat'
+    | gabungan yang tersimpan di RankingArsipDetail.
+    |
+    | Filter Jenjang yang sudah ada (di halaman) otomatis ikut berlaku di
+    | sini juga -- kalau "Semua Jenjang" dipilih, kolom Jenjang tetap
+    | ditampilkan di tabel supaya tetap kelihatan asalnya dari jenjang mana.
+    |--------------------------------------------------------------------------
+    */
     private function hitungPerubahan(Collection $daftarArsip, ?string $jenjangFilter, ?string $kotaFilter, ?Collection $madrasahIdsStatus): array
     {
         if ($daftarArsip->count() < 2) {
-            return [null, collect(), collect()];
+            return ['periode' => null, 'per_bidang' => collect()];
         }
 
         $terakhir = $daftarArsip->last();
         $sebelumnya = $daftarArsip->slice(-2, 1)->first();
 
-        $filterDetail = function ($query) use ($jenjangFilter, $kotaFilter, $madrasahIdsStatus) {
-            $query->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
-                ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
-                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('madrasah_id', $madrasahIdsStatus));
-        };
+        $perBidang = collect(self::BIDANG_KOLOM)->map(function ($kolom, $labelBidang) use ($terakhir, $sebelumnya, $jenjangFilter, $kotaFilter, $madrasahIdsStatus) {
 
-        $detailTerakhir = RankingArsipDetail::where('ranking_arsip_id', $terakhir->id)
-            ->tap($filterDetail)
-            ->get()
-            ->keyBy('madrasah_id');
+            $papanTerakhir = $this->papanBidangUntukPeriode($terakhir->id, $jenjangFilter, $kotaFilter, $madrasahIdsStatus, $kolom, $labelBidang);
+            $papanSebelumnya = $this->papanBidangUntukPeriode($sebelumnya->id, $jenjangFilter, $kotaFilter, $madrasahIdsStatus, $kolom, $labelBidang);
 
-        $detailSebelumnya = RankingArsipDetail::where('ranking_arsip_id', $sebelumnya->id)
-            ->tap($filterDetail)
-            ->get()
-            ->keyBy('madrasah_id');
+            $perubahan = collect();
 
-        $perubahan = collect();
+            foreach ($papanTerakhir as $madrasahId => $baris) {
 
-        foreach ($detailTerakhir as $madrasahId => $detail) {
+                if (!$madrasahId || !$papanSebelumnya->has($madrasahId)) {
+                    continue;
+                }
 
-            if (!$madrasahId || !$detailSebelumnya->has($madrasahId)) {
-                continue;
+                $sebelum = $papanSebelumnya->get($madrasahId);
+                $selisih = round($baris['nilai'] - $sebelum['nilai'], 2);
+
+                $perubahan->push((object) [
+                    'madrasah_id'          => $madrasahId,
+                    'nama_madrasah'        => $baris['nama_madrasah'],
+                    'jenjang_madrasah'     => $baris['jenjang_madrasah'],
+                    'nilai_sebelumnya'     => $sebelum['nilai'],
+                    'nilai_sekarang'       => $baris['nilai'],
+                    'selisih'              => $selisih,
+                    'peringkat_sebelumnya' => $sebelum['peringkat'],
+                    'peringkat_sekarang'   => $baris['peringkat'],
+                ]);
             }
 
-            $sebelum = $detailSebelumnya->get($madrasahId);
-            $selisih = round($detail->total_nilai_akhir - $sebelum->total_nilai_akhir, 2);
-
-            $perubahan->push((object) [
-                'madrasah_id'          => $madrasahId,
-                'nama_madrasah'        => $detail->nama_madrasah,
-                'jenjang_madrasah'     => $detail->jenjang_madrasah,
-                'nilai_sebelumnya'     => $sebelum->total_nilai_akhir,
-                'nilai_sekarang'       => $detail->total_nilai_akhir,
-                'selisih'              => $selisih,
-                'peringkat_sebelumnya' => $sebelum->peringkat,
-                'peringkat_sekarang'   => $detail->peringkat,
-            ]);
-        }
+            return [
+                'kenaikan'   => $perubahan->sortByDesc('selisih')->take(10)->values(),
+                'penurunan'  => $perubahan->sortBy('selisih')->take(10)->values(),
+            ];
+        });
 
         return [
-            [
+            'periode' => [
                 'sebelumnya' => $sebelumnya->periode,
                 'sekarang'   => $terakhir->periode,
             ],
-            $perubahan->sortByDesc('selisih')->take(10)->values(),
-            $perubahan->sortBy('selisih')->take(10)->values(),
+            'per_bidang' => $perBidang,
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAPAN 1 BIDANG UNTUK 1 ARSIP -- versi "bulk" dari hitungPeringkatBidang()
+    | (yang aslinya cuma hitung 1 madrasah). Di sini SEMUA madrasah dihitung
+    | sekaligus dalam 1 query + 1 sorting, supaya efisien dipanggil untuk
+    | daftar kenaikan/penurunan (yang butuh peringkat SEMUA madrasah, bukan
+    | cuma 1).
+    |--------------------------------------------------------------------------
+    */
+    private function papanBidangUntukPeriode(
+        int $rankingArsipId,
+        ?string $jenjangFilter,
+        ?string $kotaFilter,
+        ?Collection $madrasahIdsStatus,
+        string $kolom,
+        string $labelBidang
+    ): Collection {
+        $baris = RankingArsipDetail::where('ranking_arsip_id', $rankingArsipId)
+            ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+            ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+            ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('madrasah_id', $madrasahIdsStatus))
+            ->get(['madrasah_id', 'nama_madrasah', 'jenjang_madrasah', $kolom, 'potongan_aduan', 'potongan_keterlambatan']);
+
+        return $baris
+            ->map(function ($row) use ($kolom, $labelBidang) {
+                $potonganKeterlambatanBidang = round($row->potongan_keterlambatan / 5, 2);
+                $potonganAduanBidang = $labelBidang === 'Lembaga' ? $row->potongan_aduan : 0;
+                $nilaiAkhirBidang = max(0, $row->$kolom - $potonganKeterlambatanBidang - $potonganAduanBidang);
+
+                return [
+                    'madrasah_id'      => $row->madrasah_id,
+                    'nama_madrasah'    => $row->nama_madrasah,
+                    'jenjang_madrasah' => $row->jenjang_madrasah,
+                    'nilai'            => $nilaiAkhirBidang,
+                ];
+            })
+            // Madrasah yang nilainya 0 di bidang ini dianggap tidak
+            // berpartisipasi -- konsisten sama Ranking Live yang juga
+            // mengecualikan madrasah begini dari papan bidang tsb.
+            ->filter(fn ($r) => $r['nilai'] > 0)
+            ->sortByDesc('nilai')
+            ->values()
+            ->map(function ($r, $i) {
+                $r['peringkat'] = $i + 1;
+                return $r;
+            })
+            ->keyBy('madrasah_id');
     }
 
     private function hitungProfilMadrasah(int $madrasahId, Collection $daftarArsip): ?object

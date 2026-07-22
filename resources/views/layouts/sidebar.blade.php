@@ -159,12 +159,12 @@
 
         {{-- Hasil Penilaian (Madrasah) -- ditahan dulu (href="#") sampai
              ada keputusan dari atasan soal risiko komplain nilai. --}}
-        @if ($user->hasRole('Madrasah'))
+        {{-- @if ($user->hasRole('Madrasah'))
             <a href="#" class="menu-item">
                 <i class="bi bi-clipboard-data"></i>
                 <span>Hasil Penilaian</span>
             </a>
-        @endif
+        @endif --}}
 
         {{-- =========================================================
             LAPORAN (Administrator)
@@ -250,11 +250,11 @@
 
             {{-- USULAN -- riwayat penilaian yang sudah completed dari
                  periode-periode lalu, terpisah dari daftar kerja aktif --}}
-            <a href="#" class="menu-item menu-usulan">
+            {{-- <a href="#" class="menu-item menu-usulan">
                 <i class="bi bi-clock-history"></i>
                 <span>Riwayat Penilaian</span>
                 <span class="badge-usulan">USULAN</span>
-            </a>
+            </a> --}}
         @endif
 
         {{-- =========================================================

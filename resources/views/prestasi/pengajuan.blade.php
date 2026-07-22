@@ -2,117 +2,44 @@
 
 @push('styles')
     <style>
-        /* =========================
-               HEADER
-            ========================= */
-
-        .page-title {
-            padding: 0 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .page-title h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: .25rem;
-        }
-
-        .page-title p {
-            color: #64748b;
-            margin: 0;
+        :root {
+            --presma-primary: #0f8a43;
+            --presma-primary-soft: #eaf6ef;
+            --presma-text: #1e293b;
+            --presma-text-light: #64748b;
+            --presma-border: #e8edf5;
+            --presma-bg-soft: #f8fafc;
         }
 
         .container-fluid {
             padding: 0 1rem;
         }
 
-        /* =========================
-               HERO CARD
-            ========================= */
-
-        .hero-card {
+        /* Halaman ini cuma satu "tugas" (kirim pengajuan), bukan dashboard
+                   padat data -- jadi kontennya di-center vertikal di ruang yang
+                   tersedia daripada dipaksa mepet ke atas & nyisa kosong di bawah. */
+        .pg-wrap {
+            min-height: calc(100vh - 175px);
             display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 2rem;
-            border-radius: 22px;
-            background: linear-gradient(135deg, #0f8a43 0%, #0c6e35 100%);
-            box-shadow: 0 12px 30px rgba(15, 138, 67, .25);
-            color: #fff;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-icon {
-            flex-shrink: 0;
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .15);
-            display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            font-size: 2.1rem;
-        }
-
-        .hero-card h2 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: .4rem;
-        }
-
-        .hero-card p {
-            margin: 0;
-            opacity: .9;
-            max-width: 620px;
-            line-height: 1.6;
         }
 
         /* =========================
-               GENERIC CARD
-            ========================= */
+                   HERO
+                   ========================= */
 
-        .content-card {
-            background: #fff;
-            border-radius: 20px;
-            border: 1px solid #eef0f2;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .05);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: box-shadow .25s ease, transform .25s ease;
-        }
-
-        .content-card:hover {
-            box-shadow: 0 10px 28px rgba(0, 0, 0, .08);
-            transform: translateY(-2px);
-        }
-
-        .card-section-title {
+        .pg-hero {
             display: flex;
             align-items: center;
-            gap: .6rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 1rem;
-        }
-
-        .card-section-title i {
-            color: #0f8a43;
-        }
-
-        /* =========================
-               STATUS SIKLUS — HERO
-            ========================= */
-
-        .siklus-hero {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1.5rem 2rem;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.4rem 1.75rem;
             border-radius: 20px;
             color: #fff;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 10px 26px rgba(0, 0, 0, .12);
+            margin-bottom: 1.25rem;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, .12);
         }
 
         .siklus-open {
@@ -131,202 +58,287 @@
             background: linear-gradient(135deg, #475569 0%, #334155 100%);
         }
 
-        .siklus-periode-badge {
-            flex-shrink: 0;
+        .pg-hero-left {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+        }
+
+        .pg-hero-icon {
+            flex-shrink: 0;
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .18);
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 92px;
-            height: 92px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .16);
+            font-size: 1.4rem;
         }
 
-        .siklus-periode-label {
-            font-size: .65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            opacity: .85;
-        }
-
-        .siklus-periode-number {
-            font-size: 1.6rem;
+        .pg-hero-title {
+            font-size: 1.3rem;
             font-weight: 800;
-            line-height: 1;
+            line-height: 1.25;
         }
 
-        .siklus-hero-title {
+        .pg-hero-desc {
+            font-size: .84rem;
+            opacity: .88;
+            margin: 0;
+        }
+
+        .pg-hero-right {
             display: flex;
             align-items: center;
-            gap: .6rem;
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: .02em;
-            margin-bottom: .3rem;
+            gap: .55rem;
+            flex-wrap: wrap;
         }
 
-        .siklus-hero-desc {
-            margin: 0;
-            opacity: .92;
-            font-size: .95rem;
+        .pg-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .4rem .9rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .16);
+            font-size: .78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .btn-export {
+            background: rgba(255, 255, 255, .95);
+            color: #0f172a;
+            border: none;
+            font-weight: 700;
+            font-size: .8rem;
+            border-radius: 10px;
+            padding: .5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            white-space: nowrap;
+            transition: transform .15s ease;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-1px);
+            color: #0f172a;
         }
 
         /* =========================
-               SUMMARY CARDS
-            ========================= */
+                   CARD generik (dua kolom)
+                   ========================= */
 
-        .summary-card {
+        .pg-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid var(--presma-border);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .05);
+            padding: 1.75rem;
+        }
+
+        .pg-card-title {
             display: flex;
             align-items: center;
-            gap: .9rem;
-            padding: 1.1rem 1.2rem;
-            background: #fff;
-            border: 1px solid #eef0f2;
-            border-radius: 18px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, .04);
-            height: 100%;
-            transition: transform .2s ease, box-shadow .2s ease;
+            gap: .6rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--presma-text);
+            margin-bottom: 1.25rem;
         }
 
-        .summary-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .07);
+        .pg-card-title i {
+            color: var(--presma-primary);
         }
 
-        .summary-icon {
+        /* =========================
+                   RINGKASAN (kiri)
+                   ========================= */
+
+        .pg-stat-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: .8rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .pg-stat-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .pg-stat-row:first-child {
+            padding-top: 0;
+        }
+
+        .pg-stat-icon {
             flex-shrink: 0;
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
         }
 
-        .summary-icon.icon-total {
+        .icon-total {
             background: rgba(15, 138, 67, .12);
             color: #0f8a43;
         }
 
-        .summary-icon.icon-akademik {
+        .icon-akademik {
             background: rgba(13, 110, 253, .1);
             color: #0d6efd;
         }
 
-        .summary-icon.icon-non-akademik {
+        .icon-non-akademik {
             background: rgba(245, 158, 11, .12);
             color: #b45309;
         }
 
-        .summary-icon.icon-keagamaan {
+        .icon-keagamaan {
             background: rgba(109, 40, 217, .1);
             color: #6d28d9;
         }
 
-        .summary-icon.icon-gtk {
+        .icon-gtk {
             background: rgba(14, 165, 233, .1);
             color: #0369a1;
         }
 
-        .summary-icon.icon-lembaga {
+        .icon-lembaga {
             background: rgba(100, 116, 139, .12);
             color: #475569;
         }
 
-        .summary-value {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #0f172a;
-            line-height: 1.1;
+        .pg-stat-label {
+            flex: 1;
+            font-size: .9rem;
+            color: var(--presma-text-light);
+            font-weight: 500;
         }
 
-        .summary-label {
-            font-size: .78rem;
-            color: #64748b;
+        .pg-stat-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--presma-text);
+        }
+
+        .pg-stat-row.pg-stat-total {
+            background: var(--presma-primary-soft);
+            border-radius: 14px;
+            padding: .9rem 1rem;
+            margin-bottom: .4rem;
+            border-bottom: none;
+        }
+
+        .pg-stat-row.pg-stat-total .pg-stat-label {
+            color: var(--presma-text);
+            font-weight: 700;
+        }
+
+        .pg-stat-row.pg-stat-total .pg-stat-value {
+            color: var(--presma-primary);
+            font-size: 1.4rem;
         }
 
         /* =========================
-               INFO PENTING
-            ========================= */
+                   INFORMASI PENTING -> gaya checklist
+                   (ikon & teks dibungkus terpisah supaya
+                   <strong> di dalam teks TIDAK ikut jadi
+                   flex-item sendiri-sendiri)
+                   ========================= */
 
-        .info-card {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 20px;
-            padding: 1.5rem;
+        .pg-checklist {
+            margin: 0 0 1.5rem;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .85rem;
         }
 
-        .info-card .card-section-title {
-            color: #92400e;
+        .pg-checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: .7rem;
         }
 
-        .info-card .card-section-title i {
+        .pg-checklist .pg-check-icon {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fef3c7;
             color: #b45309;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .68rem;
+            margin-top: .1rem;
         }
 
-        .info-list {
-            margin: 0;
-            padding-left: 1.25rem;
-            color: #78716c;
-        }
-
-        .info-list li {
-            margin-bottom: .5rem;
+        .pg-checklist span {
+            font-size: .86rem;
             line-height: 1.55;
-        }
-
-        .info-list li:last-child {
-            margin-bottom: 0;
-        }
-
-        .info-list strong {
             color: #57534e;
         }
 
+        .pg-checklist strong {
+            color: #292524;
+        }
+
         /* =========================
-               PERNYATAAN
-            ========================= */
+                   PERNYATAAN + TOMBOL
+                   ========================= */
 
         .pernyataan-card {
             display: flex;
             align-items: flex-start;
-            gap: .9rem;
-            padding: 1.25rem 1.5rem;
+            gap: .8rem;
+            padding: 1rem 1.1rem;
             border: 1.5px solid #dbe2ea;
-            border-radius: 18px;
-            background: #f8fafc;
+            border-radius: 14px;
+            background: var(--presma-bg-soft);
             transition: border-color .2s ease, background .2s ease;
+            margin-bottom: 1.1rem;
         }
 
         .pernyataan-card:has(.form-check-input:checked) {
-            border-color: #0f8a43;
+            border-color: var(--presma-primary);
             background: #f0fdf4;
         }
 
         .pernyataan-card .form-check-input {
-            width: 1.35em;
-            height: 1.35em;
+            width: 1.3em;
+            height: 1.3em;
             margin-top: .1rem;
             flex-shrink: 0;
         }
 
         .pernyataan-card .form-check-label {
+            font-size: .88rem;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
         }
 
-        /* =========================
-               BUTTON
-            ========================= */
+        .pg-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: .6rem;
+        }
 
-        .btn {
-            border-radius: 12px;
+        .pg-actions .btn {
+            border-radius: 10px;
             font-weight: 600;
-            padding: .65rem 1.4rem;
+            font-size: .88rem;
+            padding: .6rem 1.3rem;
         }
 
         .btn-kirim {
@@ -346,17 +358,30 @@
             cursor: not-allowed;
         }
 
-        @media (max-width: 768px) {
-            .hero-card {
-                flex-direction: column;
-                text-align: center;
-                padding: 1.75rem 1.5rem;
+        .pg-closed-msg {
+            font-size: .88rem;
+            color: var(--presma-text-light);
+            line-height: 1.65;
+            margin-bottom: 1.1rem;
+        }
+
+        @media (max-width: 992px) {
+            .pg-wrap {
+                min-height: auto;
             }
 
-            .siklus-hero {
+            .pg-hero {
                 flex-direction: column;
+                align-items: stretch;
                 text-align: center;
-                padding: 1.75rem 1.5rem;
+            }
+
+            .pg-hero-left {
+                justify-content: center;
+            }
+
+            .pg-hero-right {
+                justify-content: center;
             }
         }
     </style>
@@ -364,226 +389,179 @@
 
 @section('content')
     <main class="content">
-
-        {{-- HEADER --}}
-        <div class="page-title d-flex align-items-start justify-content-between flex-wrap gap-3">
-            <div>
-                <h2>Pengajuan Prestasi</h2>
-                <p>Kirim seluruh data prestasi madrasah Anda untuk diproses ke tahap penilaian.</p>
-            </div>
-
-            <a href="{{ route('prestasi.export') }}" class="btn btn-outline-success">
-                <i class="bi bi-file-earmark-excel"></i>
-                Export Excel
-            </a>
-        </div>
-
         <div class="container-fluid">
+            <div class="pg-wrap">
 
-            {{-- 1. HERO CARD --}}
-            <div class="hero-card">
-                <div class="hero-icon">
-                    <i class="bi bi-send-check"></i>
-                </div>
-                <div>
-                    <h2>Pengajuan Prestasi</h2>
-                    <p>
-                        Pastikan seluruh data prestasi sudah lengkap dan benar. Setelah pengajuan dikirim,
-                        data tidak dapat diubah kembali sampai proses penilaian selesai.
-                    </p>
-                </div>
-            </div>
+                @php
+                    $statusMap = [
+                        'OPEN' => [
+                            'label' => 'Terbuka untuk Pengisian',
+                            'icon' => 'bi-unlock-fill',
+                            'class' => 'siklus-open',
+                        ],
+                        'SUBMITTED' => [
+                            'label' => 'Menunggu Penugasan Asesor',
+                            'icon' => 'bi-send-check-fill',
+                            'class' => 'siklus-submitted',
+                        ],
+                        'ASSESSMENT' => [
+                            'label' => 'Sedang Dinilai Asesor',
+                            'icon' => 'bi-clipboard-data-fill',
+                            'class' => 'siklus-assessment',
+                        ],
+                        'FINISHED' => [
+                            'label' => 'Penilaian Selesai',
+                            'icon' => 'bi-check-circle-fill',
+                            'class' => 'siklus-finished',
+                        ],
+                    ];
 
-            {{-- 2. STATUS SIKLUS --}}
-            @php
-                $statusMap = [
-                    'OPEN' => [
-                        'label' => 'Terbuka untuk Pengisian',
-                        'icon' => 'bi-unlock-fill',
-                        'class' => 'siklus-open',
-                    ],
-                    'SUBMITTED' => [
-                        'label' => 'Menunggu Penugasan Asesor',
-                        'icon' => 'bi-send-check-fill',
-                        'class' => 'siklus-submitted',
-                    ],
-                    'ASSESSMENT' => [
-                        'label' => 'Sedang Dinilai Asesor',
-                        'icon' => 'bi-clipboard-data-fill',
-                        'class' => 'siklus-assessment',
-                    ],
-                    'FINISHED' => [
-                        'label' => 'Penilaian Selesai',
-                        'icon' => 'bi-check-circle-fill',
-                        'class' => 'siklus-finished',
-                    ],
-                ];
+                    $statusNow = $statusMap[$siklus->status] ?? $statusMap['OPEN'];
+                @endphp
 
-                $statusNow = $statusMap[$siklus->status] ?? $statusMap['OPEN'];
-            @endphp
-
-            <div class="siklus-hero {{ $statusNow['class'] }}">
-                <div class="siklus-periode-badge">
-                    <span class="siklus-periode-label">Periode</span>
-                    <span class="siklus-periode-number">{{ $siklus->periode }}</span>
-                </div>
-                <div>
-                    <div class="siklus-hero-title">
-                        <i class="bi {{ $statusNow['icon'] }}"></i>
-                        {{ $siklus->status }}
-                    </div>
-                    <p class="siklus-hero-desc">{{ $statusNow['label'] }}</p>
-                </div>
-            </div>
-
-            {{-- 3. CARD RINGKASAN PRESTASI --}}
-            <div class="content-card">
-                <div class="card-section-title">
-                    <i class="bi bi-bar-chart"></i>
-                    Ringkasan Prestasi
-                </div>
-
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
-
-                    <div class="col">
-                        <div class="summary-card">
-                            <div class="summary-icon icon-total">
-                                <i class="bi bi-trophy"></i>
-                            </div>
-                            <div>
-                                <div class="summary-value">{{ number_format($summary->total ?? 0) }}</div>
-                                <div class="summary-label">Total Prestasi</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="summary-card">
-                            <div class="summary-icon icon-akademik">
-                                <i class="bi bi-mortarboard"></i>
-                            </div>
-                            <div>
-                                <div class="summary-value">{{ number_format($summary->akademik ?? 0) }}</div>
-                                <div class="summary-label">Akademik</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="summary-card">
-                            <div class="summary-icon icon-non-akademik">
-                                <i class="bi bi-award"></i>
-                            </div>
-                            <div>
-                                <div class="summary-value">{{ number_format($summary->non_akademik ?? 0) }}</div>
-                                <div class="summary-label">Non Akademik</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="summary-card">
-                            <div class="summary-icon icon-keagamaan">
-                                <i class="bi bi-book"></i>
-                            </div>
-                            <div>
-                                <div class="summary-value">{{ number_format($summary->keagamaan ?? 0) }}</div>
-                                <div class="summary-label">Keagamaan</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="summary-card">
-                            <div class="summary-icon icon-gtk">
-                                <i class="bi bi-people"></i>
-                            </div>
-                            <div>
-                                <div class="summary-value">{{ number_format($summary->gtk ?? 0) }}</div>
-                                <div class="summary-label">GTK</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="summary-card">
-                            <div class="summary-icon icon-lembaga">
-                                <i class="bi bi-building"></i>
-                            </div>
-                            <div>
-                                <div class="summary-value">{{ number_format($summary->lembaga ?? 0) }}</div>
-                                <div class="summary-label">Lembaga</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            {{-- 4. CARD INFORMASI PENTING --}}
-            <div class="info-card mb-4">
-                <div class="card-section-title">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    Informasi Penting
-                </div>
-
-                <ul class="info-list">
-                    <li>Setelah pengajuan dikirim, <strong>seluruh data prestasi tidak dapat diedit atau dihapus</strong>
-                        sampai proses penilaian selesai.</li>
-                    <li>Fitur <strong>Tambah Prestasi</strong> dan <strong>Import Excel</strong> akan otomatis dinonaktifkan
-                        setelah pengajuan dikirim.</li>
-                    <li>Asesor akan mulai melakukan penilaian terhadap seluruh data yang telah diajukan.</li>
-                    <li>Pastikan seluruh data pada setiap bidang prestasi sudah benar sebelum melanjutkan.</li>
-                </ul>
-            </div>
-
-            {{-- FORM PENGAJUAN --}}
-            @if ($siklus->canSubmit())
-                <form id="formPengajuan" action="{{ route('pengajuan.submit') }}" method="POST">
-                    @csrf
-
-                    {{-- 5. CHECKBOX PERNYATAAN --}}
-                    <div class="pernyataan-card mb-4">
-                        <input class="form-check-input" type="checkbox" id="checkPernyataan">
-                        <label class="form-check-label" for="checkPernyataan">
-                            Saya menyatakan seluruh data prestasi telah benar dan siap dikirim.
-                        </label>
-                    </div>
-
-                    {{-- 6. TOMBOL --}}
-                    <div class="d-flex flex-column flex-sm-row justify-content-sm-between gap-2 mb-4">
-                        <a href="{{ dashboardRoute() }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i>
-                            Kembali
-                        </a>
-
-                        <button type="button" id="btnKirimPrestasi" class="btn btn-kirim" disabled>
+                {{-- HERO --}}
+                <div class="pg-hero {{ $statusNow['class'] }}">
+                    <div class="pg-hero-left">
+                        <div class="pg-hero-icon">
                             <i class="bi bi-send-check"></i>
-                            Kirim Prestasi
-                        </button>
+                        </div>
+                        <div>
+                            <div class="pg-hero-title">Pengajuan Prestasi</div>
+                            <p class="pg-hero-desc">Kirim seluruh data prestasi madrasah untuk diproses ke tahap
+                                penilaian.</p>
+                        </div>
                     </div>
-                </form>
-            @else
-                <div class="content-card mb-4">
-                    <div class="card-section-title mb-2">
-                        <i class="bi bi-info-circle"></i>
-                        Pengajuan Sudah Tidak Dapat Dikirim
+
+                    <div class="pg-hero-right">
+                        <span class="pg-chip"><i class="bi bi-calendar-event"></i> Periode {{ $siklus->periode }}</span>
+                        <span class="pg-chip"><i class="bi {{ $statusNow['icon'] }}"></i>
+                            {{ $statusNow['label'] }}</span>
+                        <a href="{{ route('prestasi.export') }}" class="btn-export">
+                            <i class="bi bi-file-earmark-excel"></i> Export Excel
+                        </a>
                     </div>
-                    <p class="mb-0" style="color:#64748b;">
-                        Prestasi untuk periode <strong>{{ $siklus->periode }}</strong> sudah dikirim dan status saat ini
-                        adalah <strong>{{ $siklus->status }}</strong>. Tidak ada tindakan lain yang perlu dilakukan di
-                        halaman ini.
-                    </p>
                 </div>
 
-                <div class="d-flex justify-content-end mb-4">
-                    <a href="{{ dashboardRoute() }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i>
-                        Kembali
-                    </a>
-                </div>
-            @endif
+                {{-- BODY — dua kolom --}}
+                <div class="row g-3">
 
+                    {{-- KIRI: RINGKASAN PRESTASI --}}
+                    <div class="col-lg-5">
+                        <div class="pg-card h-100">
+                            <div class="pg-card-title">
+                                <i class="bi bi-bar-chart"></i> Ringkasan Prestasi
+                            </div>
+
+                            <div class="pg-stat-row pg-stat-total">
+                                <div class="pg-stat-icon icon-total"><i class="bi bi-trophy"></i></div>
+                                <div class="pg-stat-label">Total Prestasi</div>
+                                <div class="pg-stat-value">{{ number_format($summary->total ?? 0) }}</div>
+                            </div>
+
+                            <div class="pg-stat-row">
+                                <div class="pg-stat-icon icon-akademik"><i class="bi bi-mortarboard"></i></div>
+                                <div class="pg-stat-label">Akademik</div>
+                                <div class="pg-stat-value">{{ number_format($summary->akademik ?? 0) }}</div>
+                            </div>
+
+                            <div class="pg-stat-row">
+                                <div class="pg-stat-icon icon-non-akademik"><i class="bi bi-award"></i></div>
+                                <div class="pg-stat-label">Non Akademik</div>
+                                <div class="pg-stat-value">{{ number_format($summary->non_akademik ?? 0) }}</div>
+                            </div>
+
+                            <div class="pg-stat-row">
+                                <div class="pg-stat-icon icon-keagamaan"><i class="bi bi-book"></i></div>
+                                <div class="pg-stat-label">Keagamaan</div>
+                                <div class="pg-stat-value">{{ number_format($summary->keagamaan ?? 0) }}</div>
+                            </div>
+
+                            <div class="pg-stat-row">
+                                <div class="pg-stat-icon icon-gtk"><i class="bi bi-people"></i></div>
+                                <div class="pg-stat-label">GTK</div>
+                                <div class="pg-stat-value">{{ number_format($summary->gtk ?? 0) }}</div>
+                            </div>
+
+                            <div class="pg-stat-row">
+                                <div class="pg-stat-icon icon-lembaga"><i class="bi bi-building"></i></div>
+                                <div class="pg-stat-label">Lembaga</div>
+                                <div class="pg-stat-value">{{ number_format($summary->lembaga ?? 0) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- KANAN: INFORMASI PENTING (checklist) + PERNYATAAN + TOMBOL --}}
+                    <div class="col-lg-7">
+                        <div class="pg-card h-100 d-flex flex-column">
+                            <div class="pg-card-title">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Informasi Penting
+                            </div>
+
+                            <ul class="pg-checklist">
+                                <li>
+                                    <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
+                                    <span>Setelah pengajuan dikirim, <strong>seluruh data prestasi tidak dapat
+                                            diedit atau dihapus</strong> sampai proses penilaian selesai.</span>
+                                </li>
+                                <li>
+                                    <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
+                                    <span>Fitur <strong>Tambah Prestasi</strong> dan <strong>Import Excel</strong>
+                                        akan otomatis dinonaktifkan setelah pengajuan dikirim.</span>
+                                </li>
+                                <li>
+                                    <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
+                                    <span>Asesor akan mulai melakukan penilaian terhadap seluruh data yang telah
+                                        diajukan.</span>
+                                </li>
+                                <li>
+                                    <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
+                                    <span>Pastikan seluruh data pada setiap bidang prestasi sudah benar sebelum
+                                        melanjutkan.</span>
+                                </li>
+                            </ul>
+
+                            <div class="mt-auto">
+                                @if ($siklus->canSubmit())
+                                    <form id="formPengajuan" action="{{ route('pengajuan.submit') }}" method="POST">
+                                        @csrf
+
+                                        <div class="pernyataan-card">
+                                            <input class="form-check-input" type="checkbox" id="checkPernyataan">
+                                            <label class="form-check-label" for="checkPernyataan">
+                                                Saya menyatakan seluruh data prestasi telah benar dan siap dikirim.
+                                            </label>
+                                        </div>
+
+                                        <div class="pg-actions">
+                                            <a href="{{ dashboardRoute() }}" class="btn btn-outline-secondary">
+                                                <i class="bi bi-arrow-left"></i> Kembali
+                                            </a>
+
+                                            <button type="button" id="btnKirimPrestasi" class="btn btn-kirim" disabled>
+                                                <i class="bi bi-send-check"></i> Kirim Prestasi
+                                            </button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <p class="pg-closed-msg">
+                                        Prestasi untuk periode <strong>{{ $siklus->periode }}</strong> sudah dikirim
+                                        dan status saat ini adalah <strong>{{ $siklus->status }}</strong>. Tidak ada
+                                        tindakan lain yang perlu dilakukan di halaman ini.
+                                    </p>
+
+                                    <div class="pg-actions justify-content-end">
+                                        <a href="{{ dashboardRoute() }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-left"></i> Kembali
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
         </div>
     </main>
 @endsection
