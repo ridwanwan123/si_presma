@@ -31,10 +31,26 @@ class UserManagementController extends Controller
             });
         }
 
+        // Filter Status -- cuma 2 kondisi, langsung dari is_active
+        if ($request->filled('status')) {
+            match ($request->status) {
+                'aktif'    => $query->where('is_active', true),
+                'nonaktif' => $query->where('is_active', false),
+                default    => null,
+            };
+        }
+
+        // Akun nonaktif ditaruh paling atas supaya yang butuh diaktifkan
+        // langsung kelihatan, baru diurutkan terbaru seperti biasa.
         $users = $query
+            ->orderBy('is_active')
             ->latest()
             ->paginate(10)
             ->withQueryString();
+
+        // Dihitung terpisah (tanpa filter role/status) supaya badge jumlah
+        // selalu akurat walau user sedang memfilter.
+        $jumlahNonaktif = User::where('is_active', false)->count();
 
         // Dropdown Role
         $roles = Role::orderBy('nama')->get();
@@ -54,6 +70,7 @@ class UserManagementController extends Controller
             'roles',
             'madrasahs',
             'wilayahPengawas',
+            'jumlahNonaktif',
             'breadcrumb'
         ));
     }
@@ -211,5 +228,27 @@ class UserManagementController extends Controller
                 ->withInput()
                 ->with('error', 'Gagal memperbarui akun.');
         }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AKTIFKAN AKUN -- dipakai baik untuk akun baru hasil self-register
+    | maupun akun lama yang sebelumnya dinonaktifkan manual. Endpoint
+    | terpisah dari update() biasa supaya aksi ini punya activity log
+    | sendiri yang jelas.
+    |--------------------------------------------------------------------------
+    */
+    public function approve(User $user)
+    {
+        $user->update([
+            'is_active' => true,
+        ]);
+
+        ActivityLogger::log(
+            event: 'update',
+            description: "Mengaktifkan akun {$user->nama} ({$user->role?->nama})"
+        );
+
+        return back()->with('success', "Akun {$user->nama} berhasil diaktifkan dan sudah bisa login.");
     }
 }

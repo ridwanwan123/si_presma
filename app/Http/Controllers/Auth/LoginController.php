@@ -68,7 +68,8 @@ class LoginController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Akun Anda telah dinonaktifkan. Silakan hubungi Administrator.');
+                ->with('show_aktivasi_modal', true)
+                ->with('aktivasi_modal_judul', 'Akun Anda Belum Aktif');
         }
 
         /*

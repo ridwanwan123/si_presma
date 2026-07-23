@@ -2,21 +2,21 @@
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PRESMA | Masuk</title>
 
     {{-- Bootstrap (grid & alert utilities only) --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
     {{-- Boxicons --}}
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     {{-- Fonts: Sora (display) + Inter (UI) + JetBrains Mono (stat numbers) --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap"
-        rel="stylesheet">
+        rel="stylesheet" />
 
-    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}" type="image/x-icon" />
 
     <style>
         /* =====================================================
@@ -49,7 +49,7 @@
 
             --shadow-sm: 0 4px 14px rgba(21, 128, 61, 0.08);
             --shadow-md: 0 14px 34px rgba(22, 101, 52, 0.15);
-            --shadow-lg: 0 24px 60px rgba(20, 83, 45, 0.30);
+            --shadow-lg: 0 24px 60px rgba(20, 83, 45, 0.3);
         }
 
         * {
@@ -108,8 +108,13 @@
             padding: 44px 48px;
             color: #fff;
             background:
-                radial-gradient(900px 500px at 15% -10%, rgba(255, 255, 255, 0.08), transparent 60%),
-                linear-gradient(165deg, var(--brand-darker), var(--brand-dark) 55%, var(--brand));
+                radial-gradient(900px 500px at 15% -10%,
+                    rgba(255, 255, 255, 0.08),
+                    transparent 60%),
+                linear-gradient(165deg,
+                    var(--brand-darker),
+                    var(--brand-dark) 55%,
+                    var(--brand));
             overflow: hidden;
         }
 
@@ -267,7 +272,8 @@
             width: 68px;
             height: 68px;
             border-radius: 50%;
-            background: conic-gradient(var(--brand) 0deg 295deg, var(--brand-soft) 295deg 360deg);
+            background: conic-gradient(var(--brand) 0deg 295deg,
+                    var(--brand-soft) 295deg 360deg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -453,7 +459,116 @@
             font-size: 13.5px;
             padding: 12px 16px;
             box-shadow: var(--shadow-md);
-            animation: toastIn 0.3s ease, toastOut 0.3s ease 4s forwards;
+            animation:
+                toastIn 0.3s ease,
+                toastOut 0.3s ease 4s forwards;
+        }
+
+        /* ============ MODAL AKTIVASI AKUN ============ */
+        /* Sengaja disalin persis dari .periode-modal-* di base.css --
+           halaman login ini berdiri sendiri (tidak load base.css), jadi
+           styling-nya perlu dibawa sendiri di sini supaya tampilannya
+           konsisten dengan modal periode aktif yang sudah ada. */
+        .aktivasi-modal-content {
+            border-radius: 22px;
+            border: none;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+        }
+
+        .aktivasi-modal-title {
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.4rem;
+        }
+
+        .aktivasi-modal-subtitle {
+            color: #64748b;
+            font-size: 0.92rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .aktivasi-modal-box {
+            border: 1.5px solid #dbe2ea;
+            border-radius: 16px;
+            padding: 1.75rem 1rem;
+            margin-bottom: 1.75rem;
+            background: #f8fafc;
+        }
+
+        .aktivasi-modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(37, 211, 102, 0.12);
+            color: #25d366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            margin: 0 auto 1rem;
+        }
+
+        .aktivasi-modal-nama {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.15rem;
+        }
+
+        .aktivasi-modal-unit {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .aktivasi-modal-wa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #25d366;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 0.7rem 1.2rem;
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .aktivasi-modal-telepon {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #0f8a43;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .aktivasi-modal-telepon:hover {
+            color: #0c7438;
+        }
+
+        .aktivasi-modal-wa-btn:hover {
+            background: #1ebe5a;
+            color: #fff;
+        }
+
+        .aktivasi-modal-wa-btn i {
+            font-size: 1.2rem;
+        }
+
+        .aktivasi-modal-btn {
+            background: #0f8a43;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 0.7rem;
+            border: none;
+        }
+
+        .aktivasi-modal-btn:hover {
+            background: #0c7438;
+            color: #fff;
         }
 
         @keyframes toastIn {
@@ -523,7 +638,9 @@
             padding: 0 15px 0 44px;
             font-size: 14.5px;
             background: var(--surface);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
         }
 
         .form-control::placeholder {
@@ -587,7 +704,9 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s;
             margin-top: 6px;
         }
 
@@ -663,19 +782,17 @@
 </head>
 
 <body>
-
     <div class="auth-wrapper">
-
-        {{-- ============================== ASIDE — signature panel ============================== --}}
+        {{-- ============================== ASIDE — signature panel
+      ============================== --}}
         <div class="auth-aside">
-
             <div class="aside-brand">
-                <div class="mark"><i class='bx bxs-graduation'></i></div>
+                <div class="mark"><i class="bx bxs-graduation"></i></div>
                 <span>PRESMA | JMA 2027</span>
             </div>
 
             <div class="aside-copy">
-                <span class="eyebrow"><i class='bx bxs-certification'></i> Sistem Prestasi Madrasah</span>
+                <span class="eyebrow"><i class="bx bxs-certification"></i> Sistem Prestasi Madrasah</span>
                 <h1>Masuk untuk melihat <em>data prestasi</em></h1>
                 <p>Semua data prestasi sudah menunggu di dashboard.</p>
             </div>
@@ -697,33 +814,37 @@
 
                     <div class="bar-row">
                         <span>Akademik</span>
-                        <div class="track"><i style="width:84%"></i></div>
+                        <div class="track"><i style="width: 84%"></i></div>
                         <span class="pct">84%</span>
                     </div>
                     <div class="bar-row">
                         <span>Non Akademik</span>
-                        <div class="track"><i style="width:81%"></i></div>
+                        <div class="track"><i style="width: 81%"></i></div>
                         <span class="pct">81%</span>
                     </div>
                     <div class="bar-row">
                         <span>Keagamaan</span>
-                        <div class="track"><i style="width:92%"></i></div>
+                        <div class="track"><i style="width: 92%"></i></div>
                         <span class="pct">92%</span>
                     </div>
                     <div class="bar-row">
                         <span>GTK</span>
-                        <div class="track"><i style="width:88%"></i></div>
+                        <div class="track"><i style="width: 88%"></i></div>
                         <span class="pct">88%</span>
                     </div>
                     <div class="bar-row">
                         <span>Kelembagaan</span>
-                        <div class="track"><i style="width:79%"></i></div>
+                        <div class="track"><i style="width: 79%"></i></div>
                         <span class="pct">79%</span>
                     </div>
                 </div>
 
-                <div class="chip-float chip-1"><i class='bx bxs-trophy'></i> Juara 1 Nasional</div>
-                <div class="chip-float chip-2"><i class='bx bxs-check-shield'></i> Data terverifikasi</div>
+                <div class="chip-float chip-1">
+                    <i class="bx bxs-trophy"></i> Juara 1 Nasional
+                </div>
+                <div class="chip-float chip-2">
+                    <i class="bx bxs-check-shield"></i> Data terverifikasi
+                </div>
             </div>
 
             <div class="aside-foot">
@@ -733,71 +854,133 @@
             </div>
         </div>
 
-        {{-- ============================== FORM ============================== --}}
+        {{-- ============================== FORM ==============================
+      --}}
         <div class="auth-main">
             <div class="auth-card">
-
                 <div class="card-head">
                     <span class="step-tag">Selamat datang kembali</span>
                     <h2>Masuk ke akun Anda</h2>
                     <p>Gunakan username dan password terdaftar</p>
                 </div>
 
-                @if (session('error'))
-                    <div class="toast-alert alert alert-danger">{{ session('error') }}</div>
-                @endif
-
-                @if (session('success'))
-                    <div class="toast-alert alert alert-success">{{ session('success') }}</div>
-                @endif
-
-                <form action="{{ route('login') }}" method="POST">
-                    @csrf
-
-                    <div class="field-group">
-                        <label class="form-label">Username</label>
-                        <div class="field-icon">
-                            <i class='bx bx-user'></i>
-                            <input type="text" name="login" class="form-control" placeholder="Masukkan username"
-                                required>
+                @if (session('error') && !session('show_aktivasi_modal'))
+                    <div class="toast-alert alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                    @endif @if (session('success') && !session('show_aktivasi_modal'))
+                        <div class="toast-alert alert alert-success">
+                            {{ session('success') }}
                         </div>
-                    </div>
+                    @endif
 
-                    <div class="field-group">
-                        <label class="form-label">Password</label>
-                        <div class="field-icon">
-                            <i class='bx bx-lock-alt'></i>
-                            <input type="password" id="password" name="password" class="form-control has-toggle"
-                                placeholder="Masukkan password" required>
-                            <i class='bx bx-show toggle-password' id="togglePassword"></i>
+                    <form action="{{ route('login') }}" method="POST">
+                        @csrf
+
+                        <div class="field-group">
+                            <label class="form-label">Username</label>
+                            <div class="field-icon">
+                                <i class="bx bx-user"></i>
+                                <input type="text" name="login" class="form-control"
+                                    placeholder="Masukkan username" required />
+                            </div>
                         </div>
+
+                        <div class="field-group">
+                            <label class="form-label">Password</label>
+                            <div class="field-icon">
+                                <i class="bx bx-lock-alt"></i>
+                                <input type="password" id="password" name="password" class="form-control has-toggle"
+                                    placeholder="Masukkan password" required />
+                                <i class="bx bx-show toggle-password" id="togglePassword"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-extra">
+                            <a href="#">Lupa password?</a>
+                        </div>
+
+                        <button type="submit" class="btn-login">
+                            <i class="bx bx-log-in"></i>
+                            Masuk
+                        </button>
+
+                        <div class="footer-link">
+                            Belum punya akun?
+                            <a href="{{ route('register.form') }}">Daftar di sini</a>
+                        </div>
+                    </form>
+
+                    <div class="help-text">
+                        <i class="bx bx-help-circle"></i>
+                        Butuh bantuan? Hubungi Administrator
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ========================================================= MODAL
+    AKTIVASI AKUN — muncul otomatis kalau server flash 'show_aktivasi_modal'
+    (pola sama seperti modal Periode Aktif di base.blade.php, cuma dipasang di
+    sini karena halaman login tidak pakai layout base.blade.php).
+    ========================================================== --}}
+    <div class="modal fade" id="modalAktivasiAkun" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content aktivasi-modal-content">
+                <div class="modal-body text-center px-4 py-5">
+                    <div class="aktivasi-modal-icon">
+                        <i class="bx bxl-whatsapp"></i>
                     </div>
 
-                    <div class="form-extra">
-                        <a href="#">Lupa password?</a>
+                    <h4 class="aktivasi-modal-title">
+                        {{ session('aktivasi_modal_judul', 'Akun Belum Aktif') }}
+                    </h4>
+                    <p class="aktivasi-modal-subtitle">
+                        Akun perlu diaktifkan terlebih dahulu sebelum bisa dipakai login
+                    </p>
+
+                    <div class="aktivasi-modal-box">
+                        <div class="aktivasi-modal-nama">Muhamad Ridwan</div>
+                        <div class="aktivasi-modal-unit">Penmad DKI Jakarta</div>
+                        <div class="aktivasi-modal-telepon">0813-8175-2590</div>
+
+                        @php                         $pesanWaAktivasi = 'Assalamualaikum, mohon izin untuk approve
+              akun PRESMA saya agar bisa segera digunakan. Terima kasih banyak
+              atas bantuannya 🙏'; @endphp
+
+                        <a href="https://wa.me/6281381752590?text={{ urlencode($pesanWaAktivasi) }}" target="_blank"
+                            rel="noopener" class="aktivasi-modal-wa-btn">
+                            <i class="bx bxl-whatsapp"></i> Kirim Pesan
+                        </a>
                     </div>
 
-                    <button type="submit" class="btn-login">
-                        <i class='bx bx-log-in'></i>
-                        Masuk
+                    <button type="button" class="btn aktivasi-modal-btn w-100" data-bs-dismiss="modal">
+                        Mengerti
                     </button>
-
-                    <div class="footer-link">
-                        Belum punya akun?
-                        <a href="{{ route('register.form') }}">Daftar di sini</a>
-                    </div>
-                </form>
-
-                <div class="help-text">
-                    <i class='bx bx-help-circle'></i>
-                    Butuh bantuan? Hubungi Administrator
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        document.querySelectorAll(".toast-alert").forEach(toast => {
+        document.addEventListener('DOMContentLoaded', () => {
+            const showAktivasiModal = @json(session('show_aktivasi_modal', false));
+
+            if (!showAktivasiModal) return;
+
+            const modalEl = document.getElementById('modalAktivasiAkun');
+
+            if (modalEl && window.bootstrap) {
+                new bootstrap.Modal(modalEl).show();
+            }
+        });
+    </script>
+
+    <script>
+        document.querySelectorAll(".toast-alert").forEach((toast) => {
             setTimeout(() => toast.remove(), 4300);
         });
 

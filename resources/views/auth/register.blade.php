@@ -116,6 +116,10 @@
                         Silakan pilih role terlebih dahulu
                     </div>
 
+                    @error('role_id')
+                        <div class="text-danger text-center mb-2">{{ $message }}</div>
+                    @enderror
+
                     <span class="section-label">Jenis akun</span>
                     <div class="role-container">
                         @foreach ($roles->where('nama', 'Madrasah') as $role)
@@ -152,6 +156,9 @@
                                         @endforeach
                                     </div>
                                 </div>
+                                @error('madrasah_id')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -167,6 +174,9 @@
                                     <option value="5">Jakarta Selatan</option>
                                     <option value="6">Kepulauan Seribu</option>
                                 </select>
+                                @error('wilayah_pengawas_id')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -174,32 +184,54 @@
                         <div class="form-row">
                             <div class="field-group">
                                 <label class="form-label">Nama Lengkap</label>
-                                <input type="text" name="nama" class="form-control"
+                                <input type="text" name="nama"
+                                    class="form-control @error('nama') is-invalid @enderror"
                                     value="{{ old('nama') }}" placeholder="Masukkan nama">
+                                @error('nama')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="field-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control"
+                                <input type="email" name="email"
+                                    class="form-control @error('email') is-invalid @enderror"
                                     value="{{ old('email') }}" placeholder="email@gmail.com">
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="field-group">
                                 <label class="form-label">Username</label>
-                                <input type="text" name="username" class="form-control"
+                                <input type="text" name="username"
+                                    class="form-control @error('username') is-invalid @enderror"
                                     value="{{ old('username') }}" placeholder="Username">
+                                @error('username')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="field-group">
+                                {{-- Sengaja type="text" + inputmode="numeric", BUKAN type="number" --
+                                     input type=number di HTML otomatis membuang angka 0 di depan
+                                     (08xxx jadi 8xxx), yang merusak format nomor HP Indonesia. --}}
                                 <label class="form-label">No. HP</label>
-                                <input type="number" name="no_hp" class="form-control"
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" name="no_hp"
+                                    class="form-control @error('no_hp') is-invalid @enderror"
                                     value="{{ old('no_hp') }}" placeholder="08xxxxxxxxxx">
+                                @error('no_hp')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="field-group">
                                 <label class="form-label">Password</label>
-                                <input type="password" name="password" id="password" class="form-control"
-                                    placeholder="******">
+                                <input type="password" name="password" id="password"
+                                    class="form-control @error('password') is-invalid @enderror" placeholder="******">
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
 
                                 <div class="password-check">
                                     <small id="rule-length" class="invalid-rule">

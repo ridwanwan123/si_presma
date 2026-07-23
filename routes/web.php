@@ -121,6 +121,9 @@ Route::middleware('auth')->group(function () {
             ->parameters([
                 'user-management' => 'user'
             ]);
+            
+        Route::patch('user-management/{user}/approve', [UserManagementController::class, 'approve'])
+            ->name('user-management.approve');
 
         Route::get(
             'assign-asesor/export-pdf',
