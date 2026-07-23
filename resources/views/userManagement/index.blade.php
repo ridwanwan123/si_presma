@@ -45,8 +45,8 @@
         }
 
         /* =====================================
-                                           FILTER CARD
-                                        ===================================== */
+                                               FILTER CARD
+                                            ===================================== */
         .filter-card {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -189,8 +189,8 @@
         }
 
         /* =====================================
-                                           PRESMA ACCOUNT MODAL
-                                        ===================================== */
+                                               PRESMA ACCOUNT MODAL
+                                            ===================================== */
         .presma-dialog {
             max-width: 920px;
             width: calc(100% - 2rem);
@@ -560,31 +560,222 @@
             </div>
         </div>
     </main>
-    <div class="modal fade" id="modalTambahAkun" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered presma-dialog">
-            <form action="{{ route('user-management.store') }}" method="POST" id="formTambahAkun">
-                @csrf
-                <input type="hidden" name="form_source" value="tambah">
-                <div class="modal-content presma-account-modal">
-                    {{-- HEADER --}}
-                    <div class="modal-header">
-                        <div>
-                            <span class="modal-tag">
-                                PRESMA ACCOUNT
-                            </span>
-                            <h5 class="modal-title">
-                                <i class="bx bx-user-plus"></i>
-                                Tambah Akun Baru
-                            </h5>
-                            <small>
-                                Pilih jenis akun kemudian lengkapi data pengguna.
-                            </small>
-                        </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal">
-                        </button>
+@endsection
+
+<div class="modal fade" id="modalTambahAkun" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered presma-dialog">
+        <form action="{{ route('user-management.store') }}" method="POST" id="formTambahAkun">
+            @csrf
+            <input type="hidden" name="form_source" value="tambah">
+            <div class="modal-content presma-account-modal">
+                {{-- HEADER --}}
+                <div class="modal-header">
+                    <div>
+                        <span class="modal-tag">
+                            PRESMA ACCOUNT
+                        </span>
+                        <h5 class="modal-title">
+                            <i class="bx bx-user-plus"></i>
+                            Tambah Akun Baru
+                        </h5>
+                        <small>
+                            Pilih jenis akun kemudian lengkapi data pengguna.
+                        </small>
                     </div>
-                    {{-- BODY --}}
-                    <div class="modal-body">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal">
+                    </button>
+                </div>
+                {{-- BODY --}}
+                <div class="modal-body">
+                    {{-- ROLE --}}
+                    <span class="section-label">
+                        Jenis Akun
+                    </span>
+                    <div class="role-container">
+                        @foreach ($roles as $role)
+                            <label class="role-card">
+                                <input type="radio" name="role_id" value="{{ $role->id }}" class="role-radio"
+                                    data-role="{{ strtolower($role->nama) }}">
+                                <div class="role-body">
+                                    <div class="role-icon">
+                                        @if ($role->nama == 'Administrator')
+                                            <i class="bx bxs-crown"></i>
+                                        @elseif($role->nama == 'Madrasah')
+                                            <i class="bx bxs-school"></i>
+                                        @elseif($role->nama == 'Pengawas')
+                                            <i class="bx bxs-map-pin"></i>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <h5>
+                                            {{ $role->nama }}
+                                        </h5>
+                                        <small>
+                                            @if ($role->nama == 'Administrator')
+                                                Pengelola sistem
+                                            @elseif($role->nama == 'Madrasah')
+                                                Admin Madrasah
+                                            @else
+                                                Pengawas wilayah
+                                            @endif
+                                        </small>
+                                    </div>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                    {{-- ERROR ROLE --}}
+                    <div id="roleError" class="text-danger text-center d-none mt-2">
+                        Silakan pilih jenis akun
+                    </div>
+                    {{-- DINAMIS INSTANSI --}}
+                    <div id="dynamicAccountField">
+                        {{-- MADRASAH --}}
+                        <div id="madrasahField" class="role-fields d-none mt-3">
+                            <label class="form-label">
+                                Nama Madrasah
+                            </label>
+                            <div class="search-select">
+                                <input type="text" id="madrasahSearch" class="form-control"
+                                    placeholder="Cari nama madrasah..." autocomplete="off">
+                                <input type="hidden" name="madrasah_id" id="madrasahValue">
+                                <div class="search-dropdown" id="madrasahDropdown">
+                                    @foreach ($madrasahs as $madrasah)
+                                        <div class="dropdown-item-custom" data-id="{{ $madrasah->id }}">
+                                            {{ $madrasah->nama_madrasah }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        {{-- PENGAWAS --}}
+                        <div id="pengawasField" class="role-fields d-none mt-3">
+                            <label class="form-label">
+                                Wilayah Pengawas
+                            </label>
+                            <select name="wilayah_pengawas_id" class="form-select">
+                                <option value="">
+                                    Pilih Wilayah
+                                </option>
+                                @foreach ($wilayahPengawas as $wilayah)
+                                    <option value="{{ $wilayah->id }}">
+                                        {{ $wilayah->unit_kerja }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    {{-- DATA AKUN --}}
+                    <span class="section-label mt-4">
+                        Data Akun
+                    </span>
+                    <div class="form-grid">
+                        <div>
+                            <label>
+                                Nama Lengkap
+                            </label>
+                            <input type="text" name="nama" value="{{ old('nama') }}"
+                                class="form-control @error('nama') is-invalid @enderror" placeholder="Nama lengkap">
+                            @error('nama')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div>
+                            <label>
+                                Email
+                            </label>
+                            <input type="email" name="email" value="{{ old('email') }}"
+                                class="form-control @error('email') is-invalid @enderror"
+                                placeholder="email@gmail.com">
+                            @error('email')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div>
+                            <label>
+                                Username
+                            </label>
+                            <input type="text" name="username" value="{{ old('username') }}"
+                                class="form-control @error('username') is-invalid @enderror" placeholder="Username">
+                            @error('username')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div>
+                            <label>
+                                No HP
+                            </label>
+                            <input type="text" name="no_hp" value="{{ old('no_hp') }}"
+                                class="form-control @error('no_hp') is-invalid @enderror" placeholder="08xxxx">
+                        </div>
+                        <div>
+                            <label>
+                                Password
+                            </label>
+                            <input type="password" name="password"
+                                class="form-control @error('password') is-invalid @enderror">
+                            @error('password')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" role="switch" id="tambahIsActive"
+                                    name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="tambahIsActive">
+                                    Akun Aktif
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- FOOTER --}}
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn-register">
+                        <i class="bx bx-save"></i>
+                        Simpan Akun
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{{-- ================= MODAL DETAIL / EDIT AKUN ================= --}}
+<div class="modal fade" id="modalDetailAkun" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered presma-dialog">
+        <form method="POST" id="formDetailAkun">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="form_source" value="edit">
+            <input type="hidden" name="user_id" value="{{ old('user_id') }}">
+            <div class="modal-content presma-account-modal">
+                {{-- HEADER --}}
+                <div class="modal-header">
+                    <div>
+                        <span class="modal-tag">
+                            PRESMA ACCOUNT
+                        </span>
+                        <h5 class="modal-title">
+                            <i class="bx bx-user-check"></i>
+                            Detail Akun
+                        </h5>
+                        <small>
+                            Lihat dan perbarui data pengguna.
+                        </small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal">
+                    </button>
+                </div>
+                {{-- BODY --}}
+                <div class="modal-body">
+                    <div id="editLoading" class="text-center py-5 d-none">
+                        <div class="spinner-border text-success" role="status"></div>
+                        <div class="mt-2 text-muted">Memuat data akun...</div>
+                    </div>
+                    <div id="editFormWrapper">
                         {{-- ROLE --}}
                         <span class="section-label">
                             Jenis Akun
@@ -592,8 +783,9 @@
                         <div class="role-container">
                             @foreach ($roles as $role)
                                 <label class="role-card">
-                                    <input type="radio" name="role_id" value="{{ $role->id }}" class="role-radio"
-                                        data-role="{{ strtolower($role->nama) }}">
+                                    <input type="radio" name="role_id" value="{{ $role->id }}"
+                                        class="role-radio role-radio-edit" data-role="{{ strtolower($role->nama) }}"
+                                        {{ old('role_id') == $role->id ? 'checked' : '' }}>
                                     <div class="role-body">
                                         <div class="role-icon">
                                             @if ($role->nama == 'Administrator')
@@ -622,22 +814,23 @@
                                 </label>
                             @endforeach
                         </div>
-                        {{-- ERROR ROLE --}}
-                        <div id="roleError" class="text-danger text-center d-none mt-2">
+                        <div id="roleErrorEdit" class="text-danger text-center d-none mt-2">
                             Silakan pilih jenis akun
                         </div>
                         {{-- DINAMIS INSTANSI --}}
-                        <div id="dynamicAccountField">
+                        <div id="dynamicAccountFieldEdit">
                             {{-- MADRASAH --}}
-                            <div id="madrasahField" class="role-fields d-none mt-3">
+                            <div id="madrasahFieldEdit" class="role-fields d-none mt-3">
                                 <label class="form-label">
                                     Nama Madrasah
                                 </label>
                                 <div class="search-select">
-                                    <input type="text" id="madrasahSearch" class="form-control"
+                                    <input type="text" id="madrasahSearchEdit" class="form-control"
+                                        value="{{ old('madrasah_id') ? optional(collect($madrasahs)->firstWhere('id', old('madrasah_id')))->nama_madrasah : '' }}"
                                         placeholder="Cari nama madrasah..." autocomplete="off">
-                                    <input type="hidden" name="madrasah_id" id="madrasahValue">
-                                    <div class="search-dropdown" id="madrasahDropdown">
+                                    <input type="hidden" name="madrasah_id" id="madrasahValueEdit"
+                                        value="{{ old('madrasah_id') }}">
+                                    <div class="search-dropdown" id="madrasahDropdownEdit">
                                         @foreach ($madrasahs as $madrasah)
                                             <div class="dropdown-item-custom" data-id="{{ $madrasah->id }}">
                                                 {{ $madrasah->nama_madrasah }}
@@ -647,7 +840,7 @@
                                 </div>
                             </div>
                             {{-- PENGAWAS --}}
-                            <div id="pengawasField" class="role-fields d-none mt-3">
+                            <div id="pengawasFieldEdit" class="role-fields d-none mt-3">
                                 <label class="form-label">
                                     Wilayah Pengawas
                                 </label>
@@ -656,7 +849,8 @@
                                         Pilih Wilayah
                                     </option>
                                     @foreach ($wilayahPengawas as $wilayah)
-                                        <option value="{{ $wilayah->id }}">
+                                        <option value="{{ $wilayah->id }}"
+                                            {{ old('wilayah_pengawas_id') == $wilayah->id ? 'selected' : '' }}>
                                             {{ $wilayah->unit_kerja }}
                                         </option>
                                     @endforeach
@@ -669,19 +863,16 @@
                         </span>
                         <div class="form-grid">
                             <div>
-                                <label>
-                                    Nama Lengkap
-                                </label>
+                                <label>Nama Lengkap</label>
                                 <input type="text" name="nama" value="{{ old('nama') }}"
-                                    class="form-control @error('nama') is-invalid @enderror" placeholder="Nama lengkap">
+                                    class="form-control @error('nama') is-invalid @enderror"
+                                    placeholder="Nama lengkap">
                                 @error('nama')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div>
-                                <label>
-                                    Email
-                                </label>
+                                <label>Email</label>
                                 <input type="email" name="email" value="{{ old('email') }}"
                                     class="form-control @error('email') is-invalid @enderror"
                                     placeholder="email@gmail.com">
@@ -690,245 +881,55 @@
                                 @enderror
                             </div>
                             <div>
-                                <label>
-                                    Username
-                                </label>
+                                <label>Username</label>
                                 <input type="text" name="username" value="{{ old('username') }}"
-                                    class="form-control @error('username') is-invalid @enderror" placeholder="Username">
+                                    class="form-control @error('username') is-invalid @enderror"
+                                    placeholder="Username">
                                 @error('username')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div>
-                                <label>
-                                    No HP
-                                </label>
+                                <label>No HP</label>
                                 <input type="text" name="no_hp" value="{{ old('no_hp') }}"
                                     class="form-control @error('no_hp') is-invalid @enderror" placeholder="08xxxx">
                             </div>
                             <div>
-                                <label>
-                                    Password
-                                </label>
+                                <label>Password Baru</label>
                                 <input type="password" name="password"
-                                    class="form-control @error('password') is-invalid @enderror">
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    placeholder="Kosongkan jika tidak diubah">
                                 @error('password')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="form-check form-switch mt-4">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="tambahIsActive"
-                                        name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="tambahIsActive">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="editIsActive"
+                                        name="is_active" value="1"
+                                        {{ old('is_active', true) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="editIsActive">
                                         Akun Aktif
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {{-- FOOTER --}}
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                            Batal
-                        </button>
-                        <button type="submit" class="btn-register">
-                            <i class="bx bx-save"></i>
-                            Simpan Akun
-                        </button>
-                    </div>
                 </div>
-            </form>
-        </div>
-    </div>
-    {{-- ================= MODAL DETAIL / EDIT AKUN ================= --}}
-    <div class="modal fade" id="modalDetailAkun" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered presma-dialog">
-            <form method="POST" id="formDetailAkun">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="form_source" value="edit">
-                <input type="hidden" name="user_id" value="{{ old('user_id') }}">
-                <div class="modal-content presma-account-modal">
-                    {{-- HEADER --}}
-                    <div class="modal-header">
-                        <div>
-                            <span class="modal-tag">
-                                PRESMA ACCOUNT
-                            </span>
-                            <h5 class="modal-title">
-                                <i class="bx bx-user-check"></i>
-                                Detail Akun
-                            </h5>
-                            <small>
-                                Lihat dan perbarui data pengguna.
-                            </small>
-                        </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal">
-                        </button>
-                    </div>
-                    {{-- BODY --}}
-                    <div class="modal-body">
-                        <div id="editLoading" class="text-center py-5 d-none">
-                            <div class="spinner-border text-success" role="status"></div>
-                            <div class="mt-2 text-muted">Memuat data akun...</div>
-                        </div>
-                        <div id="editFormWrapper">
-                            {{-- ROLE --}}
-                            <span class="section-label">
-                                Jenis Akun
-                            </span>
-                            <div class="role-container">
-                                @foreach ($roles as $role)
-                                    <label class="role-card">
-                                        <input type="radio" name="role_id" value="{{ $role->id }}"
-                                            class="role-radio role-radio-edit" data-role="{{ strtolower($role->nama) }}"
-                                            {{ old('role_id') == $role->id ? 'checked' : '' }}>
-                                        <div class="role-body">
-                                            <div class="role-icon">
-                                                @if ($role->nama == 'Administrator')
-                                                    <i class="bx bxs-crown"></i>
-                                                @elseif($role->nama == 'Madrasah')
-                                                    <i class="bx bxs-school"></i>
-                                                @elseif($role->nama == 'Pengawas')
-                                                    <i class="bx bxs-map-pin"></i>
-                                                @endif
-                                            </div>
-                                            <div>
-                                                <h5>
-                                                    {{ $role->nama }}
-                                                </h5>
-                                                <small>
-                                                    @if ($role->nama == 'Administrator')
-                                                        Pengelola sistem
-                                                    @elseif($role->nama == 'Madrasah')
-                                                        Admin Madrasah
-                                                    @else
-                                                        Pengawas wilayah
-                                                    @endif
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            <div id="roleErrorEdit" class="text-danger text-center d-none mt-2">
-                                Silakan pilih jenis akun
-                            </div>
-                            {{-- DINAMIS INSTANSI --}}
-                            <div id="dynamicAccountFieldEdit">
-                                {{-- MADRASAH --}}
-                                <div id="madrasahFieldEdit" class="role-fields d-none mt-3">
-                                    <label class="form-label">
-                                        Nama Madrasah
-                                    </label>
-                                    <div class="search-select">
-                                        <input type="text" id="madrasahSearchEdit" class="form-control"
-                                            value="{{ old('madrasah_id') ? optional(collect($madrasahs)->firstWhere('id', old('madrasah_id')))->nama_madrasah : '' }}"
-                                            placeholder="Cari nama madrasah..." autocomplete="off">
-                                        <input type="hidden" name="madrasah_id" id="madrasahValueEdit"
-                                            value="{{ old('madrasah_id') }}">
-                                        <div class="search-dropdown" id="madrasahDropdownEdit">
-                                            @foreach ($madrasahs as $madrasah)
-                                                <div class="dropdown-item-custom" data-id="{{ $madrasah->id }}">
-                                                    {{ $madrasah->nama_madrasah }}
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                                {{-- PENGAWAS --}}
-                                <div id="pengawasFieldEdit" class="role-fields d-none mt-3">
-                                    <label class="form-label">
-                                        Wilayah Pengawas
-                                    </label>
-                                    <select name="wilayah_pengawas_id" class="form-select">
-                                        <option value="">
-                                            Pilih Wilayah
-                                        </option>
-                                        @foreach ($wilayahPengawas as $wilayah)
-                                            <option value="{{ $wilayah->id }}"
-                                                {{ old('wilayah_pengawas_id') == $wilayah->id ? 'selected' : '' }}>
-                                                {{ $wilayah->unit_kerja }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            {{-- DATA AKUN --}}
-                            <span class="section-label mt-4">
-                                Data Akun
-                            </span>
-                            <div class="form-grid">
-                                <div>
-                                    <label>Nama Lengkap</label>
-                                    <input type="text" name="nama" value="{{ old('nama') }}"
-                                        class="form-control @error('nama') is-invalid @enderror"
-                                        placeholder="Nama lengkap">
-                                    @error('nama')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label>Email</label>
-                                    <input type="email" name="email" value="{{ old('email') }}"
-                                        class="form-control @error('email') is-invalid @enderror"
-                                        placeholder="email@gmail.com">
-                                    @error('email')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label>Username</label>
-                                    <input type="text" name="username" value="{{ old('username') }}"
-                                        class="form-control @error('username') is-invalid @enderror"
-                                        placeholder="Username">
-                                    @error('username')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label>No HP</label>
-                                    <input type="text" name="no_hp" value="{{ old('no_hp') }}"
-                                        class="form-control @error('no_hp') is-invalid @enderror" placeholder="08xxxx">
-                                </div>
-                                <div>
-                                    <label>Password Baru</label>
-                                    <input type="password" name="password"
-                                        class="form-control @error('password') is-invalid @enderror"
-                                        placeholder="Kosongkan jika tidak diubah">
-                                    @error('password')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="form-check form-switch mt-4">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="editIsActive"
-                                            name="is_active" value="1"
-                                            {{ old('is_active', true) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="editIsActive">
-                                            Akun Aktif
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{-- FOOTER --}}
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                            Batal
-                        </button>
-                        <button type="submit" class="btn-register">
-                            <i class="bx bx-save"></i>
-                            Simpan Perubahan
-                        </button>
-                    </div>
+                {{-- FOOTER --}}
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn-register">
+                        <i class="bx bx-save"></i>
+                        Simpan Perubahan
+                    </button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
-@endsection
+</div>
 
 @push('scripts')
     @if ($errors->any())
