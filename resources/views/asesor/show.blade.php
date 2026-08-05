@@ -1103,12 +1103,20 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
-                                                    @if ($prestasi['juara'])
-                                                        <div class="text-success fw-bold fst-italic">Juara
-                                                            {{ $prestasi['juara'] }}</div>
+                                                    @if ($prestasi['juara'] || $prestasi['kategori_kegiatan'] || $prestasi['sumber_skor'])
+                                                        <div class="fw-bold fst-italic">
+                                                            @if ($prestasi['juara'])
+                                                                <span class="text-success">{{ $prestasi['juara'] }}</span>
+                                                            @endif
+                                                            @if ($prestasi['kategori_kegiatan'])
+                                                                <span class="text-primary">{{ $prestasi['juara'] ? ' · ' : '' }}{{ $prestasi['kategori_kegiatan'] }}</span>
+                                                            @endif
+                                                            @if ($prestasi['sumber_skor'])
+                                                                <span class="text-secondary">{{ ($prestasi['juara'] || $prestasi['kategori_kegiatan']) ? ' · ' : '' }}{{ $prestasi['sumber_skor'] }}</span>
+                                                            @endif
+                                                        </div>
                                                     @endif
                                                     <div class="prestasi-name">{{ $prestasi['nama'] }}</div>
-
                                                 </td>
                                                 <td>
                                                     <span
@@ -1127,31 +1135,28 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    <div class="prestasi-meta text-danger">
-                                                        <i
-                                                            class="bi {{ $prestasi['sumber_skor'] === 'Luring' ? 'bi-building' : 'bi-wifi' }}"></i>
-                                                        {{ $prestasi['sumber_skor'] }}
+                                                    <div class="d-flex flex-column align-items-center gap-1">
+                                                        <span class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
+                                                        @if ($prestasi['rubrik_status'] === 'cocok')
+                                                            <div class="rubrik-badge rubrik-cocok" data-bs-toggle="tooltip"
+                                                                title="Sesuai rubrik Juknis">
+                                                                <i class="bi bi-check-circle-fill"></i> Sesuai
+                                                            </div>
+                                                        @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
+                                                            <div class="rubrik-badge rubrik-tidak-cocok"
+                                                                data-bs-toggle="tooltip"
+                                                                title="Skor rubrik Juknis: {{ $prestasi['rubrik_skor'] }}">
+                                                                <i class="bi bi-exclamation-triangle-fill"></i> Rublik:
+                                                                {{ $prestasi['rubrik_skor'] }}
+                                                            </div>
+                                                        @else
+                                                            <div class="rubrik-badge rubrik-tidak-ada"
+                                                                data-bs-toggle="tooltip"
+                                                                title="Kombinasi kriteria ini belum ada di tabel rubrik">
+                                                                <i class="bi bi-dash-circle"></i> N/A
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    <span class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
-                                                    @if ($prestasi['rubrik_status'] === 'cocok')
-                                                        <div class="rubrik-badge rubrik-cocok" data-bs-toggle="tooltip"
-                                                            title="Sesuai rubrik Juknis">
-                                                            <i class="bi bi-check-circle-fill"></i> Sesuai
-                                                        </div>
-                                                    @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
-                                                        <div class="rubrik-badge rubrik-tidak-cocok"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Skor rubrik Juknis: {{ $prestasi['rubrik_skor'] }}">
-                                                            <i class="bi bi-exclamation-triangle-fill"></i> Beda:
-                                                            {{ $prestasi['rubrik_skor'] }}
-                                                        </div>
-                                                    @else
-                                                        <div class="rubrik-badge rubrik-tidak-ada"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Kombinasi kriteria ini belum ada di tabel rubrik">
-                                                            <i class="bi bi-dash-circle"></i> N/A
-                                                        </div>
-                                                    @endif
                                                 </td>
                                                 <td class="text-center">
                                                     @if ($sudah)

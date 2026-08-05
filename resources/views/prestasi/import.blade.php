@@ -702,12 +702,15 @@
                                 <input type="text" class="form-control" readonly
                                     value="{{ auth()->user()->madrasah?->nama_madrasah ?? '-' }}">
                             </div>
-
+                            
+                            @php
+                                $periodeAktifNavbar = \App\Models\PeriodeAktif::aktif();
+                            @endphp
                             <div class="col-md-6">
                                 <label class="form-label">
                                     Tahun Periode
                                 </label>
-                                <input type="text" class="form-control" readonly value="{{ date('Y') }}">
+                                <input type="text" class="form-control" readonly value="{{ $periodeAktifNavbar - 1 }}">
                             </div>
 
                             <div class="col-md-12">
