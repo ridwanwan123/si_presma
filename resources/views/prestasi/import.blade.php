@@ -227,8 +227,8 @@
         }
 
         /* ===========================
-                   MODAL ERROR IMPORT (SweetAlert)
-                =========================== */
+                                                                           MODAL ERROR IMPORT (SweetAlert)
+                                                                        =========================== */
 
         .import-error-summary {
             display: flex;
@@ -519,9 +519,8 @@
 
                 <div class="alert alert-success border-0 mb-3">
                     <i class="bi bi-lightbulb-fill me-1"></i>
-                    Selalu mulai dari <strong>Download Template</strong> di bawah, jangan bikin format sendiri —
-                    urutan &amp; nama kolom harus persis sama. Kalau data lebih dari 7.000 baris, pecah jadi
-                    beberapa file, upload satu-satu.
+                    Selalu gunakan <strong>Template</strong> yang disediakan (jangan ubah nama atau urutan kolom); jika data
+                    melebihi <strong>7.000 baris</strong>, bagi menjadi beberapa file dan unggah satu per satu.
                 </div>
 
                 {{-- DETAIL PER KOLOM (COLLAPSIBLE) --}}
@@ -541,9 +540,11 @@
                                         <div class="panduan-kolom-nama">bidang_prestasi</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Isi salah satu: <strong>Akademik</strong>, <strong>Non Akademik</strong>,
-                                        <strong>Keagamaan</strong>, <strong>GTK</strong>, atau <strong>Lembaga</strong>.
-                                        Boleh beda-beda tiap baris — satu file boleh campuran semua bidang.</td>
+                                    <td>
+                                        Isi dengan <strong>Akademik</strong>, <strong>Non Akademik</strong>,
+                                        <strong>Keagamaan</strong>, <strong>GTK</strong>, atau <strong>Lembaga</strong>;
+                                        satu file boleh berisi campuran semua bidang.
+                                    </td>
                                     <td class="panduan-contoh">Akademik</td>
                                 </tr>
                                 <tr>
@@ -551,8 +552,10 @@
                                         <div class="panduan-kolom-nama">nama_kegiatan</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Nama kegiatan/lomba, teks bebas. <strong>Maksimal 255 karakter</strong> — jangan
-                                        tempel deskripsi panjang di kolom ini.</td>
+                                    <td>
+                                        Isi dengan <strong>nama kegiatan/lomba</strong> (maksimal <strong>255
+                                            karakter</strong>).
+                                    </td>
                                     <td class="panduan-contoh">Olimpiade Sains Nasional</td>
                                 </tr>
                                 <tr>
@@ -561,7 +564,8 @@
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
                                     <td>Isi salah satu: <strong>Kabupaten/Kota</strong>, <strong>Provinsi</strong>,
-                                        <strong>Nasional</strong>, atau <strong>Internasional</strong>.</td>
+                                        <strong>Nasional</strong>, atau <strong>Internasional</strong>.
+                                    </td>
                                     <td class="panduan-contoh">Nasional</td>
                                 </tr>
                                 <tr>
@@ -577,9 +581,11 @@
                                         <div class="panduan-kolom-nama">juara</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Isi salah satu: <strong>Juara 1/2/3</strong> atau <strong>Harapan 1/2/3</strong>.
-                                        Boleh ditulis angka biasa ("Juara 1") atau angka romawi ("Juara I") — dua-duanya
-                                        diterima, otomatis disamakan ke bentuk angka.</td>
+                                    <td>
+                                        Isi dengan <strong>Juara 1 / Juara 2 / Juara 3</strong> atau <strong>Harapan 1 /
+                                            Harapan 2</strong>; angka
+                                        biasa maupun romawi (<strong>I/II/III</strong>) sama-sama diterima.
+                                    </td>
                                     <td class="panduan-contoh">Juara 1 / Harapan 2</td>
                                 </tr>
                                 <tr>
@@ -587,7 +593,9 @@
                                         <div class="panduan-kolom-nama">lembaga_penyelenggara</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Nama penyelenggara kegiatan, teks bebas. <strong>Maksimal 255 karakter</strong>.
+                                    <td>
+                                        Isi dengan <strong>nama penyelenggara</strong> kegiatan (maksimal <strong>255
+                                            karakter</strong>).
                                     </td>
                                     <td class="panduan-contoh">Kemendikbudristek</td>
                                 </tr>
@@ -596,9 +604,10 @@
                                         <div class="panduan-kolom-nama">kategori_penyelenggara</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Isi salah satu: <strong>Pemerintah</strong> atau <strong>Non Pemerintah</strong>.
-                                        Harus persis salah satu dari dua ini, bukan teks bebas (mis. jangan tulis "Dinas
-                                        Pendidikan" atau "Pemerintah Kota").</td>
+                                    <td>
+                                        Isi dengan <strong>Pemerintah</strong> atau <strong>Non Pemerintah</strong> saja;
+                                        nilai lain akan ditolak.
+                                    </td>
                                     <td class="panduan-contoh">Pemerintah</td>
                                 </tr>
                                 <tr>
@@ -607,10 +616,8 @@
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
                                     <td>
-                                        <strong>Harus berupa sel bertipe Tanggal di Excel</strong> (klik kanan sel →
-                                        Format Cells → Date), <strong>bukan diketik sebagai teks bebas</strong>. Ini
-                                        penyebab error paling sering — kalau tanggal ditulis manual seperti
-                                        "kemarin" atau format aneh, baris itu akan ditolak.
+                                        Isi dengan <strong>format Tanggal</strong> di Excel (bukan teks); tanggal tidak
+                                        valid akan menyebabkan baris ditolak.
                                     </td>
                                     <td class="panduan-contoh">15/03/2025 (format tanggal Excel)</td>
                                 </tr>
@@ -627,8 +634,10 @@
                                         <div class="panduan-kolom-nama">skor</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Harus <strong>angka</strong> (bukan teks), tanpa titik/koma ribuan. Maksimal
-                                        <strong>999.999,99</strong>.</td>
+                                    <td>
+                                        Isi dengan <strong>angka</strong> (bukan teks), tanpa titik/koma pemisah ribuan;
+                                        maksimal <strong>999.999,99</strong>.
+                                    </td>
                                     <td class="panduan-contoh">87.5</td>
                                 </tr>
                                 <tr>
@@ -636,8 +645,11 @@
                                         <div class="panduan-kolom-nama">link_drive_bukti</div>
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
-                                    <td>Link Google Drive/penyimpanan bukti kegiatan. <strong>Maksimal 255
-                                            karakter</strong>. Pastikan link bisa diakses (mode "Anyone with the link").
+                                    <td>
+                                        Isi dengan <strong>link bukti kegiatan</strong> (Google Drive/penyimpanan lain)
+                                        maksimal <strong>255 karakter</strong>; <br /> pastikan akses link diatur ke
+                                        <strong>"Anyone with the link"</strong>.
+
                                     </td>
                                     <td class="panduan-contoh">https://drive.google.com/...</td>
                                 </tr>
@@ -688,9 +700,8 @@
                             <div class="col-12">
                                 <div class="alert alert-success border-0 mb-0">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Data Madrasah dan Submitter diisi otomatis oleh sistem. Bidang Prestasi dibaca
-                                    otomatis dari isi Excel pada setiap baris, sehingga file boleh berisi campuran
-                                    Akademik, Non Akademik, Keagamaan, GTK, dan Lembaga sekaligus.
+                                    Bidang Prestasi dibaca otomatis dari setiap baris Excel, sehingga satu file dapat berisi
+                                    campuran Akademik, Non Akademik, Keagamaan, GTK, dan Lembaga.
                                 </div>
                             </div>
 
@@ -702,15 +713,15 @@
                                 <input type="text" class="form-control" readonly
                                     value="{{ auth()->user()->madrasah?->nama_madrasah ?? '-' }}">
                             </div>
-                            
+
                             @php
                                 $periodeAktifNavbar = \App\Models\PeriodeAktif::aktif();
                             @endphp
                             <div class="col-md-6">
                                 <label class="form-label">
-                                    Tahun Periode
+                                    Tahun Periode Prestasi
                                 </label>
-                                <input type="text" class="form-control" readonly value="{{ $periodeAktifNavbar - 1 }}">
+                                <input type="text" class="form-control" readonly value="{{ $periodeAktifNavbar }}">
                             </div>
 
                             <div class="col-md-12">
@@ -920,7 +931,7 @@
                             let errorHtml = response.errors.map(err => {
 
                                 const kolom = kolomInfo[err.column] || kolomInfo
-                                .general;
+                                    .general;
                                 const rows = err.rows || [];
                                 const barisTampil = rows.slice(0, MAKS_BARIS_TAMPIL)
                                     .join(', ');

@@ -147,6 +147,10 @@ class RankingController extends Controller
         $rows = DB::table('penilaian_prestasis')
             ->join('prestasi_siswas', 'prestasi_siswas.id', '=', 'penilaian_prestasis.prestasi_siswa_id')
             ->where('penilaian_prestasis.status', 'completed')
+            // Prestasi yang tidak diakui (ditandai Asesor saat menilai)
+            // dikecualikan TOTAL dari sini -- seperti tidak pernah ada,
+            // bukan cuma diberi nilai 0.
+            ->where('prestasi_siswas.diakui', true)
             ->whereIn('prestasi_siswas.madrasah_id', $madrasahIdsFinished)
             ->where('prestasi_siswas.periode', $periode)
             ->groupBy('prestasi_siswas.madrasah_id', 'prestasi_siswas.bidang_prestasi')

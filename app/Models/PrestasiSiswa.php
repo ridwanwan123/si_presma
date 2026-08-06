@@ -23,6 +23,7 @@ class PrestasiSiswa extends Model
         'waktu_kegiatan',
         'metode_pelaksanaan',
         'skor',
+        'diakui',
         'link_drive_bukti',
         'presentase',
         'nilai_akhir',
@@ -35,6 +36,7 @@ class PrestasiSiswa extends Model
     protected $casts = [
         'waktu_kegiatan' => 'date',
         'skor' => 'decimal:2',
+        'diakui' => 'boolean',
     ];
 
     public function madrasah()

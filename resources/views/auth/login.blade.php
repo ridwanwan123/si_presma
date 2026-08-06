@@ -792,7 +792,7 @@
             </div>
 
             <div class="aside-copy">
-                <span class="eyebrow"><i class="bx bxs-certification"></i> Sistem Prestasi Madrasah</span>
+                <span class="eyebrow"><i class="bx bxs-certification"></i> Sistem Penilaian Prestasi JMA</span>
                 <h1>Masuk untuk melihat <em>data prestasi</em></h1>
                 <p>Semua data prestasi sudah menunggu di dashboard.</p>
             </div>

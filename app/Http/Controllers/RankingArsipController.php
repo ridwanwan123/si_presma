@@ -293,6 +293,10 @@ class RankingArsipController extends Controller
         $perBidang = DB::table('penilaian_prestasis')
             ->join('prestasi_siswas', 'prestasi_siswas.id', '=', 'penilaian_prestasis.prestasi_siswa_id')
             ->where('penilaian_prestasis.status', 'completed')
+            // Sama seperti Ranking Live -- prestasi tidak diakui
+            // dikecualikan total, supaya arsip yang dibekukan juga tidak
+            // pernah menghitung prestasi itu sejak awal.
+            ->where('prestasi_siswas.diakui', true)
             ->whereIn('prestasi_siswas.madrasah_id', $madrasahIdsFinished)
             ->where('prestasi_siswas.periode', $periode)
             ->groupBy('prestasi_siswas.madrasah_id', 'prestasi_siswas.bidang_prestasi')

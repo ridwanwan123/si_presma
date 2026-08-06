@@ -14,8 +14,8 @@
             $periodeAktifNavbar = \App\Models\PeriodeAktif::aktif();
         @endphp
         <div class="app-title d-flex flex-column lh-sm">
-            <span class="app-name font-weight-bold">JMA {{ $periodeAktifNavbar }} | PRESTASI TAHUN
-                {{ $periodeAktifNavbar - 1 }}</span>
+            <span class="app-name font-weight-bold">JMA {{ $periodeAktifNavbar + 1 }} | PRESTASI TAHUN
+                {{ $periodeAktifNavbar }}</span>
             <span class="app-region text-muted small">Penmad DKI Jakarta</span>
         </div>
     </div>

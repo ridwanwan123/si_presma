@@ -47,6 +47,12 @@ return new class extends Migration
 
             $table->decimal('skor', 8, 2);
 
+            // Default TRUE -- prestasi yang diinput Madrasah dianggap
+            // diakui sampai ada yang sengaja menandainya sebaliknya
+            // (siapa & kapan itu terjadi masih perlu dipastikan --
+            // lihat pertanyaan di chat).
+            $table->boolean('diakui')->default(true);
+
             $table->string('link_drive_bukti')->nullable();
             $table->text('keterangan')->nullable();
             $table->unsignedSmallInteger('periode');

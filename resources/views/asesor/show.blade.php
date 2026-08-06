@@ -3,12 +3,12 @@
 @push('styles')
     <style>
         /* ===========================================================
-                   PENILAIAN MADRASAH (asesor/show.blade.php)
-                   Token disamakan dengan assets/css/prestasi/index.css dan
-                   assets/css/rubrik-penilaian/index.css (--presma-*) supaya
-                   satu sistem desain PRESMA. Kalau nanti dipindah ke base.css
-                   secara global, blok :root ini boleh dihapus dari sini.
-                   =========================================================== */
+                                           PENILAIAN MADRASAH (asesor/show.blade.php)
+                                           Token disamakan dengan assets/css/prestasi/index.css dan
+                                           assets/css/rubrik-penilaian/index.css (--presma-*) supaya
+                                           satu sistem desain PRESMA. Kalau nanti dipindah ke base.css
+                                           secara global, blok :root ini boleh dihapus dari sini.
+                                           =========================================================== */
         :root {
             --presma-primary: #0f8a43;
             --presma-primary-soft: #eaf6ef;
@@ -540,8 +540,8 @@
 
         /* ============ BADGE KECOCOKAN RUBRIK ============ */
         /* Sengaja SANGAT compact -- ditaruh DI DALAM kolom Skor Dasar yang
-                                   sudah ada, tidak menambah kolom baru, supaya tabel tidak makin
-                                   lebar (menghindari scroll ke samping). */
+                                                           sudah ada, tidak menambah kolom baru, supaya tabel tidak makin
+                                                           lebar (menghindari scroll ke samping). */
         .rubrik-badge {
             display: inline-flex;
             align-items: center;
@@ -764,6 +764,75 @@
             background-color: #e3e7ed;
         }
 
+        /* ============ LAYOUT 2 KOLOM (COMPACT, HINDARI SCROLL) ============ */
+        .nilai-modal-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-top: 4px;
+        }
+
+        .nilai-modal-col-kiri {
+            border-right: 1px solid #eef1f5;
+            padding-right: 20px;
+        }
+
+        .nilai-modal .prestasi-detail-grid {
+            margin-top: 0;
+        }
+
+        .nilai-modal .bobot-preview {
+            margin-top: 0;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+        }
+
+        .nilai-modal .bobot-preview .preview-value {
+            font-size: 0.95rem;
+        }
+
+        /* Toggle Diakui -- switch compact, warna hijau saat aktif */
+        .diakui-toggle-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f5f7fb;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+        }
+
+        .diakui-toggle-box .diakui-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1c2b2d;
+        }
+
+        .diakui-toggle-box .diakui-sub {
+            font-size: 0.7rem;
+            color: #9aa4b2;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+
+        .form-check-input.diakui-switch {
+            width: 42px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .form-check-input.diakui-switch:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        /* Di dalam kolom kiri (sudah setengah lebar modal), grid detail
+                                   jadi 1 kolom -- kalau tetap 2 kolom di sini, tiap kartu jadi
+                                   terlalu sempit buat dibaca. */
+        .nilai-modal-col-kiri .prestasi-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
         /* Grid info detail prestasi di dalam modal */
         .prestasi-detail-grid {
             display: grid;
@@ -931,7 +1000,8 @@
                         <i class="bi bi-pencil-square"></i> {{ $statusLabel }}
                     </span>
                 </div>
-                <p class="page-subtitle">Silakan lakukan penilaian setiap prestasi satu per satu sesuai bukti yang telah
+                <p class="page-subtitle">
+                    Silakan lakukan <strong>penilaian setiap prestasi</strong> satu per satu berdasarkan bukti yang telah
                     diunggah.</p>
             </div>
 
@@ -1109,10 +1179,12 @@
                                                                 <span class="text-success">{{ $prestasi['juara'] }}</span>
                                                             @endif
                                                             @if ($prestasi['kategori_kegiatan'])
-                                                                <span class="text-primary">{{ $prestasi['juara'] ? ' · ' : '' }}{{ $prestasi['kategori_kegiatan'] }}</span>
+                                                                <span
+                                                                    class="text-primary">{{ $prestasi['juara'] ? ' · ' : '' }}{{ $prestasi['kategori_kegiatan'] }}</span>
                                                             @endif
                                                             @if ($prestasi['sumber_skor'])
-                                                                <span class="text-secondary">{{ ($prestasi['juara'] || $prestasi['kategori_kegiatan']) ? ' · ' : '' }}{{ $prestasi['sumber_skor'] }}</span>
+                                                                <span
+                                                                    class="text-secondary">{{ $prestasi['juara'] || $prestasi['kategori_kegiatan'] ? ' · ' : '' }}{{ $prestasi['sumber_skor'] }}</span>
                                                             @endif
                                                         </div>
                                                     @endif
@@ -1136,10 +1208,11 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="d-flex flex-column align-items-center gap-1">
-                                                        <span class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
+                                                        <span
+                                                            class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
                                                         @if ($prestasi['rubrik_status'] === 'cocok')
-                                                            <div class="rubrik-badge rubrik-cocok" data-bs-toggle="tooltip"
-                                                                title="Sesuai rubrik Juknis">
+                                                            <div class="rubrik-badge rubrik-cocok"
+                                                                data-bs-toggle="tooltip" title="Sesuai rubrik Juknis">
                                                                 <i class="bi bi-check-circle-fill"></i> Sesuai
                                                             </div>
                                                         @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
@@ -1404,23 +1477,36 @@
 
 @push('scripts')
     <script>
-        // Tab switch sederhana buat modal Lihat Rubrik -- sengaja custom
-        // (bukan Bootstrap native tabs) supaya tidak perlu utak-atik
-        // atribut data-bs-toggle="tab" di banyak tempat.
         document.addEventListener('DOMContentLoaded', function() {
+            // Tab switch modal Lihat Rubrik
             document.querySelectorAll('.rubrik-tab-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     const target = this.dataset.target;
-
                     document.querySelectorAll('.rubrik-tab-btn').forEach(b => b.classList.remove(
                         'active'));
                     this.classList.add('active');
-
                     document.querySelectorAll('.rubrik-tab-pane').forEach(pane => pane.classList
                         .add('d-none'));
                     document.querySelector(target).classList.remove('d-none');
                 });
             });
+
+            // Toggle "Prestasi Diakui" -> paksa Persentase Nilai ke 0%
+            document.querySelectorAll('.diakui-switch').forEach(function(toggle) {
+                const form = toggle.closest('form');
+                const selectPersentase = form.querySelector('select[name="persentase"]');
+                toggle.addEventListener('change', function() {
+                    if (!this.checked) {
+                        selectPersentase.value = '0';
+                    }
+                });
+            });
+
+            // Khusus halaman ini: auto-collapse sidebar di layar desktop
+            const sidebarEl = document.getElementById('sidebar');
+            if (sidebarEl && window.innerWidth > 992) {
+                sidebarEl.classList.add('collapsed');
+            }
         });
     </script>
 @endpush
@@ -1475,100 +1561,131 @@
                     <div class="prestasi-modal-name">{{ $prestasi['nama'] }}</div>
                     <div class="prestasi-modal-meta">
                         <span class="category-badge {{ $kat['class'] }}">{{ $kat['label'] }}</span>
-                        <span>{{ $prestasi['tingkat'] }} &middot; {{ $prestasi['tahun'] }}</span>
-                        <span>&middot; {{ $prestasi['penyelenggara'] }}</span>
+                        <span class="category-badge {{ $kat['class'] }}">{{ $prestasi['tingkat'] }} &#x2f;
+                            {{ $prestasi['tahun'] }}</span>
+                        <span class="category-badge {{ $kat['class'] }}">
+                            {{ $prestasi['penyelenggara'] }}</span>
                     </div>
 
-                    {{-- INFORMASI LENGKAP PRESTASI --}}
-                    <div class="prestasi-detail-grid">
-                        <div class="detail-item">
-                            <div class="detail-label">Kategori Kegiatan</div>
-                            <div class="detail-value">{{ $prestasi['kategori_kegiatan'] ?? '-' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Juara yang Diraih</div>
-                            <div class="detail-value">{{ $prestasi['juara'] ?? '-' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Lembaga Penyelenggara</div>
-                            <div class="detail-value">{{ $prestasi['penyelenggara'] ?? '-' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Kategori Penyelenggara</div>
-                            <div class="detail-value">{{ $prestasi['kategori_penyelenggara'] ?? '-' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Waktu Kegiatan</div>
-                            <div class="detail-value">{{ $prestasi['waktu_kegiatan'] ?? $prestasi['tahun'] }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Bukti Dukung</div>
-                            <div class="detail-value">
-                                @if ($prestasi['link_drive'])
-                                    <a href="{{ $prestasi['link_drive'] }}" target="_blank">
-                                        Lihat Dokumen <i class="bi bi-box-arrow-up-right"></i>
-                                    </a>
-                                @else
-                                    -
-                                @endif
+                    <div class="nilai-modal-layout">
+
+                        {{-- ===== KOLOM KIRI: INFORMASI PRESTASI (baca saja) ===== --}}
+                        <div class="nilai-modal-col-kiri">
+                            <div class="prestasi-detail-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label">Kategori Kegiatan</div>
+                                    <div class="detail-value">{{ $prestasi['kategori_kegiatan'] ?? '-' }}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Juara yang Diraih</div>
+                                    <div class="detail-value">{{ $prestasi['juara'] ?? '-' }}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Lembaga Penyelenggara</div>
+                                    <div class="detail-value">{{ $prestasi['penyelenggara'] ?? '-' }}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Kategori Penyelenggara</div>
+                                    <div class="detail-value">{{ $prestasi['kategori_penyelenggara'] ?? '-' }}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Waktu Kegiatan</div>
+                                    <div class="detail-value">{{ $prestasi['waktu_kegiatan'] ?? $prestasi['tahun'] }}
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Bukti Dukung</div>
+                                    <div class="detail-value">
+                                        @if ($prestasi['link_drive'])
+                                            <a href="{{ $prestasi['link_drive'] }}" target="_blank">
+                                                Lihat Dokumen <i class="bi bi-box-arrow-up-right"></i>
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <form method="POST"
-                        action="{{ route('asesor.nilai.store', ['madrasah' => $madrasah['id'], 'prestasi' => $prestasi['id']]) }}"
-                        id="formNilai{{ $index }}">
-                        @csrf
+                        {{-- ===== KOLOM KANAN: RINGKASAN + TOGGLE DIAKUI + FORM ===== --}}
+                        <div class="nilai-modal-col-kanan">
 
-                        <label class="form-label">Persentase Nilai</label>
-                        <select class="form-select" name="persentase" required
-                            {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>
-                            <option value="" disabled {{ $sudah ? '' : 'selected' }}>-- Pilih Persentase --
-                            </option>
-                            @foreach ($opsiPersentase as $opsi)
-                                <option value="{{ $opsi }}"
-                                    {{ $sudah && $prestasi['nilai'] == $opsi ? 'selected' : '' }}>
-                                    {{ $opsi }}%
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <label class="form-label mt-3">
-                            Catatan Asesor <span class="text-muted fw-normal">(opsional)</span>
-                        </label>
-                        <textarea class="form-control" name="catatan" rows="3"
-                            placeholder="Tulis catatan atau masukan untuk madrasah terkait prestasi ini..."
-                            {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>{{ $prestasi['catatan'] ?? '' }}</textarea>
-                    </form>
-
-                    <div class="bobot-preview">
-                        <div class="preview-item">
-                            <div class="preview-value">{{ $prestasi['bobot'] }}%</div>
-                            <div class="preview-label">Skor Dasar &middot; {{ $prestasi['sumber_skor'] }}</div>
-                            @if ($prestasi['rubrik_status'] === 'cocok')
-                                <div class="rubrik-badge rubrik-cocok mt-1">
-                                    <i class="bi bi-check-circle-fill"></i> Sesuai rubrik
+                            <div class="bobot-preview">
+                                <div class="preview-item">
+                                    <div class="preview-value">{{ $prestasi['bobot'] }}%</div>
+                                    <div class="preview-label">Skor Dasar &#x2f; {{ $prestasi['sumber_skor'] }}
+                                    </div>
+                                    @if ($prestasi['rubrik_status'] === 'cocok')
+                                        <div class="rubrik-badge rubrik-cocok mt-1">
+                                            <i class="bi bi-check-circle-fill"></i> Sesuai
+                                        </div>
+                                    @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
+                                        <div class="rubrik-badge rubrik-tidak-cocok mt-1">
+                                            <i class="bi bi-exclamation-triangle-fill"></i>
+                                            {{ $prestasi['rubrik_skor'] }}
+                                        </div>
+                                    @else
+                                        <div class="rubrik-badge rubrik-tidak-ada mt-1">
+                                            <i class="bi bi-dash-circle"></i> N/A
+                                        </div>
+                                    @endif
                                 </div>
-                            @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
-                                <div class="rubrik-badge rubrik-tidak-cocok mt-1">
-                                    <i class="bi bi-exclamation-triangle-fill"></i> Rubrik:
-                                    {{ $prestasi['rubrik_skor'] }}
+                                <div class="preview-divider"></div>
+                                <div class="preview-item">
+                                    <div class="preview-value">{{ $sudah ? $prestasi['nilai'] . '%' : '-' }}</div>
+                                    <div class="preview-label">Persentase</div>
                                 </div>
-                            @else
-                                <div class="rubrik-badge rubrik-tidak-ada mt-1">
-                                    <i class="bi bi-dash-circle"></i> Belum ada di rubrik
+                                <div class="preview-divider"></div>
+                                <div class="preview-item">
+                                    <div class="preview-value text-success">{{ $nilaiAkhir ?? '-' }}</div>
+                                    <div class="preview-label">Nilai Akhir</div>
                                 </div>
-                            @endif
-                        </div>
-                        <div class="preview-divider"></div>
-                        <div class="preview-item">
-                            <div class="preview-value">{{ $sudah ? $prestasi['nilai'] . '%' : '-' }}</div>
-                            <div class="preview-label">Persentase Nilai</div>
-                        </div>
-                        <div class="preview-divider"></div>
-                        <div class="preview-item">
-                            <div class="preview-value text-success">{{ $nilaiAkhir ?? '-' }}</div>
-                            <div class="preview-label">Nilai Akhir</div>
+                            </div>
+
+                            <form method="POST"
+                                action="{{ route('asesor.nilai.store', ['madrasah' => $madrasah['id'], 'prestasi' => $prestasi['id']]) }}"
+                                id="formNilai{{ $index }}">
+                                @csrf
+
+                                {{-- TOGGLE DIAKUI -- kalau di-nonaktifkan, prestasi ini
+                                     dikecualikan TOTAL dari perhitungan ranking (seperti
+                                     tidak pernah ada), bukan cuma ditandai. --}}
+                                <div class="diakui-toggle-box">
+                                    <div>
+                                        <div class="diakui-label">Prestasi Diakui</div>
+                                        <div class="diakui-sub">Tidak diakui = tidak dihitung</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input diakui-switch" type="checkbox" name="diakui"
+                                            value="1" id="diakuiSwitch{{ $index }}"
+                                            {{ $prestasi['diakui'] ?? true ? 'checked' : '' }}
+                                            {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>
+                                    </div>
+                                </div>
+
+                                <label class="form-label">Persentase Nilai</label>
+                                <select class="form-select" name="persentase" required
+                                    {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>
+                                    <option value="" disabled {{ $sudah ? '' : 'selected' }}>-- Pilih
+                                        Persentase
+                                        --
+                                    </option>
+                                    @foreach ($opsiPersentase as $opsi)
+                                        <option value="{{ $opsi }}"
+                                            {{ $sudah && $prestasi['nilai'] == $opsi ? 'selected' : '' }}>
+                                            {{ $opsi }}%
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <label class="form-label mt-3">
+                                    Catatan Asesor <span class="text-muted fw-normal">(opsional)</span>
+                                </label>
+                                <textarea class="form-control" name="catatan" rows="2" placeholder="Catatan/masukan untuk madrasah..."
+                                    {{ $statusAssignment === 'completed' ? 'disabled' : '' }}>{{ $prestasi['catatan'] ?? '' }}</textarea>
+                            </form>
+
                         </div>
                     </div>
                 </div>

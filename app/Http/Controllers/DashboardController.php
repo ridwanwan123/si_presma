@@ -388,6 +388,7 @@ class DashboardController extends Controller
         };
 
         $periodeList = PrestasiSiswa::visible()
+            ->where('diakui', true)
             ->whereHas('madrasah', $filterMadrasah)
             ->select('periode')
             ->distinct()
@@ -398,6 +399,7 @@ class DashboardController extends Controller
             ->values();
 
         $rows = PrestasiSiswa::visible()
+            ->where('diakui', true)
             ->whereHas('madrasah', $filterMadrasah)
             ->whereIn('periode', $periodeList)
             ->groupBy('periode', 'tingkat')
@@ -446,11 +448,13 @@ class DashboardController extends Controller
         };
 
         $totalPrestasi = PrestasiSiswa::visible()
+            ->where('diakui', true)
             ->whereHas('madrasah', $filterMadrasah)
             ->where('periode', $periodeAktif)
             ->count();
 
         $madrasahAktif = PrestasiSiswa::visible()
+            ->where('diakui', true)
             ->whereHas('madrasah', $filterMadrasah)
             ->where('periode', $periodeAktif)
             ->distinct('madrasah_id')

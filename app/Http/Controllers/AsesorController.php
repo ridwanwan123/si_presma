@@ -22,7 +22,7 @@ class AsesorController extends Controller
     | OPSI PERSENTASE NILAI (rubrik penilaian tetap, bukan dari database)
     |--------------------------------------------------------------------------
     */
-    private const OPSI_PERSENTASE = [0, 5, 70, 80, 85, 90, 95, 100];
+    private const OPSI_PERSENTASE = [100, 95, 90, 85, 80, 5, 0];
 
     /*
     |--------------------------------------------------------------------------
@@ -489,6 +489,7 @@ class AsesorController extends Controller
                 'nilai_akhir' => $penilaian->nilai_akhir ?? null,
                 'catatan' => $penilaian->catatan ?? null,
                 'ada_penilaian' => $penilaian !== null,
+                'diakui' => $prestasi->diakui,
                 'rubrik_status' => $kecocokanRubrik['status'], // 'cocok' | 'tidak_cocok' | 'tidak_ada'
                 'rubrik_skor' => $kecocokanRubrik['skor_rubrik'],
             ];
@@ -658,7 +659,17 @@ class AsesorController extends Controller
         $validatedData = $request->validate([
             'persentase' => ['required', 'integer', Rule::in(self::OPSI_PERSENTASE)],
             'catatan' => ['nullable', 'string', 'max:1000'],
+            // Checkbox HTML: kalau di-uncheck, field ini TIDAK dikirim
+            // sama sekali oleh browser -- makanya default 'true' di sini
+            // kalau memang tidak ada di request (checked = kondisi awal).
+            'diakui' => ['nullable', 'boolean'],
         ]);
+
+        // PENTING: checkbox yang di-uncheck TIDAK mengirim field sama sekali
+        // ke server (bukan kirim "0") -- jadi harus dicek keberadaannya
+        // (has), BUKAN pakai boolean() dengan default true (itu yang
+        // kemarin jadi bug: uncheck malah selalu kebaca sebagai true).
+        $diakui = $request->has('diakui');
 
         $skorAwal = $prestasi->skor ?? 0;
 
@@ -666,6 +677,14 @@ class AsesorController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // 'diakui' kolomnya ada di prestasi_siswas (bukan
+            // penilaian_prestasis) -- jadi disimpan lewat update()
+            // langsung ke $prestasi, terpisah dari updateOrCreate()
+            // penilaian di bawah.
+            $prestasi->update([
+                'diakui' => $diakui,
+            ]);
 
             $penilaian = PenilaianPrestasi::updateOrCreate(
                 [
@@ -697,6 +716,7 @@ class AsesorController extends Controller
                     'persentase' => $validatedData['persentase'],
                     'catatan' => $validatedData['catatan'] ?? null,
                     'nilai_akhir' => $nilaiAkhir,
+                    'diakui' => $diakui,
                 ]
             );
 
