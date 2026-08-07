@@ -702,6 +702,57 @@
                     @endforeach
                 @endif
 
+                {{-- ================= PERKEMBANGAN JUMLAH PRESTASI (DIAKUI) ================= --}}
+                <div class="content-card mb-4">
+                    <div class="card-title-row">
+                        <div class="title"><i class="bi bi-bar-chart-line text-success"></i> Perkembangan Jumlah
+                            Prestasi (Diakui)
+                            <div class="text-muted" style="font-size:.72rem;font-weight:400">
+                                Dihitung mulai periode {{ $periodeMulaiJumlahPrestasi }}
+                            </div>
+                        </div>
+                        <a href="{{ route('dashboard.export', ['tipe' => 'perkembangan-prestasi', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter, 'madrasah_id' => $madrasahIdFilter]) }}"
+                            class="btn btn-outline-success btn-export-mini">
+                            <i class="bi bi-file-earmark-excel"></i> Export
+                        </a>
+                    </div>
+
+                    <form method="GET" class="filter-form mb-3">
+                        <input type="hidden" name="jenjang" value="{{ $jenjangFilter }}">
+                        <input type="hidden" name="status" value="{{ $statusFilter }}">
+                        <input type="hidden" name="kota" value="{{ $kotaFilter }}">
+                        <div>
+                            <label class="form-label">Pilih Madrasah (opsional)</label>
+                            <select name="madrasah_id" class="form-select" onchange="this.form.submit()"
+                                style="min-width:260px">
+                                <option value="">-- Semua Madrasah (dikelompokkan per Jenjang) --</option>
+                                @foreach ($daftarMadrasahDiakui as $m)
+                                    <option value="{{ $m->id }}" {{ $madrasahIdFilter == $m->id ? 'selected' : '' }}>
+                                        {{ $m->nama_madrasah }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($madrasahIdFilter)
+                            <a href="{{ route('dashboard.index', ['jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
+                                class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise"></i> Lihat Semua Madrasah
+                            </a>
+                        @endif
+                    </form>
+
+                    @if ($perkembanganJumlahPrestasi['periode_list']->isEmpty())
+                        <div class="empty-note">
+                            <i class="bi bi-info-circle"></i>
+                            Belum ada data prestasi diakui sejak periode {{ $periodeMulaiJumlahPrestasi }}.
+                        </div>
+                    @else
+                        <div class="chart-box">
+                            <canvas id="chartPerkembanganPrestasi"></canvas>
+                        </div>
+                    @endif
+                </div>
+
                 <div class="content-card mb-4">
                     <div class="card-title-row">
                         <div class="title"><i class="bi bi-building text-primary"></i> Profil Perkembangan Madrasah</div>
@@ -856,6 +907,37 @@
                 'GTK': '#8b5cf6',
                 'Lembaga': '#94a3b8',
             };
+
+            {{-- ============ PERKEMBANGAN JUMLAH PRESTASI (DIAKUI) ============ --}}
+            @if ($perkembanganJumlahPrestasi['periode_list']->isNotEmpty())
+                const labelPeriodePrestasi = @json($perkembanganJumlahPrestasi['periode_list']);
+                const perKelompokPrestasi = @json($perkembanganJumlahPrestasi['per_kelompok']);
+                const modePrestasi = @json($perkembanganJumlahPrestasi['mode']); // 'jenjang' | 'bidang'
+                const paletPrestasi = modePrestasi === 'bidang' ? warnaBidang : warnaJenjang;
+
+                const datasetsPrestasi = Object.keys(perKelompokPrestasi).map((kelompok) => ({
+                    label: kelompok,
+                    data: labelPeriodePrestasi.map(p => perKelompokPrestasi[kelompok][p] ?? 0),
+                    backgroundColor: paletPrestasi[kelompok] || warnaJenjangDefault,
+                    borderRadius: 6,
+                    maxBarThickness: 42,
+                }));
+
+                new Chart(document.getElementById('chartPerkembanganPrestasi'), {
+                    type: 'bar',
+                    data: { labels: labelPeriodePrestasi, datasets: datasetsPrestasi },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'circle' } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            @endif
 
             @if ($persenPeningkatan)
                 /* ============ PERSENTASE PENINGKATAN PER TINGKAT ============ */

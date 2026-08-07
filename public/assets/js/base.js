@@ -79,6 +79,7 @@ window.addEventListener("load", () => {
 // (lihat komentar di base.blade.php)
 // =========================================================
 document.addEventListener("DOMContentLoaded", () => {
+  
   const showPeriodeModal = window.PRESMA?.showPeriodeModal ?? false;
 
   if (!showPeriodeModal) return;
@@ -87,5 +88,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (modalEl && window.bootstrap) {
     new bootstrap.Modal(modalEl).show();
+  }
+});
+
+// =========================================================
+// DROPDOWN "BUTUH BANTUAN" — fix biar gak kepotong overflow:hidden .main
+// Popper dipaksa pakai strategy "fixed" (relatif ke viewport), bukan
+// "absolute" (relatif ke .dropdown di dalam .main yang overflow:hidden).
+// =========================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const btnBantuan = document.getElementById("btnBantuan");
+  if (btnBantuan && window.bootstrap) {
+    new bootstrap.Dropdown(btnBantuan, {
+      popperConfig: (defaultConfig) => ({
+        ...defaultConfig,
+        strategy: "fixed",
+      }),
+    });
   }
 });

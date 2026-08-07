@@ -48,17 +48,11 @@
                     </div>
                 </div>
 
-                <a href="https://wa.me/6281381752590" target="_blank" rel="noopener"
+                <a href="https://wa.me/081381752590" target="_blank" rel="noopener"
                     class="help-contact-action help-contact-wa">
                     <i class="bi bi-whatsapp"></i>
                     <span>081381752590</span>
                 </a>
-
-                <a href="tel:081381752590" class="help-contact-action help-contact-call">
-                    <i class="bi bi-telephone"></i>
-                    <span>Telepon Langsung</span>
-                </a>
-
             </div>
         </div>
 

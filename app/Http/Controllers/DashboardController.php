@@ -12,6 +12,7 @@ use App\Models\RankingArsipDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -22,6 +23,17 @@ class DashboardController extends Controller
         'GTK'          => 'nilai_gtk',
         'Lembaga'      => 'nilai_lembaga',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | PERIODE MULAI "PERKEMBANGAN JUMLAH PRESTASI"
+    |--------------------------------------------------------------------------
+    | Fitur ini beda dari grafik Skor/Nilai di atasnya -- sengaja TIDAK
+    | pakai data sebelum periode ini (sesuai keputusan: "data tahun lalu
+    | atau sebelumnya nggak dipakai, ikut sesuai penggunaan aplikasi").
+    |--------------------------------------------------------------------------
+    */
+    private const PERIODE_MULAI_JUMLAH_PRESTASI = 2026;
 
     private const URUTAN_TINGKAT = [
         'Kabupaten/Kota',
@@ -108,6 +120,38 @@ class DashboardController extends Controller
 
         $breadcrumb = breadcrumb(['Dashboard']);
 
+        /*
+        |--------------------------------------------------------------------------
+        | BAGIAN 3 — PERKEMBANGAN JUMLAH PRESTASI (DIAKUI)
+        |--------------------------------------------------------------------------
+        | Sengaja TERPISAH dari blok arsip di atas -- ini baca LANGSUNG dari
+        | prestasi_siswas (COUNT, bukan SUM nilai), jadi tetap jalan walau
+        | belum ada satupun Arsip Ranking dibuat.
+        |--------------------------------------------------------------------------
+        */
+        $perkembanganJumlahPrestasi = $this->hitungPerkembanganJumlahPrestasi(
+            $jenjangFilter,
+            $kotaFilter,
+            $madrasahIdsStatus,
+            $madrasahIdFilter
+        );
+
+        // Daftar dropdown khusus fitur ini -- TIDAK dari RankingArsipDetail
+        // (yang di atas cuma keisi kalau ada arsip), tapi langsung dari
+        // Madrasah yang benar-benar punya prestasi diakui di periode ini.
+        $daftarMadrasahDiakui = Madrasah::select('id', 'nama_madrasah')
+            ->whereHas('prestasis', function ($q) {
+                $q->where('diakui', true)
+                    ->where('periode', '>=', self::PERIODE_MULAI_JUMLAH_PRESTASI);
+            })
+            ->when($jenjangFilter, fn ($q) => $q->where('jenjang_madrasah', $jenjangFilter))
+            ->when($kotaFilter, fn ($q) => $q->where('kota', $kotaFilter))
+            ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('id', $madrasahIdsStatus))
+            ->orderBy('nama_madrasah')
+            ->get();
+
+        $periodeMulaiJumlahPrestasi = self::PERIODE_MULAI_JUMLAH_PRESTASI;
+
         return view('dashboard.index', compact(
             'matrixTingkat',
             'ringkasanPeriode',
@@ -119,6 +163,9 @@ class DashboardController extends Controller
             'daftarMadrasah',
             'madrasahIdFilter',
             'profilMadrasah',
+            'perkembanganJumlahPrestasi',
+            'daftarMadrasahDiakui',
+            'periodeMulaiJumlahPrestasi',
             'jenjangFilter',
             'statusFilter',
             'kotaFilter',
@@ -139,6 +186,7 @@ class DashboardController extends Controller
         $tipe = $request->query('tipe');
         [$jenjangFilter, $statusFilter, $kotaFilter] = $this->bacaFilter($request);
         $madrasahIdsStatus = $this->madrasahIdsByStatus($statusFilter);
+        $madrasahIdFilter = $request->integer('madrasah_id') ?: null;
 
         switch ($tipe) {
 
@@ -286,6 +334,29 @@ class DashboardController extends Controller
                 ];
 
                 $judul = 'Profil ' . $profil->nama_madrasah;
+                break;
+
+            case 'perkembangan-prestasi':
+                $hasil = $this->hitungPerkembanganJumlahPrestasi(
+                    $jenjangFilter,
+                    $kotaFilter,
+                    $madrasahIdsStatus,
+                    $madrasahIdFilter
+                );
+
+                $data = $hasil['periode_list']->map(function ($periode) use ($hasil) {
+                    $baris = [$periode];
+
+                    foreach ($hasil['per_kelompok'] as $kelompok => $perPeriode) {
+                        $baris[] = $perPeriode[$periode] ?? 0;
+                    }
+
+                    return $baris;
+                });
+
+                $headings = array_merge(['Periode'], $hasil['per_kelompok']->keys()->toArray());
+
+                $judul = 'Perkembangan Jumlah Prestasi' . ($madrasahIdFilter ? ' - ' . Madrasah::find($madrasahIdFilter)?->nama_madrasah : '');
                 break;
 
             default:
@@ -837,5 +908,73 @@ class DashboardController extends Controller
         $posisi = $urutan->search($madrasahId);
 
         return $posisi !== false ? $posisi + 1 : null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PERKEMBANGAN JUMLAH PRESTASI (DIAKUI) -- COUNT baris prestasi_siswas,
+    | BUKAN SUM nilai. Mode berubah otomatis:
+    | - Tanpa filter madrasah -> dikelompokkan per JENJANG (MI/MTs/MA)
+    | - Dengan filter madrasah -> dikelompokkan per BIDANG (5 bidang),
+    |   soalnya 1 madrasah cuma 1 jenjang, breakdown jenjang jadi percuma.
+    |--------------------------------------------------------------------------
+    */
+    private function hitungPerkembanganJumlahPrestasi(
+        ?string $jenjangFilter,
+        ?string $kotaFilter,
+        ?Collection $madrasahIdsStatus,
+        ?int $madrasahIdFilter
+    ): array {
+        $daftarPeriode = PrestasiSiswa::where('periode', '>=', self::PERIODE_MULAI_JUMLAH_PRESTASI)
+            ->select('periode')
+            ->distinct()
+            ->orderBy('periode')
+            ->pluck('periode');
+
+        if ($daftarPeriode->isEmpty()) {
+            return ['periode_list' => collect(), 'per_kelompok' => collect(), 'mode' => 'jenjang'];
+        }
+
+        if ($madrasahIdFilter) {
+            $mode = 'bidang';
+            $daftarKelompok = collect(array_keys(self::BIDANG_KOLOM));
+
+            $rows = PrestasiSiswa::where('diakui', true)
+                ->where('madrasah_id', $madrasahIdFilter)
+                ->whereIn('periode', $daftarPeriode)
+                ->groupBy('periode', 'bidang_prestasi')
+                ->selectRaw('periode, bidang_prestasi as kelompok, COUNT(*) as jumlah')
+                ->get();
+        } else {
+            $mode = 'jenjang';
+            $daftarKelompok = collect(['RA', 'MI', 'MTs', 'MA']);
+
+            $rows = DB::table('prestasi_siswas')
+                ->join('madrasahs', 'madrasahs.id', '=', 'prestasi_siswas.madrasah_id')
+                ->where('prestasi_siswas.diakui', true)
+                ->whereIn('prestasi_siswas.periode', $daftarPeriode)
+                ->when($jenjangFilter, fn ($q) => $q->where('madrasahs.jenjang_madrasah', $jenjangFilter))
+                ->when($kotaFilter, fn ($q) => $q->where('madrasahs.kota', $kotaFilter))
+                ->when($madrasahIdsStatus !== null, fn ($q) => $q->whereIn('madrasahs.id', $madrasahIdsStatus))
+                ->groupBy('prestasi_siswas.periode', 'madrasahs.jenjang_madrasah')
+                ->selectRaw('prestasi_siswas.periode, madrasahs.jenjang_madrasah as kelompok, COUNT(*) as jumlah')
+                ->get();
+        }
+
+        $perKelompok = $daftarKelompok->mapWithKeys(function ($kelompok) use ($rows, $daftarPeriode) {
+            $perPeriode = $daftarPeriode->mapWithKeys(function ($periode) use ($rows, $kelompok) {
+                $match = $rows->first(fn ($r) => $r->periode == $periode && $r->kelompok === $kelompok);
+
+                return [$periode => (int) ($match->jumlah ?? 0)];
+            });
+
+            return [$kelompok => $perPeriode];
+        });
+
+        return [
+            'periode_list' => $daftarPeriode,
+            'per_kelompok' => $perKelompok,
+            'mode'         => $mode,
+        ];
     }
 }

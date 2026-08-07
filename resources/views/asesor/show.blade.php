@@ -922,23 +922,24 @@
             }
         }
 
-        /* PAGINATION */
+        /* PAGINATION -- disamakan tampilannya persis dengan index_blade.php
+           (radius 10px, margin antar tombol, warna aktif #198754) */
         .pagination {
-            gap: .35rem;
             margin-bottom: 0;
         }
 
         .pagination .page-item .page-link {
-            border-radius: 8px;
+            border-radius: 10px;
+            margin: 0 3px;
             min-width: 38px;
             height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 .75rem;
-            font-size: .875rem;
-            color: #475569;
-            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: #495057;
+            border: 1px solid #e3e7ed;
             background: #fff;
         }
 
@@ -950,13 +951,12 @@
 
         /* Active */
         .pagination .page-item.active .page-link {
-            background: var(--presma-primary);
-            border-color: var(--presma-primary);
-            color: white;
+            background-color: #198754;
+            border-color: #198754;
+            color: #fff;
         }
 
         /* Hover */
-
         .pagination .page-link:hover {
             background: var(--presma-primary-soft);
             color: var(--presma-primary);
