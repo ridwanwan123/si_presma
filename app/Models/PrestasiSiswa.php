@@ -24,6 +24,7 @@ class PrestasiSiswa extends Model
         'metode_pelaksanaan',
         'skor',
         'diakui',
+        'rubrik_penilaian_id',
         'link_drive_bukti',
         'presentase',
         'nilai_akhir',
@@ -47,6 +48,18 @@ class PrestasiSiswa extends Model
     public function penilaianPrestasi()
     {
         return $this->hasOne(PenilaianPrestasi::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rubrik yang jadi SUMBER skor -- diisi otomatis waktu simpan (manual
+    | atau import), baik Madrasah maupun sistem tidak lagi mengetik skor
+    | bebas untuk bidang yang rubriknya sudah lengkap.
+    |--------------------------------------------------------------------------
+    */
+    public function rubrikPenilaian()
+    {
+        return $this->belongsTo(RubrikPenilaian::class);
     }
 
      /*

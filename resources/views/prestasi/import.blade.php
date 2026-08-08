@@ -227,8 +227,8 @@
         }
 
         /* ===========================
-                                                                           MODAL ERROR IMPORT (SweetAlert)
-                                                                        =========================== */
+                                                                                   MODAL ERROR IMPORT (SweetAlert)
+                                                                                =========================== */
 
         .import-error-summary {
             display: flex;
@@ -498,7 +498,7 @@
                         <i class="bi bi-table"></i>
                         <div>
                             <div class="label">Jumlah Kolom</div>
-                            <div class="value">Harus tepat 12 kolom</div>
+                            <div class="value">Harus tepat 11 kolom</div>
                         </div>
                     </div>
                     <div class="panduan-summary-item">
@@ -628,17 +628,6 @@
                                     </td>
                                     <td>Isi salah satu: <strong>Luring</strong> atau <strong>Daring</strong>.</td>
                                     <td class="panduan-contoh">Luring</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">skor</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>angka</strong> (bukan teks), tanpa titik/koma pemisah ribuan;
-                                        maksimal <strong>999.999,99</strong>.
-                                    </td>
-                                    <td class="panduan-contoh">87.5</td>
                                 </tr>
                                 <tr>
                                     <td>

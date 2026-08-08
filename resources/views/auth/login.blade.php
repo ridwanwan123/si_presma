@@ -571,6 +571,83 @@
             color: #fff;
         }
 
+        /* ============ MODAL AKTIVASI — LIST 3 KONTAK ============ */
+        .aktivasi-modal-unit-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .aktivasi-modal-list {
+            border: 1.5px solid #dbe2ea;
+            border-radius: 16px;
+            background: #f8fafc;
+            overflow: hidden;
+            margin-bottom: 1.75rem;
+            text-align: left;
+        }
+
+        .aktivasi-modal-contact {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.9rem 1.1rem;
+        }
+
+        .aktivasi-modal-contact+.aktivasi-modal-contact {
+            border-top: 1px solid #e2e8ef;
+        }
+
+        .aktivasi-modal-avatar {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(15, 138, 67, 0.1);
+            color: #0f8a43;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+
+        .aktivasi-modal-contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .aktivasi-modal-contact-nama {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .aktivasi-modal-contact-telepon {
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+
+        .aktivasi-modal-wa-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(37, 211, 102, 0.14);
+            color: #25d366;
+            font-size: 1.15rem;
+            transition: 0.18s;
+        }
+
+        .aktivasi-modal-wa-icon:hover {
+            background: #25d366;
+            color: #fff;
+        }
+
         @keyframes toastIn {
             from {
                 opacity: 0;
@@ -940,19 +1017,55 @@
                         Akun perlu diaktifkan terlebih dahulu sebelum bisa dipakai login
                     </p>
 
-                    <div class="aktivasi-modal-box">
-                        <div class="aktivasi-modal-nama">Muhamad Ridwan</div>
-                        <div class="aktivasi-modal-unit">Penmad DKI Jakarta</div>
-                        <div class="aktivasi-modal-telepon">0813-8175-2590</div>
+                    <div class="aktivasi-modal-unit-label">Penmad DKI Jakarta</div>
 
-                        @php                         $pesanWaAktivasi = 'Assalamualaikum, mohon izin untuk approve
+                    @php
+                        $pesanWaAktivasi = 'Assalamualaikum, mohon izin untuk approve
               akun PRESMA saya agar bisa segera digunakan. Terima kasih banyak
-              atas bantuannya 🙏'; @endphp
+              atas bantuannya 🙏';
+                    @endphp
 
-                        <a href="https://wa.me/6281381752590?text={{ urlencode($pesanWaAktivasi) }}" target="_blank"
-                            rel="noopener" class="aktivasi-modal-wa-btn">
-                            <i class="bx bxl-whatsapp"></i> Kirim Pesan
-                        </a>
+                    <div class="aktivasi-modal-list">
+
+                        <div class="aktivasi-modal-contact">
+                            <div class="aktivasi-modal-avatar">MR</div>
+                            <div class="aktivasi-modal-contact-info">
+                                <div class="aktivasi-modal-contact-nama">Muhamad Ridwan</div>
+                                <div class="aktivasi-modal-contact-telepon">0813-8175-2590</div>
+                            </div>
+                            <a href="https://wa.me/6281381752590?text={{ urlencode($pesanWaAktivasi) }}"
+                                target="_blank" rel="noopener" class="aktivasi-modal-wa-icon"
+                                title="Chat WhatsApp Muhamad Ridwan">
+                                <i class="bx bxl-whatsapp"></i>
+                            </a>
+                        </div>
+
+                        <div class="aktivasi-modal-contact">
+                            <div class="aktivasi-modal-avatar">E</div>
+                            <div class="aktivasi-modal-contact-info">
+                                <div class="aktivasi-modal-contact-nama">Eilien Dwi K.</div>
+                                <div class="aktivasi-modal-contact-telepon">0852-1345-8681</div>
+                            </div>
+                            <a href="https://wa.me/6285213458681?text={{ urlencode($pesanWaAktivasi) }}"
+                                target="_blank" rel="noopener" class="aktivasi-modal-wa-icon"
+                                title="Chat WhatsApp Eilien">
+                                <i class="bx bxl-whatsapp"></i>
+                            </a>
+                        </div>
+
+                        <div class="aktivasi-modal-contact">
+                            <div class="aktivasi-modal-avatar">S</div>
+                            <div class="aktivasi-modal-contact-info">
+                                <div class="aktivasi-modal-contact-nama">Abdus Salam</div>
+                                <div class="aktivasi-modal-contact-telepon">0852-2072-3948</div>
+                            </div>
+                            <a href="https://wa.me/6285220723948?text={{ urlencode($pesanWaAktivasi) }}"
+                                target="_blank" rel="noopener" class="aktivasi-modal-wa-icon"
+                                title="Chat WhatsApp Abdus Salam">
+                                <i class="bx bxl-whatsapp"></i>
+                            </a>
+                        </div>
+
                     </div>
 
                     <button type="button" class="btn aktivasi-modal-btn w-100" data-bs-dismiss="modal">

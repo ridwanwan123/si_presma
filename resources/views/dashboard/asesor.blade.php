@@ -386,7 +386,8 @@
             <div class="dash-header">
                 <div>
                     <h2>Dashboard Asesor</h2>
-                    <p>Progress penilaian prestasi madrasah yang ditugaskan kepada Anda.</p>
+                    <p>Kelola dan monitor seluruh proses penilaian prestasi madrasah sesuai penugasan yang telah ditetapkan.
+                    </p>
                 </div>
             </div>
 
@@ -472,7 +473,7 @@
                             <div class="text-center text-muted py-4">
                                 <i class="bi bi-inbox"
                                     style="font-size:1.6rem;color:#cbd5e1;display:block;margin-bottom:.4rem"></i>
-                                Belum ada prestasi yang Anda nilai.
+                                Belum terdapat data penilaian prestasi yang telah Anda lakukan.
                             </div>
                         @else
                             <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -482,7 +483,7 @@
                                 <div class="flex-grow-1">
                                     <div class="rubrik-callout">
                                         <strong>{{ $kecocokanRubrikRingkasan['persen_sesuai'] }}%</strong>
-                                        penilaian Anda ({{ $kecocokanRubrikRingkasan['sesuai'] }} dari
+                                        hasil penilaian Anda ({{ $kecocokanRubrikRingkasan['sesuai'] }} dari
                                         {{ $kecocokanRubrikRingkasan['total'] }})
                                         sudah <strong>sesuai</strong> rubrik resmi Juknis.
                                     </div>
@@ -590,7 +591,7 @@
                             </div>
                         </div>
                         <div class="chart-box-sm">
-                            <canvas id="chartPersentase"></canvas>
+                            <cresanvas id="chartPersentase"></cresanvas>
                         </div>
                         <ul class="legend-list">
                             @forelse ($distribusiPersentase as $item)

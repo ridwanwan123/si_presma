@@ -53,6 +53,17 @@ return new class extends Migration
             // lihat pertanyaan di chat).
             $table->boolean('diakui')->default(true);
 
+            // Menyimpan baris Rubrik Penilaian mana yang jadi sumber skor
+            // di atas -- nullable karena bidang Lembaga/GTK-Karya masih
+            // belum wajib pakai rubrik (skor manual tetap boleh sementara
+            // rubriknya belum lengkap). Kalau baris rubrik yang jadi
+            // rujukan dihapus, kolom ini ikut null (bukan ikut terhapus),
+            // supaya histori skor lama tidak hilang.
+            $table->foreignId('rubrik_penilaian_id')
+                ->nullable()
+                ->constrained('rubrik_penilaians')
+                ->nullOnDelete();
+
             $table->string('link_drive_bukti')->nullable();
             $table->text('keterangan')->nullable();
             $table->unsignedSmallInteger('periode');

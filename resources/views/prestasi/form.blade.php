@@ -4,8 +4,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                                                                                                                                                                                   FORM MADRASAH
-                                                                                                                                                                                                                                                                                                                                ========================= */
+                                                                                                                                                                                                                                                                                                                                       FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                                    ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -400,13 +400,20 @@
                             </select>
                         </div>
 
-                        {{-- SKOR --}}
+                        {{-- SKOR -- READ ONLY, otomatis dari Rubrik Penilaian.
+                             Tidak ada name="skor" lagi di sini SENGAJA --
+                             kalau tetap ada, browser bisa mengirim nilai lama
+                             yang sudah tidak relevan. Skor SEBENARNYA
+                             ditentukan ulang di server (store()/update()),
+                             ini murni tampilan bantu. --}}
                         <div class="col-md-4">
                             <label class="form-label">
-                                Skor
+                                Skor <span class="text-muted fw-normal">(otomatis dari Rubrik)</span>
                             </label>
-                            <input type="number" step="0.01" name="skor" class="form-control skor-input"
-                                value="{{ old('skor', isset($prestasi) ? +$prestasi->skor : 0) }}">
+                            <input type="text" id="skorTampilan" class="form-control" readonly
+                                value="{{ isset($prestasi) && $prestasi->skor !== null ? number_format($prestasi->skor, 2, ',', '.') : '-- Lengkapi kriteria di atas --' }}"
+                                style="background:#f1f5f9;font-weight:700;color:#0f8a43">
+                            <small id="skorError" class="text-danger d-none"></small>
                         </div>
 
                         {{-- LINK DRIVE --}}
@@ -525,23 +532,74 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.skor-input').forEach(function(input) {
+            const fieldBidang = document.querySelector('select[name="bidang_prestasi"]');
+            const fieldTingkat = document.querySelector('select[name="tingkat"]');
+            const fieldKategori = document.querySelector('select[name="kategori_kegiatan"]');
+            const fieldJuara = document.getElementById('juara_select');
+            const fieldPenyelenggara = document.querySelector('select[name="kategori_penyelenggara"]');
+            const fieldMetode = document.querySelector('select[name="metode_pelaksanaan"]');
 
-                // Saat diklik/focus, jika nilainya 0 maka dikosongkan
-                input.addEventListener('focus', function() {
-                    if (this.value === '0' || this.value === '0.00') {
-                        this.value = '';
-                    }
-                });
+            const skorTampilan = document.getElementById('skorTampilan');
+            const skorError = document.getElementById('skorError');
 
-                // Saat selesai input, jika kosong kembalikan ke 0
-                input.addEventListener('blur', function() {
-                    if (this.value.trim() === '') {
-                        this.value = '0';
-                    }
-                });
+            function semuaKriteriaLengkap() {
+                return fieldBidang?.value && fieldTingkat?.value && fieldKategori?.value &&
+                    fieldJuara?.value && fieldPenyelenggara?.value && fieldMetode?.value;
+            }
 
+            function cariSkor() {
+                if (!semuaKriteriaLengkap()) {
+                    skorTampilan.value = '-- Lengkapi kriteria di atas --';
+                    skorError.classList.add('d-none');
+                    return;
+                }
+
+                skorTampilan.value = 'Mencari...';
+
+                const token = document.querySelector('input[name="_token"]')?.value;
+
+                fetch(`{{ route('prestasi.lookup_rubrik') }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            bidang_prestasi: fieldBidang.value,
+                            tingkat: fieldTingkat.value,
+                            juara: fieldJuara.value,
+                            kategori_kegiatan: fieldKategori.value,
+                            metode_pelaksanaan: fieldMetode.value,
+                            kategori_penyelenggara: fieldPenyelenggara.value,
+                        }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.ditemukan) {
+                            skorTampilan.value = Number(data.skor).toLocaleString('id-ID', {
+                                minimumFractionDigits: 2
+                            });
+                            skorError.classList.add('d-none');
+                        } else {
+                            skorTampilan.value = 'Tidak ditemukan';
+                            skorError.textContent = data.pesan;
+                            skorError.classList.remove('d-none');
+                        }
+                    })
+                    .catch(() => {
+                        skorTampilan.value = '-- Gagal memuat --';
+                    });
+            }
+
+            [fieldBidang, fieldTingkat, fieldKategori, fieldJuara, fieldPenyelenggara, fieldMetode]
+            .forEach(function(field) {
+                field?.addEventListener('change', cariSkor);
             });
+            
+            if (semuaKriteriaLengkap()) {
+                cariSkor();
+            }
         });
     </script>
 @endpush

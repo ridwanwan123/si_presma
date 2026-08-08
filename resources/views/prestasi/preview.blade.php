@@ -27,8 +27,8 @@
         }
 
         /* ===========================
-               WARNING CALLOUT
-            =========================== */
+                                   WARNING CALLOUT
+                                =========================== */
 
         .preview-warning {
             display: flex;
@@ -73,8 +73,8 @@
         }
 
         /* ===========================
-               SUMMARY CARD (berikon)
-            =========================== */
+                                   SUMMARY CARD (berikon)
+                                =========================== */
 
         .preview-summary-card {
             display: flex;
@@ -124,8 +124,8 @@
         }
 
         /* ===========================
-               TABLE — COMPACT
-            =========================== */
+                                   TABLE — COMPACT
+                                =========================== */
 
         .preview-table {
             margin-bottom: 0;
@@ -171,8 +171,8 @@
         }
 
         /* ===========================
-               STICKY COLUMN
-            =========================== */
+                                   STICKY COLUMN
+                                =========================== */
 
         .preview-table tbody td.sticky-col {
             position: sticky;
@@ -223,8 +223,8 @@
         }
 
         /* ===========================
-               BADGE JUARA (selaras dengan halaman Daftar Prestasi)
-            =========================== */
+                                   BADGE JUARA (selaras dengan halaman Daftar Prestasi)
+                                =========================== */
 
         .badge-juara {
             display: inline-block;
@@ -287,8 +287,8 @@
         }
 
         /* ===========================
-               LOADING OVERLAY
-            =========================== */
+                                   LOADING OVERLAY
+                                =========================== */
 
         .simpan-loading {
             position: fixed;
@@ -361,10 +361,8 @@
                 </div>
 
                 <p class="preview-warning-text">
-                    Pastikan nama kegiatan, tingkat, juara, dan skor pada tabel di bawah sudah benar.
-                    Setelah <strong>Simpan Data</strong> diklik, seluruh data akan langsung masuk ke database.
-                    Anda tetap bisa mengedit atau menghapus data satu per satu setelah tersimpan melalui halaman Daftar
-                    Prestasi.
+                    Pastikan seluruh data prestasi yang ditampilkan telah sesuai sebelum disimpan. Setelah tersimpan, data
+                    masih dapat diedit atau dihapus melalui halaman <strong>Daftar Prestasi</strong>.
                 </p>
             </div>
 
@@ -470,7 +468,8 @@
                         <small class="text-muted">
                             Data berikut akan disimpan ke database PRESMA
                             @if ($totalData > $paginatedData->perPage())
-                                &middot; menampilkan {{ $paginatedData->firstItem() }}-{{ $paginatedData->lastItem() }} dari {{ $totalData }} baris
+                                &middot; menampilkan {{ $paginatedData->firstItem() }}-{{ $paginatedData->lastItem() }} dari
+                                {{ $totalData }} baris
                             @endif
                         </small>
 
@@ -502,7 +501,7 @@
                                 <th>Penyelenggara</th>
                                 <th>Tanggal</th>
                                 <th>Metode</th>
-                                <th>Skor</th>
+                                <th hidden>Skor</th>
                             </tr>
 
                         </thead>
@@ -590,7 +589,7 @@
 
                                     </td>
 
-                                    <td class="text-center">
+                                    <td class="text-center" hidden>
 
                                         {{ $item['skor'] }}
 

@@ -40,19 +40,45 @@
                     </div>
                 </div>
 
-                <div class="help-contact">
-                    <div class="help-contact-avatar">MR</div>
-                    <div class="help-contact-info">
-                        <div class="help-contact-name">Muhamad Ridwan</div>
-                        <div class="help-contact-role">Tim Tendik</div>
-                    </div>
-                </div>
+                <div class="help-contact-list">
 
-                <a href="https://wa.me/081381752590" target="_blank" rel="noopener"
-                    class="help-contact-action help-contact-wa">
-                    <i class="bi bi-whatsapp"></i>
-                    <span>081381752590</span>
-                </a>
+                    <div class="help-contact-item">
+                        <div class="help-contact-avatar">MR</div>
+                        <div class="help-contact-info">
+                            <div class="help-contact-name">Muhamad Ridwan</div>
+                            <div class="help-contact-role">Tim Tendik</div>
+                        </div>
+                        <a href="https://wa.me/6281381752590" target="_blank" rel="noopener" class="help-contact-wa-btn"
+                            title="Chat WhatsApp Muhamad Ridwan">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+
+                    <div class="help-contact-item">
+                        <div class="help-contact-avatar">ED</div>
+                        <div class="help-contact-info">
+                            <div class="help-contact-name">Eilien Dwi K.</div>
+                            <div class="help-contact-role">Tim Tendik</div>
+                        </div>
+                        <a href="https://wa.me/6285213458681" target="_blank" rel="noopener" class="help-contact-wa-btn"
+                            title="Chat WhatsApp Eilien">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+
+                    <div class="help-contact-item">
+                        <div class="help-contact-avatar">AS</div>
+                        <div class="help-contact-info">
+                            <div class="help-contact-name">Abdus Salam</div>
+                            <div class="help-contact-role">Tim Tendik</div>
+                        </div>
+                        <a href="https://wa.me/6285220723948" target="_blank" rel="noopener" class="help-contact-wa-btn"
+                            title="Chat WhatsApp Salam">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+
+                </div>
             </div>
         </div>
 

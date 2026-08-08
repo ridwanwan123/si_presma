@@ -16,6 +16,27 @@ toggle?.addEventListener("click", () => {
     // Mobile → toggle overlay
     sidebar.classList.toggle("active");
   }
+
+  // FIX: konten (mis. tabel DataTables dengan autoWidth: false) dihitung
+  // lebarnya sekali saat render pertama. Transisi CSS lebar sidebar TIDAK
+  // memicu event resize bawaan browser, jadi kolom tabel jadi tidak sesuai
+  // lagi dengan lebar area konten yang baru. Begitu transisi sidebar
+  // selesai, kita trigger resize (untuk komponen lain seperti chart) dan
+  // paksa DataTables menghitung ulang lebar kolomnya kalau ada di halaman.
+  sidebar.addEventListener(
+    "transitionend",
+    function handler(e) {
+      if (e.propertyName !== "width") return;
+
+      window.dispatchEvent(new Event("resize"));
+
+      if (window.jQuery && $.fn.dataTable) {
+        $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+      }
+
+      sidebar.removeEventListener("transitionend", handler);
+    }
+  );
 });
 
 // =========================
@@ -79,7 +100,7 @@ window.addEventListener("load", () => {
 // (lihat komentar di base.blade.php)
 // =========================================================
 document.addEventListener("DOMContentLoaded", () => {
-  
+
   const showPeriodeModal = window.PRESMA?.showPeriodeModal ?? false;
 
   if (!showPeriodeModal) return;

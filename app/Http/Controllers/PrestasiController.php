@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PrestasiSiswa;
 use App\Models\PeriodeAktif;
 use App\Models\Madrasah;
+use App\Models\RubrikPenilaian;
 use App\Exports\PrestasiMadrasahExport;
 use App\Services\PrestasiImportService;
 use Illuminate\Http\Request;
@@ -241,6 +242,49 @@ class PrestasiController extends Controller
             new PrestasiTemplateExport,
             'template-prestasi.xlsx'
         );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOOKUP SKOR RUBRIK (AJAX) -- dipanggil dari form input manual begitu
+    | 6 kriteria (bidang/tingkat/juara/kategori/metode/penyelenggara) sudah
+    | lengkap dipilih. TIDAK menyimpan apapun, cuma mengintip skornya
+    | berapa sebelum disimpan -- validasi & penyimpanan SEBENARNYA tetap
+    | terjadi ulang di store()/update(), endpoint ini murni bantu UX.
+    |--------------------------------------------------------------------------
+    */
+    public function lookupRubrik(Request $request)
+    {
+        $validated = $request->validate([
+            'bidang_prestasi' => 'required|in:Akademik,Non Akademik,Keagamaan,GTK,Lembaga',
+            'tingkat' => 'required|in:Kabupaten/Kota,Provinsi,Nasional,Internasional',
+            'juara' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Harapan 3',
+            'kategori_kegiatan' => 'required|in:Individu,Beregu',
+            'metode_pelaksanaan' => 'required|in:Luring,Daring',
+            'kategori_penyelenggara' => 'required|in:Pemerintah,Non Pemerintah',
+        ]);
+
+        $rubrik = RubrikPenilaian::cariRubrikLomba(
+            $validated['bidang_prestasi'],
+            $validated['tingkat'],
+            $validated['juara'],
+            $validated['kategori_kegiatan'],
+            $validated['metode_pelaksanaan'],
+            $validated['kategori_penyelenggara'],
+            PeriodeAktif::aktif()
+        );
+
+        if (!$rubrik) {
+            return response()->json([
+                'ditemukan' => false,
+                'pesan' => 'Kombinasi ini belum ada di Rubrik Penilaian. Hubungi Admin.',
+            ]);
+        }
+
+        return response()->json([
+            'ditemukan' => true,
+            'skor' => (float) $rubrik->skor,
+        ]);
     }
 
     /*
@@ -592,10 +636,35 @@ class PrestasiController extends Controller
             'kategori_penyelenggara' => 'required|in:Pemerintah,Non Pemerintah',
             'waktu_kegiatan' => 'required|date',
             'metode_pelaksanaan' => 'required|in:Luring,Daring',
-            'skor' => 'nullable|numeric',
+            // 'skor' SENGAJA DIHAPUS dari validasi -- tidak lagi diketik
+            // manual, lihat pencocokan rubrik di bawah.
             'link_drive_bukti' => 'nullable|url',
             'keterangan' => 'nullable|string',
         ]);
+
+        // Cocokkan ke Rubrik Penilaian -- periode diambil SEBELUM
+        // pencocokan karena rubrik terikat tahun_berlaku.
+        $periodeAktif = PeriodeAktif::aktif();
+
+        $rubrikCocok = RubrikPenilaian::cariRubrikLomba(
+            $validatedData['bidang_prestasi'],
+            $validatedData['tingkat'],
+            $validatedData['juara'],
+            $validatedData['kategori_kegiatan'],
+            $validatedData['metode_pelaksanaan'],
+            $validatedData['kategori_penyelenggara'],
+            $periodeAktif
+        );
+
+        if (!$rubrikCocok) {
+            return redirect()->back()->withInput()->with(
+                'error',
+                'Kombinasi kriteria ini belum ada di Rubrik Penilaian. Hubungi Admin untuk melengkapi rubrik bidang ini.'
+            );
+        }
+
+        $validatedData['skor'] = $rubrikCocok->skor;
+        $validatedData['rubrik_penilaian_id'] = $rubrikCocok->id;
 
         $bidangSlugMap = [
             'Akademik' => 'akademik',
@@ -684,10 +753,30 @@ class PrestasiController extends Controller
             'kategori_penyelenggara' => 'required|in:Pemerintah,Non Pemerintah',
             'waktu_kegiatan' => 'required|date',
             'metode_pelaksanaan' => 'required|in:Luring,Daring',
-            'skor' => 'nullable|numeric',
+            // 'skor' SENGAJA DIHAPUS -- lihat pencocokan rubrik di bawah.
             'link_drive_bukti' => 'nullable|url',
             'keterangan' => 'nullable|string',
         ]);
+
+        $rubrikCocok = RubrikPenilaian::cariRubrikLomba(
+            $validatedData['bidang_prestasi'],
+            $validatedData['tingkat'],
+            $validatedData['juara'],
+            $validatedData['kategori_kegiatan'],
+            $validatedData['metode_pelaksanaan'],
+            $validatedData['kategori_penyelenggara'],
+            PeriodeAktif::aktif()
+        );
+
+        if (!$rubrikCocok) {
+            return redirect()->back()->withInput()->with(
+                'error',
+                'Kombinasi kriteria ini belum ada di Rubrik Penilaian. Hubungi Admin untuk melengkapi rubrik bidang ini.'
+            );
+        }
+
+        $validatedData['skor'] = $rubrikCocok->skor;
+        $validatedData['rubrik_penilaian_id'] = $rubrikCocok->id;
 
         try {
             DB::beginTransaction();

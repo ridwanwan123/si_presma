@@ -3,12 +3,12 @@
 @push('styles')
     <style>
         /* ===========================================================
-                                           PENILAIAN MADRASAH (asesor/show.blade.php)
-                                           Token disamakan dengan assets/css/prestasi/index.css dan
-                                           assets/css/rubrik-penilaian/index.css (--presma-*) supaya
-                                           satu sistem desain PRESMA. Kalau nanti dipindah ke base.css
-                                           secara global, blok :root ini boleh dihapus dari sini.
-                                           =========================================================== */
+                                                                                           PENILAIAN MADRASAH (asesor/show.blade.php)
+                                                                                           Token disamakan dengan assets/css/prestasi/index.css dan
+                                                                                           assets/css/rubrik-penilaian/index.css (--presma-*) supaya
+                                                                                           satu sistem desain PRESMA. Kalau nanti dipindah ke base.css
+                                                                                           secara global, blok :root ini boleh dihapus dari sini.
+                                                                                           =========================================================== */
         :root {
             --presma-primary: #0f8a43;
             --presma-primary-soft: #eaf6ef;
@@ -540,8 +540,8 @@
 
         /* ============ BADGE KECOCOKAN RUBRIK ============ */
         /* Sengaja SANGAT compact -- ditaruh DI DALAM kolom Skor Dasar yang
-                                                           sudah ada, tidak menambah kolom baru, supaya tabel tidak makin
-                                                           lebar (menghindari scroll ke samping). */
+                                                                                                           sudah ada, tidak menambah kolom baru, supaya tabel tidak makin
+                                                                                                           lebar (menghindari scroll ke samping). */
         .rubrik-badge {
             display: inline-flex;
             align-items: center;
@@ -827,8 +827,8 @@
         }
 
         /* Di dalam kolom kiri (sudah setengah lebar modal), grid detail
-                                   jadi 1 kolom -- kalau tetap 2 kolom di sini, tiap kartu jadi
-                                   terlalu sempit buat dibaca. */
+                                                                                   jadi 1 kolom -- kalau tetap 2 kolom di sini, tiap kartu jadi
+                                                                                   terlalu sempit buat dibaca. */
         .nilai-modal-col-kiri .prestasi-detail-grid {
             grid-template-columns: 1fr;
         }
@@ -923,7 +923,7 @@
         }
 
         /* PAGINATION -- disamakan tampilannya persis dengan index_blade.php
-           (radius 10px, margin antar tombol, warna aktif #198754) */
+                                                           (radius 10px, margin antar tombol, warna aktif #198754) */
         .pagination {
             margin-bottom: 0;
         }
@@ -1147,7 +1147,7 @@
                         {{-- TAB 1: DAFTAR PRESTASI --}}
                         <div class="tab-pane fade show active" id="daftar-prestasi" role="tabpanel">
                             <div class="table-responsive">
-                                <table class="table assessment-table">
+                                <table class="table assessment-table table-bordered">
                                     <thead>
                                         <tr>
                                             <th>No</th>
@@ -1157,7 +1157,7 @@
                                             <th>Penyelenggara</th>
                                             <th class="text-center">Skor Dasar</th>
                                             <th class="text-center">Nilai Akhir</th>
-                                            <th class="text-center">Link</th>
+                                            <th class="text-center">Dokumen</th>
                                             @if ($statusAssignment !== 'completed')
                                                 <th class="text-center">Aksi</th>
                                             @endif
@@ -1209,8 +1209,8 @@
                                                 <td class="text-center">
                                                     <div class="d-flex flex-column align-items-center gap-1">
                                                         <span
-                                                            class="bobot-value text-success">{{ $prestasi['bobot'] }}</span>
-                                                        @if ($prestasi['rubrik_status'] === 'cocok')
+                                                            class="bobot-value text-success">{{ (int) $prestasi['bobot'] }}</span>
+                                                        {{-- @if ($prestasi['rubrik_status'] === 'cocok')
                                                             <div class="rubrik-badge rubrik-cocok"
                                                                 data-bs-toggle="tooltip" title="Sesuai rubrik Juknis">
                                                                 <i class="bi bi-check-circle-fill"></i> Sesuai
@@ -1218,9 +1218,9 @@
                                                         @elseif ($prestasi['rubrik_status'] === 'tidak_cocok')
                                                             <div class="rubrik-badge rubrik-tidak-cocok"
                                                                 data-bs-toggle="tooltip"
-                                                                title="Skor rubrik Juknis: {{ $prestasi['rubrik_skor'] }}">
+                                                                title="Skor rubrik Juknis: {{ (int) $prestasi['rubrik_skor'] }}">
                                                                 <i class="bi bi-exclamation-triangle-fill"></i> Rublik:
-                                                                {{ $prestasi['rubrik_skor'] }}
+                                                                {{ (int) $prestasi['rubrik_skor'] }}
                                                             </div>
                                                         @else
                                                             <div class="rubrik-badge rubrik-tidak-ada"
@@ -1228,12 +1228,12 @@
                                                                 title="Kombinasi kriteria ini belum ada di tabel rubrik">
                                                                 <i class="bi bi-dash-circle"></i> N/A
                                                             </div>
-                                                        @endif
+                                                        @endif --}}
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
                                                     @if ($sudah)
-                                                        <span class="nilai-akhir-value">{{ $nilaiAkhir }}</span>
+                                                        <span class="nilai-akhir-value">{{ (int) $nilaiAkhir }}</span>
                                                     @else
                                                         <span class="nilai-belum">Belum dinilai</span>
                                                     @endif
@@ -1573,8 +1573,21 @@
                         <div class="nilai-modal-col-kiri">
                             <div class="prestasi-detail-grid">
                                 <div class="detail-item">
+                                    <div class="detail-label">Bukti Dukung</div>
+                                    <div class="detail-value">
+                                        @if ($prestasi['link_drive'])
+                                            <a href="{{ $prestasi['link_drive'] }}" target="_blank">
+                                                Lihat Dokumen <i class="bi bi-box-arrow-up-right"></i>
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="detail-item">
                                     <div class="detail-label">Kategori Kegiatan</div>
-                                    <div class="detail-value">{{ $prestasi['kategori_kegiatan'] ?? '-' }}</div>
+                                    <div class="detail-value">{{ $prestasi['kategori_kegiatan'] ?? '-' }} &#x2f;
+                                        {{ $prestasi['sumber_skor'] ?? '-' }}</div>
                                 </div>
                                 <div class="detail-item">
                                     <div class="detail-label">Juara yang Diraih</div>
@@ -1593,18 +1606,6 @@
                                     <div class="detail-value">{{ $prestasi['waktu_kegiatan'] ?? $prestasi['tahun'] }}
                                     </div>
                                 </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Bukti Dukung</div>
-                                    <div class="detail-value">
-                                        @if ($prestasi['link_drive'])
-                                            <a href="{{ $prestasi['link_drive'] }}" target="_blank">
-                                                Lihat Dokumen <i class="bi bi-box-arrow-up-right"></i>
-                                            </a>
-                                        @else
-                                            -
-                                        @endif
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -1613,8 +1614,11 @@
 
                             <div class="bobot-preview">
                                 <div class="preview-item">
-                                    <div class="preview-value">{{ $prestasi['bobot'] }}%</div>
-                                    <div class="preview-label">Skor Dasar &#x2f; {{ $prestasi['sumber_skor'] }}
+                                    <div class="preview-value">
+                                        {{ rtrim(rtrim(number_format($prestasi['bobot'], 2), '0'), '.') }}
+                                    </div>
+                                    <div class="preview-label">Skor Juknis</div>
+                                    {{-- <div class="preview-label">Skor Dasar &#x2f; {{ $prestasi['sumber_skor'] }}
                                     </div>
                                     @if ($prestasi['rubrik_status'] === 'cocok')
                                         <div class="rubrik-badge rubrik-cocok mt-1">
@@ -1629,7 +1633,7 @@
                                         <div class="rubrik-badge rubrik-tidak-ada mt-1">
                                             <i class="bi bi-dash-circle"></i> N/A
                                         </div>
-                                    @endif
+                                    @endif --}}
                                 </div>
                                 <div class="preview-divider"></div>
                                 <div class="preview-item">

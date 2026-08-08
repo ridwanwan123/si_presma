@@ -216,6 +216,10 @@ Route::middleware('auth')->group(function () {
         
         Route::resource('rubrik-penilaian', RubrikPenilaianController::class)
             ->only(['index', 'store', 'update', 'destroy']);
+            
+        Route::post('rubrik-penilaian/salin-tahun', [RubrikPenilaianController::class, 'salinTahun'])
+            ->name('rubrik-penilaian.salin-tahun');
+ 
 
         Route::get('export-center', [ExportCenterController::class, 'index'])
             ->name('export-center.index');
@@ -351,6 +355,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [PrestasiController::class, 'store'])
                 ->middleware('role:Madrasah')
                 ->name('store');
+            
+            Route::post('lookup-rubrik', [PrestasiController::class, 'lookupRubrik'])
+                ->middleware('role:Madrasah')
+                ->name('lookup_rubrik');
 
             /*
             |--------------------------------------------------------------------------

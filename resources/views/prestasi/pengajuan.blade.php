@@ -16,8 +16,8 @@
         }
 
         /* Halaman ini cuma satu "tugas" (kirim pengajuan), bukan dashboard
-                   padat data -- jadi kontennya di-center vertikal di ruang yang
-                   tersedia daripada dipaksa mepet ke atas & nyisa kosong di bawah. */
+                                   padat data -- jadi kontennya di-center vertikal di ruang yang
+                                   tersedia daripada dipaksa mepet ke atas & nyisa kosong di bawah. */
         .pg-wrap {
             min-height: calc(100vh - 175px);
             display: flex;
@@ -26,111 +26,117 @@
         }
 
         /* =========================
-                   HERO
-                   ========================= */
+                                   TOPBAR (breadcrumb)
+                                   ========================= */
 
-        .pg-hero {
+        .pg-topbar {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--presma-border);
+            padding: .7rem 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .pg-breadcrumb {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding: 1.4rem 1.75rem;
-            border-radius: 20px;
-            color: #fff;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 14px 30px rgba(0, 0, 0, .12);
+            gap: .45rem;
+            font-size: .86rem;
+            color: var(--presma-text-light);
         }
 
-        .siklus-open {
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-        }
-
-        .siklus-submitted {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        }
-
-        .siklus-assessment {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-        }
-
-        .siklus-finished {
-            background: linear-gradient(135deg, #475569 0%, #334155 100%);
-        }
-
-        .pg-hero-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            min-width: 0;
-        }
-
-        .pg-hero-icon {
-            flex-shrink: 0;
-            width: 54px;
-            height: 54px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, .18);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-        }
-
-        .pg-hero-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            line-height: 1.25;
-        }
-
-        .pg-hero-desc {
-            font-size: .84rem;
-            opacity: .88;
-            margin: 0;
-        }
-
-        .pg-hero-right {
-            display: flex;
-            align-items: center;
-            gap: .55rem;
-            flex-wrap: wrap;
-        }
-
-        .pg-chip {
+        .pg-breadcrumb a {
+            color: var(--presma-text-light);
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: .4rem;
-            padding: .4rem .9rem;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .16);
-            font-size: .78rem;
-            font-weight: 700;
-            white-space: nowrap;
+            gap: .35rem;
         }
 
-        .btn-export {
-            background: rgba(255, 255, 255, .95);
-            color: #0f172a;
-            border: none;
-            font-weight: 700;
-            font-size: .8rem;
-            border-radius: 10px;
-            padding: .5rem 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            white-space: nowrap;
-            transition: transform .15s ease;
+        .pg-breadcrumb a:hover {
+            color: var(--presma-primary);
         }
 
-        .btn-export:hover {
-            transform: translateY(-1px);
-            color: #0f172a;
+        .pg-breadcrumb .current {
+            color: var(--presma-primary);
+            font-weight: 700;
         }
 
         /* =========================
-                   CARD generik (dua kolom)
-                   ========================= */
+                                   HEADER (judul + tombol)
+                                   ========================= */
+
+        .pg-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .pg-header-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--presma-text);
+            margin: 0 0 .25rem;
+        }
+
+        .pg-header-desc {
+            font-size: .88rem;
+            color: var(--presma-text-light);
+            margin: 0;
+        }
+
+        .pg-header-right {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-export {
+            background: var(--presma-primary);
+            color: #fff;
+            border: 1.5px solid var(--presma-primary);
+            font-weight: 700;
+            font-size: .84rem;
+            border-radius: 10px;
+            padding: .5rem 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            white-space: nowrap;
+            text-decoration: none;
+            transition: background .15s ease;
+        }
+
+        .btn-export:hover {
+            background: #0d7a3a;
+            border-color: #0d7a3a;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        /* =========================
+                                   ALERT STATUS SIKLUS
+                                   ========================= */
+
+        .pg-status-alert {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            font-size: .88rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .pg-status-alert i {
+            font-size: 1.1rem;
+        }
+
+        /* =========================
+                                   CARD generik (dua kolom)
+                                   ========================= */
 
         .pg-card {
             background: #fff;
@@ -155,8 +161,8 @@
         }
 
         /* =========================
-                   RINGKASAN (kiri)
-                   ========================= */
+                                   RINGKASAN (kiri)
+                                   ========================= */
 
         .pg-stat-row {
             display: flex;
@@ -248,11 +254,11 @@
         }
 
         /* =========================
-                   INFORMASI PENTING -> gaya checklist
-                   (ikon & teks dibungkus terpisah supaya
-                   <strong> di dalam teks TIDAK ikut jadi
-                   flex-item sendiri-sendiri)
-                   ========================= */
+                                   INFORMASI PENTING -> gaya checklist
+                                   (ikon & teks dibungkus terpisah supaya
+                                   <strong> di dalam teks TIDAK ikut jadi
+                                   flex-item sendiri-sendiri)
+                                   ========================= */
 
         .pg-checklist {
             margin: 0 0 1.5rem;
@@ -294,8 +300,8 @@
         }
 
         /* =========================
-                   PERNYATAAN + TOMBOL
-                   ========================= */
+                                   PERNYATAAN + TOMBOL
+                                   ========================= */
 
         .pernyataan-card {
             display: flex;
@@ -370,17 +376,13 @@
                 min-height: auto;
             }
 
-            .pg-hero {
+            .pg-header {
                 flex-direction: column;
                 align-items: stretch;
                 text-align: center;
             }
 
-            .pg-hero-left {
-                justify-content: center;
-            }
-
-            .pg-hero-right {
+            .pg-header-right {
                 justify-content: center;
             }
         }
@@ -397,49 +399,56 @@
                         'OPEN' => [
                             'label' => 'Terbuka untuk Pengisian',
                             'icon' => 'bi-unlock-fill',
-                            'class' => 'siklus-open',
+                            'alert' => 'alert-success',
                         ],
                         'SUBMITTED' => [
                             'label' => 'Menunggu Penugasan Asesor',
                             'icon' => 'bi-send-check-fill',
-                            'class' => 'siklus-submitted',
+                            'alert' => 'alert-primary',
                         ],
                         'ASSESSMENT' => [
                             'label' => 'Sedang Dinilai Asesor',
                             'icon' => 'bi-clipboard-data-fill',
-                            'class' => 'siklus-assessment',
+                            'alert' => 'alert-info',
                         ],
                         'FINISHED' => [
                             'label' => 'Penilaian Selesai',
                             'icon' => 'bi-check-circle-fill',
-                            'class' => 'siklus-finished',
+                            'alert' => 'alert-secondary',
                         ],
                     ];
 
                     $statusNow = $statusMap[$siklus->status] ?? $statusMap['OPEN'];
                 @endphp
 
-                {{-- HERO --}}
-                <div class="pg-hero {{ $statusNow['class'] }}">
-                    <div class="pg-hero-left">
-                        <div class="pg-hero-icon">
-                            <i class="bi bi-send-check"></i>
-                        </div>
-                        <div>
-                            <div class="pg-hero-title">Pengajuan Prestasi</div>
-                            <p class="pg-hero-desc">Kirim seluruh data prestasi madrasah untuk diproses ke tahap
-                                penilaian.</p>
-                        </div>
+                {{-- BREADCRUMB --}}
+                <div class="pg-topbar">
+                    <nav class="pg-breadcrumb">
+                        <a href="{{ dashboardRoute() }}"><i class="bi bi-house-door-fill"></i> Home</a>
+                        <i class="bi bi-chevron-right"></i>
+                        <span class="current">Pengajuan Prestasi</span>
+                    </nav>
+                </div>
+
+                {{-- HEADER --}}
+                <div class="pg-header">
+                    <div>
+                        <h1 class="pg-header-title">Pengajuan Prestasi</h1>
+                        <p class="pg-header-desc">Kirim seluruh data prestasi madrasah untuk diproses ke tahap
+                            penilaian, periode {{ $siklus->periode }}.</p>
                     </div>
 
-                    <div class="pg-hero-right">
-                        <span class="pg-chip"><i class="bi bi-calendar-event"></i> Periode {{ $siklus->periode }}</span>
-                        <span class="pg-chip"><i class="bi {{ $statusNow['icon'] }}"></i>
-                            {{ $statusNow['label'] }}</span>
+                    <div class="pg-header-right">
                         <a href="{{ route('prestasi.export') }}" class="btn-export">
                             <i class="bi bi-file-earmark-excel"></i> Export Excel
                         </a>
                     </div>
+                </div>
+
+                {{-- ALERT STATUS SIKLUS --}}
+                <div class="alert {{ $statusNow['alert'] }} pg-status-alert" role="alert">
+                    <i class="bi {{ $statusNow['icon'] }}"></i>
+                    <div>{{ $statusNow['label'] }}</div>
                 </div>
 
                 {{-- BODY — dua kolom --}}
@@ -517,6 +526,19 @@
                                     <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
                                     <span>Pastikan seluruh data pada setiap bidang prestasi sudah benar sebelum
                                         melanjutkan.</span>
+                                </li>
+                                <li>
+                                    <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
+                                    <span>Pastikan setiap <strong>link bukti/dokumen</strong> sudah diatur agar dapat
+                                        diakses publik
+                                        (<em>anyone with the link</em>), karena akan dibuka langsung oleh asesor saat
+                                        menilai.</span>
+                                </li>
+                                <li>
+                                    <span class="pg-check-icon"><i class="bi bi-check-lg"></i></span>
+                                    <span>Jika ditemukan kesalahan data <strong>setelah</strong> pengajuan dikirim, silakan
+                                        hubungi
+                                        Bidang Pendidikan Madrasah untuk pengajuan revisi.</span>
                                 </li>
                             </ul>
 

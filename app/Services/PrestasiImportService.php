@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\ImportTerlaluBanyakBarisException;
 use App\Imports\PrestasiSiswaImport;
 use App\Models\PrestasiSiswa;
+use App\Models\RubrikPenilaian;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -22,7 +23,6 @@ class PrestasiImportService
         'kategori_penyelenggara',
         'waktu_kegiatan',
         'metode_pelaksanaan',
-        'skor',
         'link_drive_bukti',
     ];
 
@@ -167,6 +167,11 @@ class PrestasiImportService
 
         $data = $import->rows;
 
+        // MUAT SEKALI DI SINI -- bukan di dalam loop. Ini yang bikin
+        // pencocokan rubrik untuk 7.000 baris tetap ringan: 1 query total,
+        // bukan sampai 7.000 query terpisah ke database.
+        $daftarRubrik = RubrikPenilaian::muatUntukPencocokan($periode);
+
         foreach ($data as $index => $row) {
 
             // Rapikan seluruh kolom string
@@ -176,10 +181,10 @@ class PrestasiImportService
                 }
             }
 
-            if (count($row) != 12) {
+            if (count($row) != 11) {
                 $errors[] = [
                     'row' => $index + 2,
-                    'error' => 'Jumlah kolom harus 12'
+                    'error' => 'Jumlah kolom harus 11'
                 ];
                 continue;
             }
@@ -340,20 +345,45 @@ class PrestasiImportService
 
             /*
             |--------------------------------------------------------------------------
-            | Validasi Skor
+            | BARU: Pencocokan Rubrik -- MENGGANTIKAN validasi skor manual.
+            | Skor TIDAK LAGI diketik Madrasah -- diambil otomatis dari
+            | baris Rubrik Penilaian yang kombinasi kriterianya cocok.
+            | Kalau tidak ketemu, baris DITOLAK (bukan diloloskan dengan
+            | skor 0/kosong) -- lihat pembahasan soal ini di chat.
             |--------------------------------------------------------------------------
             */
 
-            if (!is_numeric($row['skor'])) {
+            $rubrikCocok = RubrikPenilaian::cariDariKoleksi(
+                $daftarRubrik,
+                $row['bidang_prestasi'],
+                $row['tingkat'],
+                $row['juara'],
+                $row['kategori_kegiatan'],
+                $row['metode_pelaksanaan'],
+                $row['kategori_penyelenggara']
+            );
+
+            if (!$rubrikCocok) {
+
+                $pesanTidakCocok = $daftarRubrik->isEmpty()
+                    // Rubrik untuk TAHUN ini belum diisi sama sekali --
+                    // beda kasus dari "kombinasi salah", jadi pesannya
+                    // dibedakan supaya Madrasah tidak salah kira datanya
+                    // yang keliru.
+                    ? "Rubrik Penilaian untuk periode {$periode} belum tersedia. Hubungi Admin."
+                    : 'Kombinasi kriteria ini belum ada di Rubrik Penilaian (bidang/tingkat/juara/kategori/metode/penyelenggara). Hubungi Admin.';
 
                 $errors[] = [
                     'row' => $index + 2,
-                    'column' => 'skor',
-                    'error' => 'Skor harus berupa angka'
+                    'column' => 'juara',
+                    'error' => $pesanTidakCocok
                 ];
 
                 continue;
             }
+
+            $row['skor'] = (float) $rubrikCocok->skor;
+            $row['rubrik_penilaian_id'] = $rubrikCocok->id;
 
             $result[] = [
                 'madrasah_id' => $madrasahId,
@@ -368,6 +398,7 @@ class PrestasiImportService
                 'waktu_kegiatan' => $row['waktu_kegiatan'],
                 'metode_pelaksanaan' => $row['metode_pelaksanaan'],
                 'skor' => $row['skor'],
+                'rubrik_penilaian_id' => $row['rubrik_penilaian_id'],
                 'link_drive_bukti' => $row['link_drive_bukti'],
                 'keterangan' => $row['keterangan'] ?? null,
                 'periode' => $periode,

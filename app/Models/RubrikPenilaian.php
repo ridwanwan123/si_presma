@@ -122,4 +122,53 @@ class RubrikPenilaian extends Model
             ->where('nilai_max', '>=', $nilai)
             ->first();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MUAT SEMUA RUBRIK "LOMBA" UNTUK 1 TAHUN -- SEKALI QUERY.
+    |--------------------------------------------------------------------------
+    | Dipakai import massal (PrestasiImportService) supaya TIDAK query ke
+    | rubrik_penilaians per baris Excel (bisa sampai 7.000 query kalau
+    | naive) -- cukup 1 query di awal, sisanya dicocokkan di memori lewat
+    | cariDariKoleksi().
+    |--------------------------------------------------------------------------
+    */
+    public static function muatUntukPencocokan(int $tahun): \Illuminate\Support\Collection
+    {
+        return static::where('jenis_rubrik', 'Lomba')
+            ->where('tahun_berlaku', $tahun)
+            ->get();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VERSI IN-MEMORY dari cariRubrikLomba() -- LOGIC PENCOCOKAN HARUS SAMA
+    | PERSIS (termasuk aturan GTK: metode_pelaksanaan null = wildcard),
+    | supaya hasil import massal konsisten dengan badge kecocokan yang
+    | sudah dipakai di halaman Asesor. Kalau nanti aturan pencocokan
+    | berubah, ubah DUA method ini bersamaan.
+    |--------------------------------------------------------------------------
+    */
+    public static function cariDariKoleksi(
+        \Illuminate\Support\Collection $daftarRubrik,
+        string $bidangPrestasi,
+        string $tingkat,
+        string $juara,
+        string $kategoriKegiatan,
+        ?string $metodePelaksanaan,
+        ?string $kategoriPenyelenggara
+    ): ?self {
+        return $daftarRubrik->first(function ($r) use (
+            $bidangPrestasi, $tingkat, $juara, $kategoriKegiatan, $metodePelaksanaan, $kategoriPenyelenggara
+        ) {
+            return $r->bidang_prestasi === $bidangPrestasi
+                && $r->tingkat === $tingkat
+                && $r->juara === $juara
+                && $r->kategori_kegiatan === $kategoriKegiatan
+                // GTK: rubrik metode_pelaksanaan NULL = wildcard, sama
+                // seperti cariRubrikLomba().
+                && ($r->metode_pelaksanaan === null || $r->metode_pelaksanaan === $metodePelaksanaan)
+                && (!$kategoriPenyelenggara || $r->kategori_penyelenggara === $kategoriPenyelenggara);
+        });
+    }
 }

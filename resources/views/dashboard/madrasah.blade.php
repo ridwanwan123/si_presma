@@ -411,8 +411,8 @@
             {{-- HEADER --}}
             <div class="dash-header">
                 <div>
-                    <h2>Dashboard Madrasah</h2>
-                    <p>Analisis perkembangan prestasi madrasah berdasarkan periode.</p>
+                    <h2>Dashboard</h2>
+                    <p>Analisis perkembangan prestasi madrasah.</p>
                 </div>
 
                 <form method="GET" class="periode-select-wrap">
@@ -487,7 +487,7 @@
 
             {{-- BARU: BENCHMARK SESAMA JENJANG --}}
             @if ($benchmarkJenjang)
-                <div class="content-card mb-4">
+                <div class="content-card mb-4" hidden>
                     <div class="card-title-row mb-2">
                         <div class="title"><i class="bi bi-bar-chart-line text-primary"></i> Benchmark Partisipasi —
                             Jenjang {{ $benchmarkJenjang['jenjang'] }}</div>
@@ -601,7 +601,7 @@
             {{-- BARU: CROSS-TAB BIDANG x TINGKAT --}}
             <div class="content-card mb-4">
                 <div class="card-title-row">
-                    <div class="title"><i class="bi bi-grid-3x3 text-primary"></i> Sebaran Bidang berdasarkan Tingkat
+                    <div class="title"><i class="bi bi-grid-3x3 text-primary"></i> Sebaran Prestasi berdasarkan Tingkat
                         (Periode {{ $periodeDipilih }})</div>
                 </div>
                 <div class="table-responsive">

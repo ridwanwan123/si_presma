@@ -56,7 +56,7 @@ class PrestasiSiswaImport implements ToCollection, WithHeadingRow, WithChunkRead
                 'kategori_penyelenggara'    => $this->cleanText($row['kategori_penyelenggara'] ?? null),
                 'waktu_kegiatan'            => $this->parseTanggal($row['waktu_kegiatan'] ?? null),
                 'metode_pelaksanaan'        => $this->cleanText($row['metode_pelaksanaan'] ?? null),
-                'skor'                      => $row['skor'] ?? 0,
+                // 'skor' SENGAJA DIHAPUS -- lihat catatan di PrestasiTemplateExport.php
                 'link_drive_bukti'          => $row['link_drive_bukti'] ?? null,
                 'keterangan'                => $this->cleanText($row['keterangan'] ?? null),
             ];

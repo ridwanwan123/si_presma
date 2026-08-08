@@ -7,7 +7,7 @@
         <div class="page-title">
             <div>
                 <h2>Prestasi {{ ucfirst($jenis) }}</h2>
-                <p>Data lomba & hasil verifikasi assessor</p>
+                <p>Data Prestasi Madrasah</p>
             </div>
         </div>
 
@@ -21,7 +21,7 @@
                         'label' => 'Terbuka untuk Pengisian',
                         'icon' => 'bi-unlock-fill',
                         'desc' =>
-                            'Operator dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' .
+                            'Madrasah dapat menambah, mengedit, mengimpor, dan menghapus data prestasi periode ' .
                             $siklus->periode .
                             '.',
                         'border' => '#bbf7d0',
@@ -307,6 +307,14 @@
                         </small>
                     </div>
                 </div>
+
+                <div class="export-info-note">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>
+                        <strong>Tips:</strong> data prestasi bisa di-export lewat halaman
+                        <a href="{{ route('pengajuan.index') }}">Pengajuan Prestasi</a>.
+                    </span>
+                </div>
             </div>
 
             <div class="table-container">
@@ -484,12 +492,12 @@
                         return `
                             <div class="cell-penyelenggara">
 
-                                <div class="kategori-penyelenggara">
+                                <div class="kategori-penyelenggara fw-bold">
                                     ${data.kategori_penyelenggara ?? '-'}
                                 </div>
 
                                 <div
-                                    class="nama-penyelenggara"
+                                    class="nama-penyelenggara fw-bold"
                                     title="${data.lembaga_penyelenggara ?? '-'}">
 
                                     ${data.lembaga_penyelenggara ?? '-'}
@@ -511,6 +519,7 @@
                     data: null,
                     width: "9%",
                     className: "text-center",
+                    visible: false, // TODO: aktifkan lagi (hapus baris ini) saat kolom Skor mau ditampilkan
                     render: function(data) {
 
                         if (data.skor === null || data.skor === undefined) {

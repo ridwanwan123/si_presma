@@ -3,12 +3,12 @@
 @push('styles')
     <style>
         /* ===========================================================
-                                       RUBRIK PENILAIAN — DESIGN TOKENS
-                                       Dipakai token yang sama dengan assets/css/prestasi/index.css
-                                       (--presma-*) supaya konsisten satu sistem desain PRESMA.
-                                       Kalau nanti token ini sudah dipindah ke base.css secara
-                                       global, blok :root di bawah ini boleh dihapus.
-                                       =========================================================== */
+                                               RUBRIK PENILAIAN — DESIGN TOKENS
+                                               Dipakai token yang sama dengan assets/css/prestasi/index.css
+                                               (--presma-*) supaya konsisten satu sistem desain PRESMA.
+                                               Kalau nanti token ini sudah dipindah ke base.css secara
+                                               global, blok :root di bawah ini boleh dihapus.
+                                               =========================================================== */
         :root {
             --presma-primary: #0f8a43;
             --presma-primary-soft: #eaf6ef;
@@ -31,82 +31,46 @@
 
         /* ===== HEADER ===== */
         .rp-header {
-            padding: 1.5rem 1.6rem;
+            padding: 0 1rem 1.1rem;
             margin: 0 1rem 1.5rem;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #0f8a43 0%, #0c6f37 100%);
-            box-shadow: 0 10px 30px -12px rgba(15, 138, 67, .45);
+            border-bottom: 1px solid var(--presma-border);
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .rp-header::after {
-            content: "";
-            position: absolute;
-            top: -60px;
-            right: -60px;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .08);
-        }
-
-        .rp-header-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, .18);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            color: #fff;
-            margin-bottom: .6rem;
         }
 
         .rp-header h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #fff;
-            margin: 0 0 .2rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
             letter-spacing: -.01em;
         }
 
         .rp-header p {
-            color: rgba(255, 255, 255, .82);
-            margin: 0;
-            font-size: .88rem;
-            max-width: 560px;
-            position: relative;
-            z-index: 1;
+            color: #64748b;
+            margin: .25rem 0 0;
+            font-size: .82rem;
         }
 
         .rp-header .btn-tambah {
-            background: #fff;
-            color: var(--presma-primary);
+            background: var(--presma-primary);
+            color: #fff;
             border: none;
-            font-weight: 700;
-            border-radius: 12px;
-            padding: .65rem 1.2rem;
-            font-size: .88rem;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+            font-weight: 600;
+            border-radius: 10px;
+            padding: .6rem 1.1rem;
+            font-size: .85rem;
             display: inline-flex;
             align-items: center;
             gap: .4rem;
-            transition: transform .15s ease, box-shadow .15s ease;
-            position: relative;
-            z-index: 1;
         }
 
         .rp-header .btn-tambah:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .16);
-            color: var(--presma-primary);
+            background: #0c6f37;
+            color: #fff;
         }
 
         /* ===== CARD ===== */
@@ -383,8 +347,7 @@
             padding: 1rem 1.4rem;
         }
 
-        .modal-footer .btn,
-        .rp-header .btn-tambah {
+        .modal-footer .btn {
             border-radius: 10px;
         }
 
@@ -460,7 +423,7 @@
         }
 
         /* Panel khusus untuk grup kondisional (Lomba / Bebas) supaya jelas
-                                               terpisah secara visual dari section Klasifikasi & Hasil */
+                                                       terpisah secara visual dari section Klasifikasi & Hasil */
         .form-panel {
             border: 1px solid var(--presma-border);
             background: #f8fafc;
@@ -497,8 +460,8 @@
 
         @media (max-width: 576px) {
             .rp-header {
-                margin: 0 0 1.25rem;
-                border-radius: 16px;
+                flex-direction: column;
+                align-items: stretch;
             }
 
             .rp-header .btn-tambah {
@@ -565,14 +528,17 @@
         {{-- HEADER --}}
         <div class="rp-header">
             <div>
-                <div class="rp-header-icon"><i class="bi bi-clipboard2-data"></i></div>
                 <h2>Rubrik Penilaian</h2>
-                <p>Tabel skor resmi Juknis JMA — dipakai untuk mencocokkan skor yang diinput Madrasah di halaman
-                    penilaian Asesor.</p>
+                <p>Skor resmi Juknis JMA, dipakai mencocokkan penilaian Asesor.</p>
             </div>
-            <button type="button" class="btn btn-tambah" data-bs-toggle="modal" data-bs-target="#modalTambah">
-                <i class="bi bi-plus-lg"></i> Tambah Rubrik
-            </button>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalSalinTahun">
+                    <i class="bi bi-copy"></i> Salin ke Tahun Baru
+                </button>
+                <button type="button" class="btn btn-tambah" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                    <i class="bi bi-plus-lg"></i> Tambah Rubrik
+                </button>
+            </div>
         </div>
 
         <div class="container-fluid">
@@ -897,8 +863,9 @@
             @endif
         </div>
     </main>
-@endsection
 
+
+@endsection
 @foreach ($semuaRubrikUntukModal as $rubrik)
     <div class="modal fade" id="modalEdit{{ $rubrik->id }}" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -946,7 +913,49 @@
     </div>
 </div>
 
-
+{{-- MODAL SALIN KE TAHUN BARU -- copy SEMUA rubrik dari 1 tahun ke tahun
+     baru sekaligus, supaya Admin tidak perlu input ratusan baris manual
+     tiap kali periode baru dimulai. Menyalin (bukan memindah) -- data
+     tahun lama TETAP ada setelahnya. --}}
+<div class="modal fade" id="modalSalinTahun" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('rubrik-penilaian.salin-tahun') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-copy"></i> Salin Rubrik ke Tahun Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="form-hint">
+                        Menyalin <strong>seluruh</strong> rubrik dari satu tahun ke tahun baru sekaligus.
+                        Data tahun asal tidak berubah/terhapus -- ini menyalin, bukan memindahkan.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">Dari Tahun *</label>
+                        <select name="dari_tahun" class="form-select" required>
+                            <option value="" disabled selected>-- Pilih Tahun Sumber --</option>
+                            @foreach ($daftarTahun as $tahun)
+                                <option value="{{ $tahun }}">{{ $tahun }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label">Ke Tahun *</label>
+                        <input type="number" name="ke_tahun" class="form-control" min="2000" max="2100"
+                            placeholder="Mis. 2027" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-copy"></i> Salin Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
     <script>

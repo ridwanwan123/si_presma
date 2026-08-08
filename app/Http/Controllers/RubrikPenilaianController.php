@@ -226,6 +226,88 @@ class RubrikPenilaianController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | SALIN SELURUH RUBRIK DARI 1 TAHUN KE TAHUN BARU
+    |--------------------------------------------------------------------------
+    | Bukan MEMINDAHKAN -- data di tahun asal tetap utuh setelahnya. Ini
+    | murni duplikasi massal, supaya Admin tidak perlu input ratusan baris
+    | manual tiap kali periode baru dimulai (biasanya isinya sama/mirip
+    | dari tahun ke tahun, tinggal disesuaikan sedikit lewat Edit kalau
+    | memang ada perubahan Juknis).
+    |
+    | 1 query INSERT sekaligus (bukan create() dalam loop) -- ratusan baris
+    | rubrik disalin dalam satu kali tulis ke database, bukan ratusan
+    | query terpisah.
+    |--------------------------------------------------------------------------
+    */
+    public function salinTahun(Request $request)
+    {
+        $validated = $request->validate([
+            'dari_tahun' => ['required', 'integer', 'exists:rubrik_penilaians,tahun_berlaku'],
+            'ke_tahun' => ['required', 'integer', 'min:2000', 'max:2100', 'different:dari_tahun'],
+        ], [
+            'ke_tahun.different' => 'Tahun tujuan harus berbeda dari tahun sumber.',
+        ]);
+
+        $dariTahun = $validated['dari_tahun'];
+        $keTahun = $validated['ke_tahun'];
+
+        // Cegah dobel diam-diam -- kalau tahun tujuan SUDAH punya data,
+        // tolak & minta Admin hapus dulu manual, daripada menimpa/
+        // menumpuk otomatis tanpa sepengetahuan.
+        $tujuanSudahAda = RubrikPenilaian::where('tahun_berlaku', $keTahun)->exists();
+
+        if ($tujuanSudahAda) {
+            return back()->with(
+                'error',
+                "Tahun {$keTahun} sudah punya data rubrik. Hapus dulu data tahun itu kalau memang mau ditimpa ulang."
+            );
+        }
+
+        $sumberRubrik = RubrikPenilaian::where('tahun_berlaku', $dariTahun)->get();
+
+        if ($sumberRubrik->isEmpty()) {
+            return back()->with('error', "Tidak ditemukan rubrik untuk tahun {$dariTahun}.");
+        }
+
+        $sekarang = now();
+
+        $dataBaru = $sumberRubrik->map(function ($r) use ($keTahun, $sekarang) {
+            return [
+                'bidang_prestasi' => $r->bidang_prestasi,
+                'jenis_rubrik' => $r->jenis_rubrik,
+                'tingkat' => $r->tingkat,
+                'juara' => $r->juara,
+                'kategori_kegiatan' => $r->kategori_kegiatan,
+                'metode_pelaksanaan' => $r->metode_pelaksanaan,
+                'kategori_penyelenggara' => $r->kategori_penyelenggara,
+                'kriteria_khusus' => $r->kriteria_khusus,
+                'nilai_min' => $r->nilai_min,
+                'nilai_max' => $r->nilai_max,
+                'skor' => $r->skor,
+                'keterangan' => $r->keterangan,
+                'tahun_berlaku' => $keTahun,
+                'created_at' => $sekarang,
+                'updated_at' => $sekarang,
+            ];
+        })->toArray();
+
+        RubrikPenilaian::insert($dataBaru);
+
+        $jumlah = count($dataBaru);
+
+        ActivityLogger::log(
+            event: 'create',
+            description: "Menyalin {$jumlah} rubrik penilaian dari tahun {$dariTahun} ke {$keTahun}"
+        );
+
+        return back()->with(
+            'success',
+            "Berhasil menyalin {$jumlah} rubrik dari tahun {$dariTahun} ke tahun {$keTahun}."
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | VALIDASI
     |--------------------------------------------------------------------------
     | Kolom terstruktur (tingkat, juara, dst) & kolom fleksibel

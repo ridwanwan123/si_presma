@@ -242,6 +242,12 @@
     background: linear-gradient(180deg, #ffffff, #fbfcfe);
 
     border-bottom: 1px solid var(--presma-border);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .table-title {
@@ -294,6 +300,49 @@
     font-size: 0.83rem;
 
     line-height: 1.45;
+}
+
+/* ===========================================================
+   INFO EXPORT (arahkan ke menu Pengajuan)
+   =========================================================== */
+
+.export-info-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 14px;
+    border-radius: 10px;
+
+    background: rgba(15, 138, 67, 0.06);
+    border: 1px solid rgba(15, 138, 67, 0.14);
+
+    font-size: 0.8rem;
+    color: var(--presma-text-light);
+    white-space: nowrap;
+}
+
+.export-info-note i {
+    color: #0f8a43;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.export-info-note a {
+    color: #0f8a43;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.export-info-note a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .export-info-note {
+        white-space: normal;
+        width: 100%;
+    }
 }
 
 /* ===========================================================
@@ -1454,7 +1503,8 @@ table.dataTable.no-footer {
 
 .siklus-step.is-current .dot {
     background: var(--siklus-icon-color, #4b5563);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--siklus-icon-color, #4b5563) 20%, transparent);
+    box-shadow: 0 0 0 3px
+        color-mix(in srgb, var(--siklus-icon-color, #4b5563) 20%, transparent);
 }
 
 .siklus-step-line {

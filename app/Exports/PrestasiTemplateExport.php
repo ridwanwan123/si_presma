@@ -19,7 +19,9 @@ class PrestasiTemplateExport implements FromArray, WithHeadings
             'kategori_penyelenggara',
             'waktu_kegiatan',
             'metode_pelaksanaan',
-            'skor',
+            // 'skor' SENGAJA DIHAPUS -- skor sekarang otomatis diambil dari
+            // Rubrik Penilaian berdasarkan kombinasi kolom di atas, bukan
+            // lagi diketik manual oleh Madrasah.
             'link_drive_bukti',
             'keterangan',
             // 'periode' SENGAJA DIHAPUS -- kolom ini tidak pernah dibaca oleh
