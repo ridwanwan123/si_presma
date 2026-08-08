@@ -172,16 +172,16 @@
         @if ($user->hasRole('Administrator'))
             <div class="menu-title">LAPORAN</div>
 
-            {{-- Hasil & Ranking -- sekarang sudah aktif, dilengkapi perhitungan
+            {{-- Hasil  -- sekarang sudah aktif, dilengkapi perhitungan
                  potongan Aduan Masyarakat & Keterlambatan Berkas. --}}
             <a href="{{ route('ranking.index') }}"
                 class="menu-item {{ request()->routeIs('ranking.*') ? 'active' : '' }}">
                 <i class="bi bi-trophy"></i>
-                <span>Hasil & Ranking</span>
+                <span>Hasil Penilaian</span>
             </a>
 
             {{-- Arsip Ranking -- snapshot beku ranking per periode, hasil
-                 dari tombol "Arsipkan Ranking" di halaman Hasil & Ranking --}}
+                 dari tombol "Arsipkan Ranking" di halaman Hasil  --}}
             <a href="{{ route('ranking-arsip.index') }}"
                 class="menu-item {{ request()->routeIs('ranking-arsip.*') ? 'active' : '' }}">
                 <i class="bi bi-archive"></i>
@@ -229,11 +229,11 @@
 
             {{-- USULAN -- lihat catatan status_verifikasi/catatan_verifikasi
                  di model PrestasiSiswa yang belum kepakai di controller manapun --}}
-            <a href="#" class="menu-item menu-usulan">
+            {{-- <a href="#" class="menu-item menu-usulan">
                 <i class="bi bi-patch-check"></i>
                 <span>Verifikasi Prestasi</span>
                 <span class="badge-usulan">USULAN</span>
-            </a>
+            </a> --}}
         @endif
 
         {{-- =========================================================

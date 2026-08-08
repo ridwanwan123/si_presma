@@ -5,8 +5,8 @@
 @push('styles')
     <style>
         /* =========================
-                                                                                                                                                                                                                                                                                                                                                                                                                           FORM MADRASAH
-                                                                                                                                                                                                                                                                                                                                                                                                                        ========================= */
+                                                                                                                                                                                                                                                                                                                                                                                                                               FORM MADRASAH
+                                                                                                                                                                                                                                                                                                                                                                                                                            ========================= */
 
         .page-title {
             padding: 0 1rem;
@@ -210,9 +210,9 @@
         }
 
         /* =========================
-               PHOTO UPLOAD CARD
-               (Logo / Foto Kamad / Foto KTU)
-            ========================= */
+                   PHOTO UPLOAD CARD
+                   (Logo / Foto Kamad / Foto KTU)
+                ========================= */
 
         .mp-upload-card {
             display: flex;
