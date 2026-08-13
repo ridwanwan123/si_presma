@@ -37,72 +37,51 @@
             margin-bottom: 1.25rem;
         }
 
-        /* ============ FILTER ============ */
+        /* ============ TAB JENJANG ============ */
 
-        .filter-bar {
-            display: flex;
-            align-items: flex-end;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .jenjang-tabs {
+            border-bottom: 2px solid #e2e8f0;
+            gap: .3rem;
+            margin-bottom: 1.5rem;
         }
 
-        .filter-field label {
-            display: block;
-            font-size: .76rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: .35rem;
-        }
-
-        .filter-field select {
-            min-width: 220px;
-            border-radius: 10px;
-        }
-
-        .filter-note {
-            display: flex;
-            align-items: flex-start;
-            gap: .6rem;
-            margin-top: 1rem;
-            padding: .75rem 1rem;
-            border-radius: 12px;
-            font-size: .82rem;
-            line-height: 1.5;
-        }
-
-        .filter-note i {
-            font-size: 1rem;
-            margin-top: .15rem;
-            flex-shrink: 0;
-        }
-
-        .filter-note-warning {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            color: #92400e;
-        }
-
-        .filter-note-warning i {
-            color: #d97706;
-        }
-
-        .filter-note-active {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-        }
-
-        .filter-note-active i {
-            color: #16a34a;
-        }
-
-        .badge-inline {
-            display: inline-block;
-            font-size: .68rem;
+        .jenjang-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 10px 10px 0 0;
+            padding: .7rem 1.4rem;
             font-weight: 700;
-            background: rgba(0, 0, 0, .06);
-            padding: 0 5px;
+            font-size: .92rem;
+            color: #64748b;
+            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .jenjang-tabs .nav-link .tab-count {
+            font-size: .7rem;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 1px 8px;
             border-radius: 999px;
+        }
+
+        .jenjang-tabs .nav-link:hover {
+            color: #0f8a43;
+            border-color: transparent;
+        }
+
+        .jenjang-tabs .nav-link.active {
+            color: #0f8a43;
+            background: #f0fdf4;
+            border-bottom-color: #0f8a43;
+        }
+
+        .jenjang-tabs .nav-link.active .tab-count {
+            background: #0f8a43;
+            color: #fff;
         }
 
         /* ============ STAT STRIP ============ */
@@ -209,11 +188,15 @@
             text-transform: uppercase;
             letter-spacing: .03em;
             color: #64748b;
-            padding: 10px 12px;
+            padding: 14px 16px;
             border-bottom: 2px solid #e2e8f0;
             background: #f8fafc;
             text-align: center;
             white-space: nowrap;
+        }
+
+        .table-responsive {
+            padding: 0 1.4rem 1.1rem;
         }
 
         .kelola-table thead th:nth-child(2) {
@@ -221,7 +204,7 @@
         }
 
         .kelola-table tbody td {
-            padding: 10px 12px;
+            padding: 14px 16px;
             border-bottom: 1px solid #f1f5f9;
             text-align: center;
             vertical-align: middle;
@@ -448,50 +431,6 @@
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
-            {{-- FILTER JENJANG --}}
-            <div class="content-card">
-                <form method="GET" class="filter-bar">
-                    <div class="filter-field">
-                        <label>Filter Jenjang</label>
-                        <select name="jenjang" class="form-select" onchange="this.form.submit()">
-                            <option value="">Semua Jenjang</option>
-                            @foreach ($daftarJenjangArsip as $item)
-                                <option value="{{ $item }}" {{ $jenjangFilter == $item ? 'selected' : '' }}>
-                                    {{ $item }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @if ($jenjangFilter)
-                        <a href="{{ route('ranking-arsip.kelola', $ranking_arsip->id) }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-counterclockwise"></i> Reset
-                        </a>
-                    @endif
-                </form>
-
-                @if ($jenjangFilter)
-                    <div class="filter-note filter-note-active">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <div>
-                            <strong>Sedang menampilkan peringkat resmi jenjang {{ $jenjangFilter }}.</strong>
-                            Angka <span class="badge-inline">#</span> di tiap kolom nilai (Akademik, Non Akademik, dst)
-                            adalah peringkat per bidang khusus jenjang ini — itulah yang menentukan juara.
-                            Kolom <strong>Peringkat</strong> paling kiri tidak berubah walau difilter, karena itu peringkat
-                            gabungan lintas jenjang untuk referensi saja.
-                        </div>
-                    </div>
-                @else
-                    <div class="filter-note filter-note-warning">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <div>
-                            <strong>Belum difilter ke satu jenjang.</strong>
-                            Angka <span class="badge-inline">#</span> di tiap kolom nilai saat ini dihitung lintas semua
-                            jenjang, jadi <u>belum</u> mencerminkan juara yang sesungguhnya. Pilih satu jenjang di atas
-                            dulu untuk melihat peringkat per bidang yang benar-benar berlaku.
-                        </div>
-                    </div>
-                @endif
-            </div>
-
             {{-- STAT STRIP --}}
             <div class="stat-row">
                 <div class="stat-col">
@@ -539,112 +478,165 @@
                 </div>
             </div>
 
-            {{-- TABEL DATA --}}
-            <div class="content-card p-0">
-                <div class="table-card-header">
-                    <div class="title"><i class="bi bi-table text-primary"></i> Data Madrasah</div>
-                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#modalTambah">
-                        <i class="bi bi-plus-lg"></i> Tambah Madrasah
-                    </button>
-                </div>
+            {{-- TABEL DATA — TAB PER JENJANG --}}
+            @php
+                // Urutan tab sesuai jenjang pendidikan (bukan alfabetis).
+                $urutanJenjang = ['RA', 'MI', 'MTs', 'MA'];
+                $perJenjangUrut = $detail
+                    ->groupBy('jenjang_madrasah')
+                    ->sortBy(function ($_, $jenjang) use ($urutanJenjang) {
+                        $index = array_search($jenjang, $urutanJenjang);
+                        return $index === false ? 999 : $index;
+                    });
+            @endphp
 
-                <div class="table-responsive">
-                    <table class="kelola-table">
-                        <thead>
-                            <tr>
-                                <th style="width:80px"
-                                    title="Peringkat gabungan seluruh arsip (lintas jenjang) berdasarkan total nilai akhir -- tetap sama walau difilter jenjang, bukan penentu juara">
-                                    Peringkat<br><span
-                                        style="font-weight:400;text-transform:none;font-size:.6rem">(Gabungan, lintas
-                                        jenjang)</span></th>
-                                <th>Madrasah</th>
-                                <th>Akademik</th>
-                                <th>Non Akademik</th>
-                                <th>Keagamaan</th>
-                                <th>GTK</th>
-                                <th>Lembaga</th>
-                                <th>Potongan</th>
-                                <th>Nilai Akhir</th>
-                                <th style="width:90px"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($detail as $item)
-                                <tr>
-                                    <td><span class="rank-badge rank-{{ $item->peringkat }}">{{ $item->peringkat }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="madrasah-name">{{ $item->nama_madrasah }}</div>
-                                        <div class="madrasah-sub">
-                                            {{ $item->jenjang_madrasah }}{{ $item->npsn ? ' · NPSN ' . $item->npsn : '' }}
-                                        </div>
-                                    </td>
-                                    <td>{{ number_format($item->nilai_akademik, 2, ',', '.') }} <span
-                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Akademik'] ?? '-' }}</span>
-                                    </td>
-                                    <td>{{ number_format($item->nilai_non_akademik, 2, ',', '.') }} <span
-                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Non Akademik'] ?? '-' }}</span>
-                                    </td>
-                                    <td>{{ number_format($item->nilai_keagamaan, 2, ',', '.') }} <span
-                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Keagamaan'] ?? '-' }}</span>
-                                    </td>
-                                    <td>{{ number_format($item->nilai_gtk, 2, ',', '.') }} <span
-                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['GTK'] ?? '-' }}</span>
-                                    </td>
-                                    <td>{{ number_format($item->nilai_lembaga, 2, ',', '.') }} <span
-                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Lembaga'] ?? '-' }}</span>
-                                    </td>
-                                    <td>
-                                        @php $totalPotongan = $item->potongan_aduan + $item->potongan_keterlambatan; @endphp
-                                        @if ($totalPotongan > 0)
-                                            <span class="potongan-nilai"
-                                                title="Aduan: -{{ number_format($item->potongan_aduan, 2, ',', '.') }} · Keterlambatan: -{{ number_format($item->potongan_keterlambatan, 2, ',', '.') }}">
-                                                -{{ number_format($totalPotongan, 2, ',', '.') }}
-                                            </span>
-                                        @else
-                                            <span class="potongan-none">-</span>
-                                        @endif
-                                    </td>
-                                    <td><span
-                                            class="total-nilai">{{ number_format($item->total_nilai_akhir, 2, ',', '.') }}</span>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary action-icon-btn"
-                                            data-bs-toggle="modal" data-bs-target="#modalEdit{{ $item->id }}"
-                                            title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <form
-                                            action="{{ route('ranking-arsip.detail.destroy', [$ranking_arsip->id, $item->id]) }}"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Hapus data {{ $item->nama_madrasah }}?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger action-icon-btn"
-                                                title="Hapus">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="10" style="padding: 0;">
-                                        <div class="empty-state">
-                                            <i class="bi bi-inbox"></i>
-                                            Belum ada data madrasah di arsip ini.<br>
-                                            <button type="button" class="btn btn-success btn-sm mt-3"
-                                                data-bs-toggle="modal" data-bs-target="#modalTambah">
-                                                <i class="bi bi-plus-lg"></i> Tambah Madrasah Pertama
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            @if ($perJenjangUrut->isEmpty())
+                <div class="content-card">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        Belum ada data madrasah di arsip ini.<br>
+                        <button type="button" class="btn btn-success btn-sm mt-3" data-bs-toggle="modal"
+                            data-bs-target="#modalTambah">
+                            <i class="bi bi-plus-lg"></i> Tambah Madrasah Pertama
+                        </button>
+                    </div>
                 </div>
-            </div>
+            @else
+                <ul class="nav nav-tabs jenjang-tabs" id="jenjangTab" role="tablist">
+                    @foreach ($perJenjangUrut as $jenjang => $dataJenjang)
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {{ $loop->first ? 'active' : '' }}"
+                                id="tab-jenjang-{{ $loop->index }}" data-bs-toggle="tab"
+                                data-bs-target="#panel-jenjang-{{ $loop->index }}" type="button" role="tab"
+                                aria-controls="panel-jenjang-{{ $loop->index }}"
+                                aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                                <i class="bi bi-mortarboard-fill"></i>
+                                {{ $jenjang }}
+                                <span class="tab-count">{{ $dataJenjang->count() }}</span>
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="tab-content" id="jenjangTabContent">
+                    @foreach ($perJenjangUrut as $jenjang => $dataJenjang)
+                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}"
+                            id="panel-jenjang-{{ $loop->index }}" role="tabpanel"
+                            aria-labelledby="tab-jenjang-{{ $loop->index }}">
+
+                            <div class="content-card p-0">
+                                <div class="table-card-header">
+                                    <div class="title"><i class="bi bi-table text-primary"></i> Data Madrasah —
+                                        {{ $jenjang }}</div>
+                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#modalTambah">
+                                        <i class="bi bi-plus-lg"></i> Tambah Madrasah
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="kelola-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:80px"
+                                                    title="Peringkat gabungan seluruh arsip (lintas jenjang) berdasarkan total nilai akhir -- referensi saja, bukan penentu juara">
+                                                    Peringkat<br><span
+                                                        style="font-weight:400;text-transform:none;font-size:.6rem">(Gabungan,
+                                                        referensi)</span></th>
+                                                <th>Madrasah</th>
+                                                <th>Akademik</th>
+                                                <th>Non Akademik</th>
+                                                <th>Keagamaan</th>
+                                                <th>GTK</th>
+                                                <th>Lembaga</th>
+                                                <th>Potongan</th>
+                                                <th>Nilai Akhir</th>
+                                                <th style="width:90px"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($dataJenjang as $item)
+                                                <tr>
+                                                    <td><span
+                                                            class="rank-badge rank-{{ $item->peringkat }}">{{ $item->peringkat }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="madrasah-name">{{ $item->nama_madrasah }}</div>
+                                                        <div class="madrasah-sub">
+                                                            {{ $item->npsn ? 'NPSN ' . $item->npsn : '-' }}</div>
+                                                    </td>
+                                                    <td>{{ number_format($item->nilai_akademik, 2, ',', '.') }} <span
+                                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Akademik'] ?? '-' }}</span>
+                                                    </td>
+                                                    <td>{{ number_format($item->nilai_non_akademik, 2, ',', '.') }}
+                                                        <span
+                                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Non Akademik'] ?? '-' }}</span>
+                                                    </td>
+                                                    <td>{{ number_format($item->nilai_keagamaan, 2, ',', '.') }} <span
+                                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Keagamaan'] ?? '-' }}</span>
+                                                    </td>
+                                                    <td>{{ number_format($item->nilai_gtk, 2, ',', '.') }} <span
+                                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['GTK'] ?? '-' }}</span>
+                                                    </td>
+                                                    <td>{{ number_format($item->nilai_lembaga, 2, ',', '.') }} <span
+                                                            class="bidang-rank-badge">#{{ $peringkatPerBidang[$item->id]['Lembaga'] ?? '-' }}</span>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $totalPotongan =
+                                                                $item->potongan_aduan + $item->potongan_keterlambatan;
+                                                        @endphp
+                                                        @if ($totalPotongan > 0)
+                                                            <span class="potongan-nilai"
+                                                                title="Aduan: -{{ number_format($item->potongan_aduan, 2, ',', '.') }} · Keterlambatan: -{{ number_format($item->potongan_keterlambatan, 2, ',', '.') }}">
+                                                                -{{ number_format($totalPotongan, 2, ',', '.') }}
+                                                            </span>
+                                                        @else
+                                                            <span class="potongan-none">-</span>
+                                                        @endif
+                                                    </td>
+                                                    <td><span
+                                                            class="total-nilai">{{ number_format($item->total_nilai_akhir, 2, ',', '.') }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary action-icon-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalEdit{{ $item->id }}" title="Edit">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <form
+                                                            action="{{ route('ranking-arsip.detail.destroy', [$ranking_arsip->id, $item->id]) }}"
+                                                            method="POST" class="d-inline"
+                                                            onsubmit="return confirm('Hapus data {{ $item->nama_madrasah }}?')">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-sm btn-outline-danger action-icon-btn"
+                                                                title="Hapus">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="10" style="padding: 0;">
+                                                        <div class="empty-state">
+                                                            <i class="bi bi-inbox"></i>
+                                                            Belum ada data madrasah jenjang {{ $jenjang }} di arsip
+                                                            ini.
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </main>
 @endsection

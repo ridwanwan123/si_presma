@@ -185,15 +185,15 @@
         <div class="page-title">
             <div>
                 <h2>Arsip Ranking</h2>
-                <p>Snapshot ranking yang sudah dibekukan per periode — datanya tidak ikut berubah walau ada koreksi data di
-                    kemudian hari.</p>
+                <p>Berisi ranking yang telah disimpan untuk setiap periode. Data arsip tetap tersimpan sesuai kondisi saat
+                    itu dan tidak berubah meskipun ada koreksi data di kemudian hari.</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('ranking.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Kembali ke Ranking Live
+                    <i class="bi bi-arrow-left"></i> Lihat Ranking Saat Ini
                 </a>
                 <a href="{{ route('ranking-arsip.manual.create') }}" class="btn btn-success">
-                    <i class="bi bi-pencil-square"></i> Input Manual (Data Lama)
+                    <i class="bi bi-pencil-square"></i> Input Ranking Periode Sebelumnya
                 </a>
             </div>
         </div>

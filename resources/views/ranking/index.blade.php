@@ -600,49 +600,47 @@
             </div> --}}
 
         </div>
-
-        {{-- MODAL ARSIPKAN RANKING — sengaja di dalam <main>...@endsection,
-             sebelumnya sempat berada DI LUAR @endsection sehingga tidak
-             pernah ikut ter-render sama sekali. --}}
-        <div class="modal fade" id="modalArsipkan" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form action="{{ route('ranking-arsip.store') }}" method="POST">
-                        @csrf
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="bi bi-archive text-success"></i>
-                                Arsipkan Ranking Periode {{ $periode }}
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" name="periode" value="{{ $periode }}">
-
-                            <div class="alert-warning-soft mb-3"
-                                style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:.9rem 1.1rem;color:#92400e;font-size:.85rem;">
-                                <i class="bi bi-info-circle-fill me-1"></i>
-                                Ini akan menyimpan snapshot ranking <strong>SEMUA jenjang gabungan</strong> untuk
-                                periode {{ $periode }} — termasuk nilai mentah per bidang, total nilai asesor,
-                                dan rincian potongan. Kalau periode ini sudah pernah diarsipkan sebelumnya, arsip
-                                lama akan <strong>digantikan</strong> oleh data terbaru.
-                            </div>
-
-                            <label class="form-label">Catatan (opsional)</label>
-                            <textarea name="catatan" class="form-control" rows="2"
-                                placeholder="Mis. Hasil resmi JMA {{ $periode }}"></textarea>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary"
-                                data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-save"></i> Arsipkan Sekarang
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
     </main>
 @endsection
+
+{{-- MODAL ARSIPKAN RANKING — sengaja di dalam <main>...@endsection,
+             sebelumnya sempat berada DI LUAR @endsection sehingga tidak
+             pernah ikut ter-render sama sekali. --}}
+<div class="modal fade" id="modalArsipkan" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('ranking-arsip.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-archive text-success"></i>
+                        Arsipkan Ranking Periode {{ $periode }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="periode" value="{{ $periode }}">
+
+                    <div class="alert-warning-soft mb-3"
+                        style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:.9rem 1.1rem;color:#92400e;font-size:.85rem;">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        Ini akan menyimpan snapshot ranking <strong>SEMUA jenjang gabungan</strong> untuk
+                        periode {{ $periode }} — termasuk nilai mentah per bidang, total nilai asesor,
+                        dan rincian potongan. Kalau periode ini sudah pernah diarsipkan sebelumnya, arsip
+                        lama akan <strong>digantikan</strong> oleh data terbaru.
+                    </div>
+
+                    <label class="form-label">Catatan (opsional)</label>
+                    <textarea name="catatan" class="form-control" rows="2"
+                        placeholder="Mis. Hasil resmi JMA {{ $periode }}"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Arsipkan Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

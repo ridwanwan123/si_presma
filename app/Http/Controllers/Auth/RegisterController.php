@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Models\PeriodeAktif;
 
 class RegisterController extends Controller
 {
@@ -19,8 +20,9 @@ class RegisterController extends Controller
     | REGISTER PAGE
     |----------------------------------------------------------------------
     */
-    public function showRegisterForm()
+    public function showRegisterForm(Request $request)
     {
+        $periode = $request->integer('periode') ?: PeriodeAktif::aktif();
         $madrasahs = Madrasah::orderBy('nama_madrasah')->get();
 
         $roles = Role::whereIn('nama', [
@@ -28,7 +30,7 @@ class RegisterController extends Controller
             'Pengawas'
         ])->get();
 
-        return view('auth.register', compact('madrasahs', 'roles'));
+        return view('auth.register', compact('madrasahs', 'roles', 'periode'));
     }
 
     /*

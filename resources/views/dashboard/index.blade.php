@@ -27,11 +27,23 @@
             margin: 0;
         }
 
+        .content-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #eef0f2;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .04);
+            padding: 1.25rem 1.4rem;
+        }
+
         .section-divider {
             display: flex;
             align-items: center;
             gap: .75rem;
             margin: 2rem 0 1.25rem;
+        }
+
+        .section-divider:first-of-type {
+            margin-top: 0;
         }
 
         .section-divider .label {
@@ -48,13 +60,51 @@
             background: #e2e8f0;
         }
 
-        .content-card {
-            background: #fff;
-            border-radius: 18px;
-            border: 1px solid #eef0f2;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, .04);
-            padding: 1.25rem 1.4rem;
+        /* ============ FILTER ============ */
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: end;
+            gap: .75rem;
         }
+
+        .filter-form .form-label {
+            font-size: .8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: .35rem;
+        }
+
+        .filter-form .form-select {
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        .btn-reset-filter {
+            border-radius: 10px;
+            width: 100%;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 992px) {
+            .filter-form {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .filter-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============ ROW / COL ============ */
 
         .dash-row {
             display: flex;
@@ -63,18 +113,8 @@
             margin-bottom: 1.25rem;
         }
 
-        .dash-col-7 {
-            flex: 1 1 58%;
-            min-width: 320px;
-        }
-
-        .dash-col-6 {
-            flex: 1 1 48%;
-            min-width: 300px;
-        }
-
-        .dash-col-5 {
-            flex: 1 1 34%;
+        .dash-col-half {
+            flex: 1 1 49%;
             min-width: 280px;
         }
 
@@ -86,8 +126,10 @@
         }
 
         .stat-col {
-            flex: 1 1 200px;
+            flex: 1 1 260px;
         }
+
+        /* ============ STAT CARDS ============ */
 
         .stat-card {
             display: flex;
@@ -116,10 +158,6 @@
             background: #16a34a;
         }
 
-        .stat-icon.bg-amber {
-            background: #f59e0b;
-        }
-
         .stat-icon.bg-purple {
             background: #8b5cf6;
         }
@@ -136,6 +174,14 @@
             color: #0f172a;
             line-height: 1;
         }
+
+        .stat-value .stat-value-sub {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        /* ============ CARD TITLE ============ */
 
         .card-title-row {
             display: flex;
@@ -155,12 +201,7 @@
             font-size: .96rem;
         }
 
-        .btn-export-mini {
-            font-size: .74rem;
-            font-weight: 700;
-            padding: .3rem .7rem;
-            border-radius: 8px;
-        }
+        /* ============ CHART CONTAINERS ============ */
 
         .chart-box {
             position: relative;
@@ -169,152 +210,199 @@
 
         .chart-box-sm {
             position: relative;
-            height: 200px;
+            height: 210px;
         }
 
-        .info-note {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 12px;
-            padding: .8rem 1rem;
-            color: #1e40af;
-            font-size: .82rem;
-            margin-bottom: 1.25rem;
+        .content-card.h-100 {
+            display: flex;
+            flex-direction: column;
         }
 
-        .empty-note {
-            text-align: center;
-            color: #94a3b8;
-            padding: 2rem 1rem;
-            font-size: .88rem;
+        .content-card.h-100 .chart-box,
+        .content-card.h-100 .chart-box-sm {
+            flex: 1 1 auto;
+            height: auto;
+            min-height: 190px;
         }
 
-        .mini-table {
+        /* ============ LEGEND LIST ============ */
+
+        .legend-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0 0;
+        }
+
+        .legend-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .35rem 0;
+            font-size: .85rem;
+            color: #334155;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin-right: .5rem;
+        }
+
+        .legend-label {
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-value {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ============ TABLES ============ */
+
+        .dash-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            font-size: .84rem;
+            font-size: .85rem;
         }
 
-        .mini-table thead th {
-            font-size: .7rem;
+        .table-responsive {
+            padding: 0 .1rem .1rem;
+        }
+
+        .dash-table thead th {
+            font-size: .72rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .03em;
             color: #64748b;
-            padding: 9px 10px;
+            padding: 12px 14px;
             border-bottom: 2px solid #e2e8f0;
             background: #f8fafc;
             text-align: center;
         }
 
-        .mini-table thead th:first-child {
+        .dash-table thead th:first-child {
             text-align: left;
         }
 
-        .mini-table tbody td {
-            padding: 9px 10px;
+        .dash-table tbody td {
+            padding: 12px 14px;
             border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
             text-align: center;
+            color: #334155;
         }
 
-        .mini-table tbody td:first-child {
+        .dash-table tbody td:first-child {
             text-align: left;
             font-weight: 600;
         }
 
-        .mini-table tbody tr.total-row td {
+        .dash-table tbody tr.total-row td {
             font-weight: 800;
             color: #0f172a;
             background: #f8fafc;
         }
 
-        .selisih-naik {
-            color: #16a34a;
+        .dash-table .col-total {
             font-weight: 700;
+            color: #2563eb;
         }
 
-        .selisih-turun {
-            color: #dc2626;
+        /* ============ HASIL & RANKING — PREVIEW JUARA 1 ============ */
+
+        .juara-jenjang-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .74rem;
+            font-weight: 800;
+            letter-spacing: .04em;
+            color: #fff;
+            background: #0f8a43;
+            padding: .3rem .85rem;
+            border-radius: 999px;
+            margin: 1rem 0 .75rem;
+        }
+
+        .juara-jenjang-label:first-child {
+            margin-top: 0;
+        }
+
+        .juara-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: .6rem;
+        }
+
+        .juara-card {
+            border: 1px solid #eef0f2;
+            border-radius: 12px;
+            padding: .6rem .7rem;
+            background: #fff;
+        }
+
+        .juara-card.kosong {
+            background: #f8fafc;
+        }
+
+        .juara-bidang {
+            font-size: .66rem;
             font-weight: 700;
-        }
-
-        .filter-form {
-            display: flex;
-            align-items: flex-end;
-            gap: .75rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-form .form-label {
-            font-size: .8rem;
-            font-weight: 600;
-            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            color: #94a3b8;
             margin-bottom: .35rem;
         }
 
-        .filter-form .form-select {
-            border-radius: 10px;
-            min-width: 260px;
-        }
-
-        .profil-placeholder {
-            text-align: center;
-            color: #94a3b8;
-            padding: 2.5rem 1rem;
-        }
-
-        .rank-pill {
-            display: inline-block;
-            padding: 2px 9px;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 700;
-            background: #eef2f7;
-            color: #475569;
-        }
-
-        /* ============ BADGE PERINGKAT BERTINGKAT (EMAS/PERAK/PERUNGGU) ============ */
-        /* Dipakai di Kenaikan/Penurunan DAN Profil Madrasah -- satu gaya
-           konsisten di semua tempat yang menampilkan peringkat, bukan cuma
-           di satu modul. */
-        .rank-badge {
-            display: inline-flex;
+        .juara-row {
+            display: flex;
             align-items: center;
-            gap: 4px;
-            padding: 2px 10px;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 700;
-            white-space: nowrap;
+            gap: .4rem;
+            padding: .15rem 0;
         }
 
-        .rank-badge.tier-1 { background: #fef3c7; color: #92400e; }
-        .rank-badge.tier-2 { background: #e2e8f0; color: #334155; }
-        .rank-badge.tier-3 { background: #fde8d7; color: #9a3412; }
-        .rank-badge.tier-lain { background: #eef2f7; color: #64748b; }
+        .juara-rank {
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .6rem;
+            font-weight: 800;
+            color: #fff;
+            background: #94a3b8;
+        }
 
-        .rank-arrow-naik { color: #16a34a; }
-        .rank-arrow-turun { color: #dc2626; }
-        .rank-arrow-tetap { color: #94a3b8; }
+        .juara-rank-1 {
+            background: #eab308;
+        }
 
-        /* ============ TAB BIDANG (KENAIKAN/PENURUNAN) ============ */
-        .bidang-tab-btn {
-            font-size: .8rem;
+        .juara-rank-2 {
+            background: #94a3b8;
+        }
+
+        .juara-rank-3 {
+            background: #b45309;
+        }
+
+        .juara-nama-compact {
+            font-size: .74rem;
             font-weight: 600;
-            border-radius: 999px;
-            color: #64748b;
-            background: #f1f5f9;
-            border: none;
-            padding: 6px 16px;
-            margin-right: 6px;
-            margin-bottom: 6px;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .bidang-tab-btn.active {
-            background: #0f8a43 !important;
-            color: #fff !important;
+        .juara-kosong-text {
+            font-size: .8rem;
+            color: #94a3b8;
         }
     </style>
 @endpush
@@ -323,16 +411,28 @@
     <main class="content">
         <div class="container-fluid pt-3">
 
+            {{-- HEADER --}}
             <div class="dash-header">
                 <div>
-                    <h2>Dashboard PRESMA</h2>
-                    <p>Ringkasan prestasi madrasah untuk pelaporan, dan analisis perkembangan lintas tahun.</p>
+                    <h2>Dashboard Prestasi Madrasah</h2>
+                    <p>Ringkasan prestasi madrasah periode {{ $periode }}</p>
                 </div>
             </div>
 
-            {{-- FILTER GLOBAL — berlaku ke SELURUH dashboard (Bagian 1 & 2) --}}
+            {{-- FILTER --}}
             <div class="content-card mb-4">
                 <form method="GET" class="filter-form">
+                    <div>
+                        <label class="form-label">Periode</label>
+                        <select name="periode" class="form-select" onchange="this.form.submit()">
+                            @foreach ($daftarPeriode as $item)
+                                <option value="{{ $item }}" {{ $periode == $item ? 'selected' : '' }}>
+                                    {{ $item }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div>
                         <label class="form-label">Jenjang</label>
                         <select name="jenjang" class="form-select" onchange="this.form.submit()">
@@ -366,20 +466,18 @@
                         </select>
                     </div>
 
-                    @if ($jenjangFilter || $statusFilter || $kotaFilter)
-                        <a href="{{ route('dashboard', ['jenjang' => '']) }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-counterclockwise"></i> Reset
-                        </a>
-                    @endif
+                    <a href="{{ route('dashboard', ['periode' => $periode]) }}"
+                        class="btn btn-outline-secondary btn-reset-filter">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
                 </form>
             </div>
 
-            {{-- =========================================================================
-             BAGIAN 1: RINGKASAN GLOBAL (untuk laporan ke Kabid/Kakanwil)
-        ========================================================================== --}}
-
+            {{-- =====================================================================
+                 1. RINGKASAN PERIODE BERJALAN
+            ====================================================================== --}}
             <div class="section-divider">
-                <span class="label">RINGKASAN PERIODE {{ $ringkasanPeriode['periode_aktif'] }}</span>
+                <span class="label">RINGKASAN PERIODE {{ $periode }}</span>
                 <span class="line"></span>
             </div>
 
@@ -388,9 +486,9 @@
                     <div class="content-card stat-card mb-0">
                         <div class="stat-icon bg-blue"><i class="bi bi-trophy"></i></div>
                         <div>
-                            <div class="stat-label">Total Prestasi Periode Ini</div>
-                            <div class="stat-value">{{ number_format($ringkasanPeriode['total_prestasi'], 0, ',', '.') }}
-                            </div>
+                            <div class="stat-label">Total Prestasi (Diakui)</div>
+                            <div class="stat-value">
+                                {{ number_format($ringkasanPeriode['total_prestasi'], 0, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
@@ -400,9 +498,10 @@
                         <div class="stat-icon bg-green"><i class="bi bi-building-check"></i></div>
                         <div>
                             <div class="stat-label">Madrasah Aktif</div>
-                            <div class="stat-value">{{ $ringkasanPeriode['madrasah_aktif'] }} <span
-                                    class="fs-6 text-muted fw-normal">/
-                                    {{ $ringkasanPeriode['total_madrasah_terdaftar'] }}</span></div>
+                            <div class="stat-value">{{ $ringkasanPeriode['madrasah_aktif'] }}
+                                <span class="stat-value-sub">/ {{ $ringkasanPeriode['total_madrasah_terdaftar'] }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -412,617 +511,483 @@
                         <div class="stat-icon bg-purple"><i class="bi bi-patch-check"></i></div>
                         <div>
                             <div class="stat-label">Madrasah Selesai Dinilai</div>
-                            <div class="stat-value">{{ $ringkasanPeriode['madrasah_finished'] }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-col">
-                    <div class="content-card stat-card mb-0">
-                        <div class="stat-icon bg-amber"><i class="bi bi-graph-up-arrow"></i></div>
-                        <div>
-                            <div class="stat-label">Peningkatan Prestasi</div>
-                            <div class="stat-value">
-                                @if ($persenPeningkatan)
-                                    {{ $persenPeningkatan['persen_total'] >= 0 ? '+' : '' }}{{ $persenPeningkatan['persen_total'] }}%
-                                @else
-                                    <span class="text-muted fs-6 fw-normal">Butuh 2 periode</span>
-                                @endif
+                            <div class="stat-value">{{ $ringkasanPeriode['madrasah_finished'] }}
+                                <span class="stat-value-sub">/ {{ $ringkasanPeriode['total_madrasah_terdaftar'] }}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="dash-row">
-                <div class="dash-col-5">
-                    <div class="content-card h-100">
-                        <div class="card-title-row">
-                            <div class="title"><i class="bi bi-bar-chart text-primary"></i> Persentase Peningkatan per
-                                Tingkat</div>
-                        </div>
+            {{-- =====================================================================
+                 2. PERBANDINGAN PRESTASI PER TINGKAT
+            ====================================================================== --}}
+            <div class="content-card mb-4">
+                <div class="card-title-row">
+                    <div class="title"><i class="bi bi-bar-chart text-primary"></i> Distribusi Prestasi berdasarkan Tingkat
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Tingkat</th>
+                                <th>Jumlah Prestasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($perbandinganTingkat as $row)
+                                <tr>
+                                    <td>{{ $row['tingkat'] }}</td>
+                                    <td class="col-total">{{ $row['jumlah'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                        @if ($persenPeningkatan)
-                            <div class="mb-2 text-muted" style="font-size:.78rem">
-                                Dibanding periode {{ $persenPeningkatan['periode_sebelumnya'] }} →
-                                {{ $persenPeningkatan['periode_sekarang'] }}
+            {{-- =====================================================================
+                 3. MATRIX TOTAL PRESTASI PER JENJANG x BIDANG
+            ====================================================================== --}}
+            <div class="content-card mb-4">
+                <div class="card-title-row">
+                    <div class="title"><i class="bi bi-grid-3x3 text-primary"></i> Total Prestasi Keseluruhan Per Jenjang
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Bidang</th>
+                                @foreach ($matrixJenjangBidang['daftar_jenjang'] as $jenjang)
+                                    <th>{{ $jenjang }}</th>
+                                @endforeach
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($matrixJenjangBidang['matrix'] as $row)
+                                <tr>
+                                    <td>{{ $row['bidang'] }}</td>
+                                    @foreach ($matrixJenjangBidang['daftar_jenjang'] as $jenjang)
+                                        <td>{{ $row['per_jenjang'][$jenjang] }}</td>
+                                    @endforeach
+                                    <td class="col-total">{{ $row['total'] }}</td>
+                                </tr>
+                            @endforeach
+                            <tr class="total-row">
+                                <td>Total</td>
+                                @foreach ($matrixJenjangBidang['daftar_jenjang'] as $jenjang)
+                                    <td>{{ $matrixJenjangBidang['total_per_jenjang'][$jenjang] }}</td>
+                                @endforeach
+                                <td class="col-total">{{ $matrixJenjangBidang['total_keseluruhan'] }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- =====================================================================
+                 4. HASIL & RANKING — PREVIEW JUARA 1 PER JENJANG x BIDANG
+            ====================================================================== --}}
+            <div class="content-card mb-4">
+                <div class="card-title-row">
+                    <div class="title"><i class="bi bi-trophy text-primary"></i> Pemenang Jakarta Madrasah Awards {{ $periode + 1 }}</div>
+                    <a href="{{ route('ranking.index', ['periode' => $periode, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
+                        class="btn btn-sm btn-outline-success">
+                        Lihat Selengkapnya <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                @forelse ($juaraPerJenjangBidang->groupBy('jenjang') as $jenjang => $itemsJenjang)
+                    <div class="juara-jenjang-label"><i class="bi bi-mortarboard-fill"></i> {{ $jenjang }}</div>
+                    <div class="juara-grid">
+                        @foreach ($itemsJenjang as $row)
+                            <div class="juara-card {{ $row['top3']->isEmpty() ? 'kosong' : '' }}">
+                                <div class="juara-bidang">{{ $row['bidang'] }}</div>
+                                @forelse ($row['top3'] as $item)
+                                    <div class="juara-row">
+                                        <span
+                                            class="juara-rank juara-rank-{{ $item->peringkat }}">{{ $item->peringkat }}</span>
+                                        <span class="juara-nama-compact">{{ $item->nama_madrasah }}</span>
+                                    </div>
+                                @empty
+                                    <div class="juara-kosong-text">Belum ada data</div>
+                                @endforelse
+                            </div>
+                        @endforeach
+                    </div>
+                    @empty
+                        <div class="text-center text-muted py-4">Belum ada madrasah yang penilaiannya difinalisasi pada
+                            periode ini.</div>
+                    @endforelse
+                </div>
+
+                {{-- =====================================================================
+                 5 & 6. KOMPOSISI BIDANG + KOMPOSISI JUARA
+            ====================================================================== --}}
+                <div class="dash-row">
+                    <div class="dash-col-half">
+                        <div class="content-card h-100">
+                            <div class="card-title-row">
+                                <div class="title"><i class="bi bi-pie-chart text-primary"></i> Komposisi Bidang
+                                    Prestasi</div>
                             </div>
                             <div class="chart-box-sm">
-                                <canvas id="chartPeningkatan"></canvas>
+                                <canvas id="chartBidang"></canvas>
                             </div>
-                        @else
-                            <div class="empty-note">
-                                <i class="bi bi-info-circle d-block mb-2" style="font-size:1.5rem"></i>
-                                Perbandingan persentase butuh data minimal 2 periode. Baru ada
-                                {{ $matrixTingkat['periodeList']->count() }} periode saat ini.
+                            <ul class="legend-list">
+                                @forelse ($komposisiBidang as $item)
+                                    <li>
+                                        <span class="legend-label">
+                                            <span class="legend-dot" style="background: {{ $item['warna'] }}"></span>
+                                            {{ $item['label'] }}
+                                        </span>
+                                        <span class="legend-value">{{ $item['persen'] }}%</span>
+                                    </li>
+                                @empty
+                                    <li class="justify-content-center text-muted">Belum ada data.</li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="dash-col-half">
+                        <div class="content-card h-100">
+                            <div class="card-title-row">
+                                <div class="title"><i class="bi bi-award text-primary"></i> Komposisi Juara</div>
                             </div>
-                        @endif
+                            <div class="chart-box-sm">
+                                <canvas id="chartJuara"></canvas>
+                            </div>
+                            <ul class="legend-list">
+                                @forelse ($komposisiJuara as $item)
+                                    <li>
+                                        <span class="legend-label">
+                                            <span class="legend-dot" style="background: {{ $item['warna'] }}"></span>
+                                            {{ $item['label'] }}
+                                        </span>
+                                        <span>
+                                            {{ $item['jumlah'] }}
+                                            <span class="legend-value ms-2">{{ $item['persen'] }}%</span>
+                                        </span>
+                                    </li>
+                                @empty
+                                    <li class="justify-content-center text-muted">Belum ada data.</li>
+                                @endforelse
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <div class="dash-col-7">
-                    <div class="content-card h-100">
-                        <div class="card-title-row">
-                            <div class="title"><i class="bi bi-table text-primary"></i> Perbandingan Prestasi per Tingkat,
-                                Tahun ke Tahun</div>
-                            <a href="{{ route('dashboard.export', ['tipe' => 'perbandingan-tingkat', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                class="btn btn-outline-success btn-export-mini">
-                                <i class="bi bi-file-earmark-excel"></i> Export
-                            </a>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="mini-table">
-                                <thead>
-                                    <tr>
-                                        <th>Jenjang</th>
-                                        @foreach ($matrixTingkat['periodeList'] as $periode)
-                                            <th>{{ $periode }}</th>
-                                        @endforeach
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($matrixTingkat['matrix'] as $row)
-                                        <tr>
-                                            <td>{{ $row['tingkat'] }}</td>
-                                            @foreach ($matrixTingkat['periodeList'] as $periode)
-                                                <td>{{ number_format($row['per_tahun'][$periode], 0, ',', '.') }}</td>
-                                            @endforeach
-                                        </tr>
+                {{-- =====================================================================
+                 7. SEBARAN PRESTASI (CROSS-TAB BIDANG x TINGKAT)
+            ====================================================================== --}}
+                <div class="content-card mb-4">
+                    <div class="card-title-row">
+                        <div class="title"><i class="bi bi-grid-3x3 text-primary"></i> Distribusi Bidang Prestasi</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Bidang</th>
+                                    @foreach (['Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'] as $tingkat)
+                                        <th>{{ $tingkat }}</th>
                                     @endforeach
-                                    <tr class="total-row">
-                                        <td>TOTAL</td>
-                                        @foreach ($matrixTingkat['periodeList'] as $periode)
-                                            <td>{{ number_format($matrixTingkat['totalPerTahun'][$periode], 0, ',', '.') }}
-                                            </td>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($sebaranTingkat as $row)
+                                    <tr>
+                                        <td>{{ $row['bidang'] }}</td>
+                                        @foreach (['Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'] as $tingkat)
+                                            <td>{{ $row['per_tingkat'][$tingkat] }}</td>
                                         @endforeach
+                                        <td class="col-total">{{ $row['total'] }}</td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-3">Belum ada data.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-            {{-- =========================================================================
-             BAGIAN 2: PERKEMBANGAN MADRASAH (LINTAS TAHUN, DATA ARSIP)
-        ========================================================================== --}}
-
-            <div class="section-divider">
-                <span class="label">PERKEMBANGAN MADRASAH (LINTAS TAHUN — DATA ARSIP)</span>
-                <span class="line"></span>
-            </div>
-
-            @if ($daftarArsip->isEmpty())
-                <div class="content-card empty-note">
-                    <i class="bi bi-archive d-block mb-2" style="font-size:1.8rem;color:#cbd5e1"></i>
-                    Belum ada data arsip. Bagian ini menampilkan perbandingan lintas tahun, jadi butuh minimal 1 periode
-                    yang sudah diarsipkan dulu di halaman Hasil &amp; Ranking.
-                    <div class="mt-2">
-                        <a href="{{ route('ranking.index') }}" class="btn btn-success btn-sm">
-                            <i class="bi bi-trophy"></i> Buka Hasil &amp; Ranking
-                        </a>
-                    </div>
-                </div>
-            @else
+                {{-- =====================================================================
+                 8 & 9. INDIVIDU vs BEREGU + LURING vs DARING
+            ====================================================================== --}}
                 <div class="dash-row">
-                    <div class="dash-col-6">
+                    <div class="dash-col-half">
                         <div class="content-card h-100">
                             <div class="card-title-row">
-                                <div class="title">
-                                    <i class="bi bi-graph-up-arrow text-primary"></i>
-                                    Tren Total Prestasi Sistem
-                                </div>
-                                <a href="{{ route('dashboard.export', ['tipe' => 'tren-sistem', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                    class="btn btn-outline-success btn-export-mini">
-                                    <i class="bi bi-file-earmark-excel"></i> Export
-                                </a>
+                                <div class="title"><i class="bi bi-people text-primary"></i> Individu vs Beregu</div>
                             </div>
-                            <div class="chart-box">
-                                <canvas id="chartTrenSistem"></canvas>
+                            <div class="chart-box-sm">
+                                <canvas id="chartKategori"></canvas>
                             </div>
+                            <ul class="legend-list">
+                                @forelse ($komposisiKategori as $item)
+                                    <li>
+                                        <span class="legend-label">{{ $item['label'] }}</span>
+                                        <span class="legend-value">{{ $item['jumlah'] }} ({{ $item['persen'] }}%)</span>
+                                    </li>
+                                @empty
+                                    <li class="justify-content-center text-muted">Belum ada data.</li>
+                                @endforelse
+                            </ul>
                         </div>
                     </div>
 
-                    <div class="dash-col-6">
+                    <div class="dash-col-half">
                         <div class="content-card h-100">
                             <div class="card-title-row">
-                                <div class="title">
-                                    <i class="bi bi-bar-chart-steps text-primary"></i>
-                                    Rata-rata Nilai per Jenjang
-                                </div>
-                                <a href="{{ route('dashboard.export', ['tipe' => 'rata-jenjang', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                    class="btn btn-outline-success btn-export-mini">
-                                    <i class="bi bi-file-earmark-excel"></i> Export
-                                </a>
+                                <div class="title"><i class="bi bi-wifi text-primary"></i> Luring vs Daring</div>
                             </div>
-                            <div class="chart-box">
-                                <canvas id="chartRataJenjang"></canvas>
+                            <div class="chart-box-sm">
+                                <canvas id="chartMetode"></canvas>
                             </div>
+                            <ul class="legend-list">
+                                @forelse ($komposisiMetode as $item)
+                                    <li>
+                                        <span class="legend-label">{{ $item['label'] }}</span>
+                                        <span class="legend-value">{{ $item['jumlah'] }} ({{ $item['persen'] }}%)</span>
+                                    </li>
+                                @empty
+                                    <li class="justify-content-center text-muted">Belum ada data.</li>
+                                @endforelse
+                            </ul>
                         </div>
                     </div>
                 </div>
 
-                @if (is_null($hasilPerubahan['periode']))
-                    <div class="content-card mb-4 empty-note">
-                        <i class="bi bi-info-circle"></i>
-                        Perbandingan kenaikan/penurunan butuh minimal 2 periode yang sudah diarsipkan. Baru ada
-                        {{ $daftarArsip->count() }} arsip saat ini.
-                    </div>
-                @else
-                    <ul class="nav nav-pills mb-3 flex-wrap" id="perubahanBidangTabNav">
-                        @foreach ($hasilPerubahan['per_bidang'] as $bidang => $dataBidang)
-                            <li class="nav-item">
-                                <button type="button" class="bidang-tab-btn perubahan-tab-btn {{ $loop->first ? 'active' : '' }}"
-                                    data-target="#perubahanPane-{{ Str::slug($bidang) }}">
-                                    {{ $bidang }}
-                                </button>
-                            </li>
-                        @endforeach
-                    </ul>
-
-                    @foreach ($hasilPerubahan['per_bidang'] as $bidang => $dataBidang)
-                        <div class="perubahan-pane {{ $loop->first ? '' : 'd-none' }}" id="perubahanPane-{{ Str::slug($bidang) }}">
-                            <div class="dash-row">
-                                <div class="dash-col-7" style="flex-basis:49%">
-                                    <div class="content-card h-100">
-                                        <div class="card-title-row">
-                                            <div class="title"><i class="bi bi-arrow-up-circle text-success"></i> Kenaikan
-                                                Terbesar &middot; {{ $bidang }}
-                                                <div class="text-muted" style="font-size:.7rem;font-weight:400">{{ $hasilPerubahan['periode']['sebelumnya'] }} → {{ $hasilPerubahan['periode']['sekarang'] }}</div>
-                                            </div>
-                                            <a href="{{ route('dashboard.export', ['tipe' => 'kenaikan', 'bidang' => $bidang, 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                                class="btn btn-outline-success btn-export-mini">
-                                                <i class="bi bi-file-earmark-excel"></i> Export
-                                            </a>
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="mini-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="text-align:left">Madrasah</th>
-                                                        <th>Jenjang</th>
-                                                        <th>Selisih</th>
-                                                        <th>Peringkat</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse ($dataBidang['kenaikan'] as $item)
-                                                        <tr>
-                                                            <td>{{ $item->nama_madrasah }}</td>
-                                                            <td>{{ $item->jenjang_madrasah }}</td>
-                                                            <td class="selisih-naik">
-                                                                +{{ number_format($item->selisih, 2, ',', '.') }}</td>
-                                                            <td>
-                                                                @php $tier = $item->peringkat_sekarang <= 3 ? 'tier-' . $item->peringkat_sekarang : 'tier-lain'; @endphp
-                                                                <span class="rank-badge {{ $tier }}">
-                                                                    #{{ $item->peringkat_sebelumnya }}
-                                                                    <i class="bi bi-arrow-right"></i>
-                                                                    #{{ $item->peringkat_sekarang }}
-                                                                    @if ($item->peringkat_sekarang < $item->peringkat_sebelumnya)
-                                                                        <i class="bi bi-caret-up-fill rank-arrow-naik"></i>
-                                                                    @elseif ($item->peringkat_sekarang > $item->peringkat_sebelumnya)
-                                                                        <i class="bi bi-caret-down-fill rank-arrow-turun"></i>
-                                                                    @else
-                                                                        <i class="bi bi-dash rank-arrow-tetap"></i>
-                                                                    @endif
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="4" class="text-center text-muted py-3">Tidak ada data.
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="dash-col-5" style="flex-basis:49%">
-                                    <div class="content-card h-100">
-                                        <div class="card-title-row">
-                                            <div class="title"><i class="bi bi-arrow-down-circle text-danger"></i> Penurunan
-                                                Terbesar &middot; {{ $bidang }}
-                                                <div class="text-muted" style="font-size:.7rem;font-weight:400">{{ $hasilPerubahan['periode']['sebelumnya'] }} → {{ $hasilPerubahan['periode']['sekarang'] }}</div>
-                                            </div>
-                                            <a href="{{ route('dashboard.export', ['tipe' => 'penurunan', 'bidang' => $bidang, 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                                class="btn btn-outline-success btn-export-mini">
-                                                <i class="bi bi-file-earmark-excel"></i> Export
-                                            </a>
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="mini-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="text-align:left">Madrasah</th>
-                                                        <th>Jenjang</th>
-                                                        <th>Selisih</th>
-                                                        <th>Peringkat</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse ($dataBidang['penurunan'] as $item)
-                                                        <tr>
-                                                            <td>{{ $item->nama_madrasah }}</td>
-                                                            <td>{{ $item->jenjang_madrasah }}</td>
-                                                            <td class="selisih-turun">
-                                                                {{ number_format($item->selisih, 2, ',', '.') }}</td>
-                                                            <td>
-                                                                @php $tier = $item->peringkat_sekarang <= 3 ? 'tier-' . $item->peringkat_sekarang : 'tier-lain'; @endphp
-                                                                <span class="rank-badge {{ $tier }}">
-                                                                    #{{ $item->peringkat_sebelumnya }}
-                                                                    <i class="bi bi-arrow-right"></i>
-                                                                    #{{ $item->peringkat_sekarang }}
-                                                                    @if ($item->peringkat_sekarang < $item->peringkat_sebelumnya)
-                                                                        <i class="bi bi-caret-up-fill rank-arrow-naik"></i>
-                                                                    @elseif ($item->peringkat_sekarang > $item->peringkat_sebelumnya)
-                                                                        <i class="bi bi-caret-down-fill rank-arrow-turun"></i>
-                                                                    @else
-                                                                        <i class="bi bi-dash rank-arrow-tetap"></i>
-                                                                    @endif
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="4" class="text-center text-muted py-3">Tidak ada data.
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                @endif
-
-                {{-- ================= PERKEMBANGAN JUMLAH PRESTASI (DIAKUI) ================= --}}
+                {{-- =====================================================================
+                 10. DISTRIBUSI KEGIATAN PER BULAN
+            ====================================================================== --}}
                 <div class="content-card mb-4">
                     <div class="card-title-row">
-                        <div class="title"><i class="bi bi-bar-chart-line text-success"></i> Perkembangan Jumlah
-                            Prestasi (Diakui)
-                            <div class="text-muted" style="font-size:.72rem;font-weight:400">
-                                Dihitung mulai periode {{ $periodeMulaiJumlahPrestasi }}
-                            </div>
+                        <div class="title"><i class="bi bi-calendar3 text-primary"></i> Distribusi Kegiatan per Bulan
                         </div>
-                        <a href="{{ route('dashboard.export', ['tipe' => 'perkembangan-prestasi', 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter, 'madrasah_id' => $madrasahIdFilter]) }}"
-                            class="btn btn-outline-success btn-export-mini">
-                            <i class="bi bi-file-earmark-excel"></i> Export
-                        </a>
                     </div>
-
-                    <form method="GET" class="filter-form mb-3">
-                        <input type="hidden" name="jenjang" value="{{ $jenjangFilter }}">
-                        <input type="hidden" name="status" value="{{ $statusFilter }}">
-                        <input type="hidden" name="kota" value="{{ $kotaFilter }}">
-                        <div>
-                            <label class="form-label">Pilih Madrasah (opsional)</label>
-                            <select name="madrasah_id" class="form-select" onchange="this.form.submit()"
-                                style="min-width:260px">
-                                <option value="">-- Semua Madrasah (dikelompokkan per Jenjang) --</option>
-                                @foreach ($daftarMadrasahDiakui as $m)
-                                    <option value="{{ $m->id }}" {{ $madrasahIdFilter == $m->id ? 'selected' : '' }}>
-                                        {{ $m->nama_madrasah }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @if ($madrasahIdFilter)
-                            <a href="{{ route('dashboard.index', ['jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-counterclockwise"></i> Lihat Semua Madrasah
-                            </a>
-                        @endif
-                    </form>
-
-                    @if ($perkembanganJumlahPrestasi['periode_list']->isEmpty())
-                        <div class="empty-note">
-                            <i class="bi bi-info-circle"></i>
-                            Belum ada data prestasi diakui sejak periode {{ $periodeMulaiJumlahPrestasi }}.
-                        </div>
-                    @else
-                        <div class="chart-box">
-                            <canvas id="chartPerkembanganPrestasi"></canvas>
-                        </div>
-                    @endif
+                    <div class="chart-box">
+                        <canvas id="chartBulan"></canvas>
+                    </div>
                 </div>
 
-                <div class="content-card mb-4">
+                {{-- =====================================================================
+                 11. TOP LEMBAGA PENYELENGGARA
+            ====================================================================== --}}
+                <div class="content-card">
                     <div class="card-title-row">
-                        <div class="title"><i class="bi bi-building text-primary"></i> Profil Perkembangan Madrasah</div>
+                        <div class="title"><i class="bi bi-building text-primary"></i> Top {{ $topLembaga->count() }}
+                            Lembaga Penyelenggara</div>
                     </div>
-
-                    <form method="GET" class="filter-form mb-2">
-                        <input type="hidden" name="jenjang" value="{{ $jenjangFilter }}">
-                        <input type="hidden" name="status" value="{{ $statusFilter }}">
-                        <input type="hidden" name="kota" value="{{ $kotaFilter }}">
-                        <div>
-                            <label class="form-label">Pilih Madrasah</label>
-                            <select name="madrasah_id" class="form-select" onchange="this.form.submit()">
-                                <option value="">-- Pilih Madrasah --</option>
-                                @foreach ($daftarMadrasah as $m)
-                                    <option value="{{ $m->madrasah_id }}"
-                                        {{ $madrasahIdFilter == $m->madrasah_id ? 'selected' : '' }}>
-                                        {{ $m->nama_madrasah }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </form>
-                </div>
-
-                @if ($madrasahIdFilter && $profilMadrasah)
-                    <div class="dash-row">
-                        <div class="dash-col-7">
-                            <div class="content-card h-100">
-                                <div class="card-title-row">
-                                    <div class="title"><i class="bi bi-graph-up text-primary"></i> Tren Total Nilai Akhir
-                                        — {{ $profilMadrasah->nama_madrasah }}</div>
-                                </div>
-                                <div class="chart-box">
-                                    <canvas id="chartTrenMadrasah"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="dash-col-5">
-                            <div class="content-card h-100">
-                                <div class="card-title-row">
-                                    <div class="title"><i class="bi bi-diagram-3 text-primary"></i> Tren per Bidang</div>
-                                </div>
-                                <div class="chart-box">
-                                    <canvas id="chartBidangMadrasah"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-card">
-                        <div class="card-title-row">
-                            <div class="title"><i class="bi bi-table text-primary"></i> Histori Lengkap</div>
-                            <a href="{{ route('dashboard.export', ['tipe' => 'profil-madrasah', 'madrasah_id' => $madrasahIdFilter, 'jenjang' => $jenjangFilter, 'status' => $statusFilter, 'kota' => $kotaFilter]) }}"
-                                class="btn btn-outline-success btn-export-mini">
-                                <i class="bi bi-file-earmark-excel"></i> Export
-                            </a>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="mini-table">
-                                <thead>
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Lembaga Penyelenggara</th>
+                                    <th style="width:100px">Jumlah</th>
+                                    <th style="width:100px">Persentase</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($topLembaga as $item)
                                     <tr>
-                                        <th style="text-align:left">Periode</th>
-                                        <th>Akademik</th>
-                                        <th>Non Akademik</th>
-                                        <th>Keagamaan</th>
-                                        <th>GTK</th>
-                                        <th>Lembaga</th>
-                                        <th>Total Akhir</th>
-                                        <th>Peringkat</th>
+                                        <td>{{ $item['lembaga'] }}</td>
+                                        <td>{{ $item['jumlah'] }}</td>
+                                        <td>{{ $item['persen'] }}%</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($profilMadrasah->histori as $row)
-                                        @php
-                                            $tierBidang = fn ($p) => $p && $p <= 3 ? 'tier-' . $p : 'tier-lain';
-                                        @endphp
-                                        <tr>
-                                            <td class="fw-semibold">{{ $row->periode }}</td>
-                                            <td>{{ number_format($row->nilai_akademik, 2, ',', '.') }} <span
-                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Akademik'] ?? null) }}">#{{ $row->peringkat_per_bidang['Akademik'] ?? '-' }}</span>
-                                            </td>
-                                            <td>{{ number_format($row->nilai_non_akademik, 2, ',', '.') }} <span
-                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Non Akademik'] ?? null) }}">#{{ $row->peringkat_per_bidang['Non Akademik'] ?? '-' }}</span>
-                                            </td>
-                                            <td>{{ number_format($row->nilai_keagamaan, 2, ',', '.') }} <span
-                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Keagamaan'] ?? null) }}">#{{ $row->peringkat_per_bidang['Keagamaan'] ?? '-' }}</span>
-                                            </td>
-                                            <td>{{ number_format($row->nilai_gtk, 2, ',', '.') }} <span
-                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['GTK'] ?? null) }}">#{{ $row->peringkat_per_bidang['GTK'] ?? '-' }}</span>
-                                            </td>
-                                            <td>{{ number_format($row->nilai_lembaga, 2, ',', '.') }} <span
-                                                    class="rank-badge {{ $tierBidang($row->peringkat_per_bidang['Lembaga'] ?? null) }}">#{{ $row->peringkat_per_bidang['Lembaga'] ?? '-' }}</span>
-                                            </td>
-                                            <td class="fw-bold text-success">
-                                                {{ number_format($row->total_nilai_akhir, 2, ',', '.') }}</td>
-                                            <td><span class="rank-badge {{ $tierBidang($row->peringkat_keseluruhan ?? null) }}">#{{ $row->peringkat_keseluruhan }}</span></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-3">Belum ada data.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
-                @elseif ($madrasahIdFilter && !$profilMadrasah)
-                    <div class="content-card profil-placeholder">
-                        Madrasah ini belum pernah tercatat FINISHED di arsip manapun.
-                    </div>
-                @else
-                    <div class="content-card profil-placeholder">
-                        <i class="bi bi-building"
-                            style="font-size:2rem;color:#cbd5e1;display:block;margin-bottom:.5rem;"></i>
-                        Pilih madrasah di atas untuk melihat profil perkembangannya per tahun.
-                    </div>
-                @endif
+                </div>
 
-            @endif
+            </div>
+        </main>
+    @endsection
 
-        </div>
-    </main>
-@endsection
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
 
-            // Tab switch untuk Bidang di Kenaikan/Penurunan
-            document.querySelectorAll('.perubahan-tab-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    const target = this.dataset.target;
+                // Plugin kecil untuk menulis teks di tengah donut chart
+                const centerTextPlugin = {
+                    id: 'centerText',
+                    beforeDraw(chart) {
+                        if (!chart.config.options.centerText) return;
 
-                    document.querySelectorAll('.perubahan-tab-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
+                        const {
+                            ctx,
+                            chartArea: {
+                                left,
+                                right,
+                                top,
+                                bottom
+                            }
+                        } = chart;
 
-                    document.querySelectorAll('.perubahan-pane').forEach(pane => pane.classList.add('d-none'));
-                    document.querySelector(target).classList.remove('d-none');
-                });
-            });
+                        const centerX = (left + right) / 2;
+                        const centerY = (top + bottom) / 2;
 
-            const warnaJenjang = {
-                'RA': '#ef4444', // Merah
-                'MI': '#eab308', // Kuning
-                'MTs': '#16a34a', // Hijau
-                'MA': '#2563eb', // Biru
-            };
-            const warnaJenjangDefault = '#94a3b8'; // fallback abu-abu kalau ada jenjang di luar 4 ini
-            const warnaBidang = {
-                'Akademik': '#2563eb',
-                'Non Akademik': '#38bdf8',
-                'Keagamaan': '#f59e0b',
-                'GTK': '#8b5cf6',
-                'Lembaga': '#94a3b8',
-            };
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
 
-            {{-- ============ PERKEMBANGAN JUMLAH PRESTASI (DIAKUI) ============ --}}
-            @if ($perkembanganJumlahPrestasi['periode_list']->isNotEmpty())
-                const labelPeriodePrestasi = @json($perkembanganJumlahPrestasi['periode_list']);
-                const perKelompokPrestasi = @json($perkembanganJumlahPrestasi['per_kelompok']);
-                const modePrestasi = @json($perkembanganJumlahPrestasi['mode']); // 'jenjang' | 'bidang'
-                const paletPrestasi = modePrestasi === 'bidang' ? warnaBidang : warnaJenjang;
+                        ctx.font = '700 22px sans-serif';
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillText(chart.config.options.centerText.value, centerX, centerY - 10);
 
-                const datasetsPrestasi = Object.keys(perKelompokPrestasi).map((kelompok) => ({
-                    label: kelompok,
-                    data: labelPeriodePrestasi.map(p => perKelompokPrestasi[kelompok][p] ?? 0),
-                    backgroundColor: paletPrestasi[kelompok] || warnaJenjangDefault,
-                    borderRadius: 6,
-                    maxBarThickness: 42,
-                }));
+                        ctx.font = '400 12px sans-serif';
+                        ctx.fillStyle = '#64748b';
+                        ctx.fillText(chart.config.options.centerText.label, centerX, centerY + 12);
 
-                new Chart(document.getElementById('chartPerkembanganPrestasi'), {
-                    type: 'bar',
-                    data: { labels: labelPeriodePrestasi, datasets: datasetsPrestasi },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'top', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'circle' } }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
-                            x: { grid: { display: false } }
+                        ctx.restore();
+                    }
+                };
+
+                Chart.register(centerTextPlugin);
+
+                const totalPrestasi = {{ $totalPrestasi }};
+
+                const donutOptionsDasar = (value, label) => ({
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            display: false
                         }
+                    },
+                    centerText: {
+                        value: String(value),
+                        label: label
                     }
                 });
-            @endif
 
-            @if ($persenPeningkatan)
-                /* ============ PERSENTASE PENINGKATAN PER TINGKAT ============ */
-                const perTingkat = @json($persenPeningkatan['per_tingkat']);
+                /* ============ KOMPOSISI BIDANG (DONUT) ============ */
+                const bidangLabels = @json($komposisiBidang->pluck('label'));
+                const bidangJumlah = @json($komposisiBidang->pluck('jumlah'));
+                const bidangWarna = @json($komposisiBidang->pluck('warna'));
 
-                new Chart(document.getElementById('chartPeningkatan'), {
+                new Chart(document.getElementById('chartBidang'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: bidangLabels,
+                        datasets: [{
+                            data: bidangJumlah,
+                            backgroundColor: bidangWarna,
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: donutOptionsDasar(totalPrestasi, 'Total Prestasi')
+                });
+
+                /* ============ KOMPOSISI JUARA (DONUT) ============ */
+                const juaraLabels = @json($komposisiJuara->pluck('label'));
+                const juaraJumlah = @json($komposisiJuara->pluck('jumlah'));
+                const juaraWarna = @json($komposisiJuara->pluck('warna'));
+
+                new Chart(document.getElementById('chartJuara'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: juaraLabels,
+                        datasets: [{
+                            data: juaraJumlah,
+                            backgroundColor: juaraWarna,
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: donutOptionsDasar(totalPrestasi, 'Total Prestasi')
+                });
+
+                /* ============ INDIVIDU vs BEREGU (DONUT) ============ */
+                const kategoriLabels = @json($komposisiKategori->pluck('label'));
+                const kategoriJumlah = @json($komposisiKategori->pluck('jumlah'));
+                const warnaKategori = ['#2563eb', '#f59e0b', '#94a3b8'];
+
+                new Chart(document.getElementById('chartKategori'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: kategoriLabels,
+                        datasets: [{
+                            data: kategoriJumlah,
+                            backgroundColor: warnaKategori,
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: donutOptionsDasar(totalPrestasi, 'Total Prestasi')
+                });
+
+                /* ============ LURING vs DARING (DONUT) ============ */
+                const metodeLabels = @json($komposisiMetode->pluck('label'));
+                const metodeJumlah = @json($komposisiMetode->pluck('jumlah'));
+                const warnaMetode = ['#0f8a43', '#8b5cf6', '#94a3b8'];
+
+                new Chart(document.getElementById('chartMetode'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: metodeLabels,
+                        datasets: [{
+                            data: metodeJumlah,
+                            backgroundColor: warnaMetode,
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: donutOptionsDasar(totalPrestasi, 'Total Prestasi')
+                });
+
+                /* ============ DISTRIBUSI BULANAN (BAR) ============ */
+                const bulanLabels = @json($distribusiBulan->pluck('label'));
+                const bulanJumlah = @json($distribusiBulan->pluck('jumlah'));
+
+                new Chart(document.getElementById('chartBulan'), {
                     type: 'bar',
                     data: {
-                        labels: perTingkat.map(r => r.tingkat),
+                        labels: bulanLabels,
                         datasets: [{
-                            label: '% Perubahan',
-                            data: perTingkat.map(r => r.persen),
-                            backgroundColor: perTingkat.map(r => r.persen >= 0 ? '#16a34a' :
-                                '#dc2626'),
+                            label: 'Jumlah Kegiatan',
+                            data: bulanJumlah,
+                            backgroundColor: '#2563eb',
                             borderRadius: 6,
-                            maxBarThickness: 40,
+                            maxBarThickness: 32,
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        indexAxis: 'y',
                         plugins: {
                             legend: {
                                 display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                padding: 10,
+                                cornerRadius: 8
                             }
                         },
                         scales: {
-                            x: {
-                                grid: {
-                                    color: '#f1f5f9'
-                                },
+                            y: {
+                                beginAtZero: true,
                                 ticks: {
-                                    callback: v => v + '%'
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            @endif
-
-            @if ($daftarArsip->isNotEmpty())
-                const labelPeriode = @json($daftarArsip->pluck('periode'));
-
-                /* ============ TREN TOTAL PRESTASI SISTEM — PER JENJANG ============ */
-                const trenPerJenjang = @json($trenSistem['per_jenjang']);
-
-                const datasetsTrenSistem = trenPerJenjang.map((row) => ({
-                    label: row.jenjang,
-                    data: labelPeriode.map(p => row.per_tahun[p] ?? 0),
-                    borderColor: warnaJenjang[row.jenjang] || warnaJenjangDefault,
-                    backgroundColor: 'transparent',
-                    borderWidth: 3,
-                    tension: .35,
-                    pointRadius: 4,
-                }));
-
-                new Chart(document.getElementById('chartTrenSistem'), {
-                    type: 'line',
-                    data: {
-                        labels: labelPeriode,
-                        datasets: datasetsTrenSistem
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    boxWidth: 10,
-                                    boxHeight: 10,
-                                    usePointStyle: true,
-                                    pointStyle: 'circle'
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
+                                    precision: 0
+                                },
                                 grid: {
                                     color: '#f1f5f9'
                                 }
@@ -1036,155 +1001,6 @@
                     }
                 });
 
-                /* ============ RATA-RATA PER JENJANG ============ */
-                const rataJenjang = @json($rataJenjang);
-
-                const datasetsJenjang = rataJenjang.map((row) => ({
-                    label: row.jenjang,
-                    data: labelPeriode.map(p => row.per_tahun[p] ?? 0),
-                    borderColor: warnaJenjang[row.jenjang] || warnaJenjangDefault,
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    tension: .3,
-                    pointRadius: 3,
-                }));
-
-                new Chart(document.getElementById('chartRataJenjang'), {
-                    type: 'line',
-                    data: {
-                        labels: labelPeriode,
-                        datasets: datasetsJenjang
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    boxWidth: 10,
-                                    boxHeight: 10,
-                                    usePointStyle: true,
-                                    pointStyle: 'circle'
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: '#f1f5f9'
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-
-                @if ($madrasahIdFilter && $profilMadrasah)
-                    const historiMadrasah = @json($profilMadrasah->histori);
-                    const labelHistori = historiMadrasah.map(h => h.periode);
-
-                    new Chart(document.getElementById('chartTrenMadrasah'), {
-                        type: 'line',
-                        data: {
-                            labels: labelHistori,
-                            datasets: [{
-                                label: 'Total Nilai Akhir',
-                                data: historiMadrasah.map(h => h.total_nilai_akhir),
-                                borderColor: '#2563eb',
-                                backgroundColor: 'rgba(37,99,235,.12)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: .35,
-                                pointRadius: 4,
-                                pointBackgroundColor: '#2563eb',
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: '#f1f5f9'
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    const kolomBidang = {
-                        'Akademik': 'nilai_akademik',
-                        'Non Akademik': 'nilai_non_akademik',
-                        'Keagamaan': 'nilai_keagamaan',
-                        'GTK': 'nilai_gtk',
-                        'Lembaga': 'nilai_lembaga',
-                    };
-
-                    const datasetsBidangMadrasah = Object.entries(kolomBidang).map(([label, kolom]) => ({
-                        label: label,
-                        data: historiMadrasah.map(h => h[kolom]),
-                        borderColor: warnaBidang[label],
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: .3,
-                        pointRadius: 3,
-                    }));
-
-                    new Chart(document.getElementById('chartBidangMadrasah'), {
-                        type: 'line',
-                        data: {
-                            labels: labelHistori,
-                            datasets: datasetsBidangMadrasah
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: {
-                                        boxWidth: 10,
-                                        boxHeight: 10,
-                                        usePointStyle: true,
-                                        pointStyle: 'circle'
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: '#f1f5f9'
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        }
-                    });
-                @endif
-            @endif
-
-        });
-    </script>
-@endpush
+            });
+        </script>
+    @endpush

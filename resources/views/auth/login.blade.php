@@ -865,7 +865,7 @@
         <div class="auth-aside">
             <div class="aside-brand">
                 <div class="mark"><i class="bx bxs-graduation"></i></div>
-                <span>PRESMA | JMA 2027</span>
+                <span>PRESMA | JMA {{ $periode + 1 }}</span>
             </div>
 
             <div class="aside-copy">
@@ -885,7 +885,7 @@
                         <div class="ring"><span class="mono">82%</span></div>
                         <div class="ring-label">
                             Capaian keseluruhan
-                            <strong>Semester genap 2026</strong>
+                            <strong>Tahun Ajaran {{ $periode }}</strong>
                         </div>
                     </div>
 
@@ -973,7 +973,7 @@
                             </div>
                         </div>
 
-                        <div class="form-extra">
+                        <div class="form-extra" hidden>
                             <a href="#">Lupa password?</a>
                         </div>
 

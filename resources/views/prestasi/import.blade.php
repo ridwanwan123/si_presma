@@ -227,8 +227,8 @@
         }
 
         /* ===========================
-                                                                                   MODAL ERROR IMPORT (SweetAlert)
-                                                                                =========================== */
+                                                                                       MODAL ERROR IMPORT (SweetAlert)
+                                                                                    =========================== */
 
         .import-error-summary {
             display: flex;
@@ -616,10 +616,10 @@
                                         <span class="panduan-wajib wajib">Wajib</span>
                                     </td>
                                     <td>
-                                        Isi dengan <strong>format Tanggal</strong> di Excel (bukan teks); tanggal tidak
+                                        Isi dengan <strong>format Tanggal/date</strong> di Excel (bukan teks); tanggal tidak
                                         valid akan menyebabkan baris ditolak.
                                     </td>
-                                    <td class="panduan-contoh">15/03/2025 (format tanggal Excel)</td>
+                                    <td class="panduan-contoh">15/03/2025 <br />(format tanggal Excel)</td>
                                 </tr>
                                 <tr>
                                     <td>
