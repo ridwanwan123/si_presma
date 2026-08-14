@@ -83,14 +83,6 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | AMBIL 1 MADRASAH UNTUK USER MADRASAH
-        |--------------------------------------------------------------------------
-        */
-
-        $madrasah = \App\Models\Madrasah::where('npsn', '20177932')->first();
-
-        /*
-        |--------------------------------------------------------------------------
         | SUPERADMIN
         |--------------------------------------------------------------------------
         */
@@ -109,31 +101,7 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | USER MADRASAH (5 AKUN)
-        |--------------------------------------------------------------------------
-        */
-
-        $madrasahList = Madrasah::limit(5)->get();
-
-        foreach ($madrasahList as $index => $madrasah) {
-
-            User::create([
-                'role_id' => $madrasahRole->id,
-                'madrasah_id' => $madrasah->id,
-                'wilayah_pengawas_id' => null,
-                'nama' => $madrasah->nama_madrasah,
-                'email' => 'madrasah' . ($index + 1) . '@mail.com',
-                'username' => 'madrasah' . ($index + 1),
-                'password' => Hash::make('penmad123'),
-                'no_hp' => '08222222222' . ($index + 1),
-                'is_active' => true,
-            ]);
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | USER PENGAWAS (2 AKUN)
+        | USER ASESOR (2 AKUN)
         |--------------------------------------------------------------------------
         */
 
@@ -148,9 +116,9 @@ class DatabaseSeeder extends Seeder
                 'role_id' => $pengawasRole->id,
                 'madrasah_id' => null,
                 'wilayah_pengawas_id' => $wilayah->id,
-                'nama' => 'Pengawas ' . ($index + 1),
-                'email' => 'pengawas' . ($index + 1) . '@mail.com',
-                'username' => 'pengawas' . ($index + 1),
+                'nama' => 'Asesor ' . ($index + 1),
+                'email' => 'asesor' . ($index + 1) . '@mail.com',
+                'username' => 'asesor' . ($index + 1),
                 'password' => Hash::make('penmad123'),
                 'no_hp' => '08333333333' . ($index + 1),
                 'is_active' => true,
