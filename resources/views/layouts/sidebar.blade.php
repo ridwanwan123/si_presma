@@ -287,6 +287,12 @@
                 <i class="bi bi-calendar-range"></i>
                 <span>Kelola Periode</span>
             </a>
+
+            <a href="{{ route('siklus.index') }}"
+                class="menu-item {{ request()->routeIs('siklus.*') ? 'active' : '' }}">
+                <i class="bi bi-arrow-repeat"></i>
+                <span>Manajemen Status Prestasi</span>
+            </a>
         @endif
 
         <a href="{{ route('activity.index') }}"

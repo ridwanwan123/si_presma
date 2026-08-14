@@ -460,16 +460,16 @@
                 </div>
             </div>
 
-            {{-- KECOCOKAN RUBRIK JUKNIS + STATUS ASSIGNMENT --}}
+            {{-- RINGKASAN VERIFIKASI + STATUS ASSIGNMENT --}}
             <div class="dash-row">
                 <div class="dash-col-7">
                     <div class="content-card h-100">
                         <div class="card-title-row">
-                            <div class="title"><i class="bi bi-journal-check text-primary"></i> Kecocokan dengan Rubrik
-                                Juknis</div>
+                            <div class="title"><i class="bi bi-shield-check text-primary"></i> Ringkasan Verifikasi
+                            </div>
                         </div>
 
-                        @if ($kecocokanRubrikRingkasan['total'] === 0)
+                        @if ($verifikasiRingkasan['total'] === 0)
                             <div class="text-center text-muted py-4">
                                 <i class="bi bi-inbox"
                                     style="font-size:1.6rem;color:#cbd5e1;display:block;margin-bottom:.4rem"></i>
@@ -478,42 +478,39 @@
                         @else
                             <div class="d-flex align-items-center gap-3 flex-wrap">
                                 <div class="chart-box" style="width:140px;height:140px;flex-shrink:0">
-                                    <canvas id="chartRubrik"></canvas>
+                                    <canvas id="chartVerifikasi"></canvas>
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="rubrik-callout">
-                                        <strong>{{ $kecocokanRubrikRingkasan['persen_sesuai'] }}%</strong>
-                                        hasil penilaian Anda ({{ $kecocokanRubrikRingkasan['sesuai'] }} dari
-                                        {{ $kecocokanRubrikRingkasan['total'] }})
-                                        sudah <strong>sesuai</strong> rubrik resmi Juknis.
+                                        <strong>{{ $verifikasiRingkasan['persen_diakui'] }}%</strong>
+                                        dari prestasi yang Anda nilai ({{ $verifikasiRingkasan['diakui'] }} dari
+                                        {{ $verifikasiRingkasan['total'] }})
+                                        dinyatakan <strong>diakui</strong>.
                                     </div>
                                     <div class="rubrik-legend">
-                                        <span class="rubrik-legend-item"><span class="dot dot-sesuai"></span> Sesuai
-                                            ({{ $kecocokanRubrikRingkasan['sesuai'] }})</span>
-                                        <span class="rubrik-legend-item"><span class="dot dot-beda"></span> Beda
-                                            ({{ $kecocokanRubrikRingkasan['beda'] }})</span>
-                                        <span class="rubrik-legend-item"><span class="dot dot-na"></span> Belum Ada Rubrik
-                                            ({{ $kecocokanRubrikRingkasan['belum_ada'] }})</span>
+                                        <span class="rubrik-legend-item"><span class="dot dot-sesuai"></span> Diakui
+                                            ({{ $verifikasiRingkasan['diakui'] }})</span>
+                                        <span class="rubrik-legend-item"><span class="dot dot-beda"></span> Tidak
+                                            Diakui ({{ $verifikasiRingkasan['tidak_diakui'] }})</span>
                                     </div>
                                 </div>
                             </div>
 
-                            @if ($daftarBedaRubrik->isNotEmpty())
+                            @if ($daftarTidakDiakui->isNotEmpty())
                                 <div class="rubrik-beda-title">
-                                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Perlu Dicek Ulang — Beda
-                                    dari Rubrik
+                                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Tidak Diakui — Perlu
+                                    Ditinjau Ulang
                                 </div>
                                 <div class="table-responsive">
                                     <table class="mini-table">
                                         <thead>
                                             <tr>
                                                 <th style="text-align:left">Madrasah / Kegiatan</th>
-                                                <th>Skor Anda</th>
-                                                <th>Rubrik</th>
+                                                <th style="text-align:left">Catatan Asesor</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($daftarBedaRubrik as $item)
+                                            @foreach ($daftarTidakDiakui as $item)
                                                 <tr>
                                                     <td style="text-align:left">
                                                         <div class="fw-semibold" style="font-size:.8rem">
@@ -521,9 +518,14 @@
                                                         <div class="text-muted" style="font-size:.72rem">
                                                             {{ $item->nama_kegiatan }}</div>
                                                     </td>
-                                                    <td>{{ number_format($item->skor_madrasah, 0, ',', '.') }}</td>
-                                                    <td class="text-warning fw-bold">
-                                                        {{ number_format($item->skor_rubrik, 0, ',', '.') }}</td>
+                                                    <td style="text-align:left">
+                                                        @if ($item->catatan)
+                                                            <span style="font-size:.78rem">{{ $item->catatan }}</span>
+                                                        @else
+                                                            <span class="text-muted" style="font-size:.78rem">—
+                                                                Tanpa catatan</span>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -736,19 +738,17 @@
 
             Chart.register(centerTextPlugin);
 
-            /* ============ KECOCOKAN RUBRIK JUKNIS ============ */
-            const rubrikRingkasan = @json($kecocokanRubrikRingkasan);
+            /* ============ RINGKASAN VERIFIKASI (DIAKUI vs TIDAK DIAKUI) ============ */
+            const verifikasiRingkasan = @json($verifikasiRingkasan);
 
-            if (rubrikRingkasan.total > 0) {
-                new Chart(document.getElementById('chartRubrik'), {
+            if (verifikasiRingkasan.total > 0) {
+                new Chart(document.getElementById('chartVerifikasi'), {
                     type: 'doughnut',
                     data: {
-                        labels: ['Sesuai', 'Beda', 'Belum Ada Rubrik'],
+                        labels: ['Diakui', 'Tidak Diakui'],
                         datasets: [{
-                            data: [rubrikRingkasan.sesuai, rubrikRingkasan.beda, rubrikRingkasan
-                                .belum_ada
-                            ],
-                            backgroundColor: ['#16a34a', '#f59e0b', '#94a3b8'],
+                            data: [verifikasiRingkasan.diakui, verifikasiRingkasan.tidak_diakui],
+                            backgroundColor: ['#16a34a', '#f59e0b'],
                             borderWidth: 0,
                         }]
                     },

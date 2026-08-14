@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignAsesor;
 use App\Models\PrestasiSiswa;
-use App\Models\RubrikPenilaian;
 use Illuminate\Http\Request;
 
 class DashboardAsesorController extends Controller
@@ -144,70 +143,45 @@ class DashboardAsesorController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | KECOCOKAN DENGAN RUBRIK JUKNIS (menggantikan tren 14 hari yang lama --
-        | itu cuma laporan historis "berapa dinilai per hari", tidak actionable.
-        | Ini lebih berguna: dari semua yang SUDAH Anda nilai, berapa yang
-        | skornya cocok/beda/belum ada rubriknya -- dan yang "beda" itu
-        | ditampilkan detailnya supaya bisa langsung dicek ulang.
+        | RINGKASAN VERIFIKASI — DIAKUI vs TIDAK DIAKUI
+        |--------------------------------------------------------------------------
+        | Menggantikan "Kecocokan dengan Rubrik Juknis" yang lama -- widget itu
+        | dulu berguna karena skor diketik manual oleh madrasah sehingga sering
+        | meleset dari rubrik. Sekarang skor sudah dihitung otomatis mengikuti
+        | rubrik sejak awal, jadi membandingkan skor dengan rubrik lagi di sini
+        | cuma membandingkan sesuatu dengan dirinya sendiri (tidak actionable).
+        |
+        | Widget ini menampilkan hal yang justru MASIH murni judgment asesor:
+        | keputusan 'diakui' (checkbox di modal "Beri Nilai") -- bukan hasil
+        | hitungan sistem. Daftar yang "Tidak Diakui" dibatasi 8 baris terbaru
+        | supaya ringkas, sisanya tetap bisa dicek di halaman Madrasah > Detail.
         |--------------------------------------------------------------------------
         */
-        $prestasiSudahDinilai = $semuaPrestasi->filter(fn ($p) => $p->penilaianPrestasi !== null);
-
-        // Lookup nama madrasah dari data assignment yang sudah di-load (hindari
-        // query tambahan per prestasi).
         $namaMadrasahById = $assignments->pluck('madrasah.nama_madrasah', 'madrasah_id');
 
-        $kecocokanRubrik = $prestasiSudahDinilai->map(function ($p) use ($namaMadrasahById) {
-            $hasil = RubrikPenilaian::statusKecocokan(
-                bidangPrestasi: $p->bidang_prestasi,
-                tingkat: $p->tingkat,
-                juara: $p->juara,
-                kategoriKegiatan: $p->kategori_kegiatan,
-                metodePelaksanaan: $p->metode_pelaksanaan,
-                kategoriPenyelenggara: $p->kategori_penyelenggara,
-                tahun: (int) $p->periode,
-                skorMadrasah: (float) ($p->skor ?? 0)
-            );
+        $prestasiSudahDinilai = $semuaPrestasi->filter(fn ($p) => $p->penilaianPrestasi !== null);
 
-            return (object) [
-                'nama_kegiatan'  => $p->nama_kegiatan,
-                'nama_madrasah'  => $namaMadrasahById->get($p->madrasah_id, '-'),
-                'bidang'         => $p->bidang_prestasi,
-                'status'         => $hasil['status'], // 'cocok' | 'tidak_cocok' | 'tidak_ada'
-                'skor_madrasah'  => $p->skor,
-                'skor_rubrik'    => $hasil['skor_rubrik'],
-            ];
-        });
+        $totalSudahDinilai = $prestasiSudahDinilai->count();
+        $jumlahDiakui      = $prestasiSudahDinilai->where('diakui', true)->count();
+        $jumlahTidakDiakui = $totalSudahDinilai - $jumlahDiakui;
 
-        $totalDinilaiUntukRubrik = $kecocokanRubrik->count();
-        $jumlahSesuaiRubrik      = $kecocokanRubrik->where('status', 'cocok')->count();
-        $jumlahBedaRubrik        = $kecocokanRubrik->where('status', 'tidak_cocok')->count();
-        $jumlahBelumAdaRubrik    = $kecocokanRubrik->where('status', 'tidak_ada')->count();
-
-        $persenSesuaiRubrik = $totalDinilaiUntukRubrik > 0
-            ? round($jumlahSesuaiRubrik / $totalDinilaiUntukRubrik * 100)
-            : 0;
-
-        // Daftar yang BEDA dari rubrik -- paling actionable, batasi 8 biar
-        // ringkas, urutkan dari selisih terbesar supaya yang paling
-        // mencolok muncul duluan.
-        $daftarBedaRubrik = $kecocokanRubrik
-            ->where('status', 'tidak_cocok')
-            ->map(function ($item) {
-                $item->selisih = abs($item->skor_madrasah - $item->skor_rubrik);
-                return $item;
-            })
-            ->sortByDesc('selisih')
-            ->take(8)
-            ->values();
-
-        $kecocokanRubrikRingkasan = [
-            'total'          => $totalDinilaiUntukRubrik,
-            'sesuai'         => $jumlahSesuaiRubrik,
-            'beda'           => $jumlahBedaRubrik,
-            'belum_ada'      => $jumlahBelumAdaRubrik,
-            'persen_sesuai'  => $persenSesuaiRubrik,
+        $verifikasiRingkasan = [
+            'total'         => $totalSudahDinilai,
+            'diakui'        => $jumlahDiakui,
+            'tidak_diakui'  => $jumlahTidakDiakui,
+            'persen_diakui' => $totalSudahDinilai > 0 ? round($jumlahDiakui / $totalSudahDinilai * 100) : 0,
         ];
+
+        $daftarTidakDiakui = $prestasiSudahDinilai
+            ->where('diakui', false)
+            ->sortByDesc(fn ($p) => $p->penilaianPrestasi->updated_at)
+            ->take(8)
+            ->map(fn ($p) => (object) [
+                'nama_kegiatan' => $p->nama_kegiatan,
+                'nama_madrasah' => $namaMadrasahById->get($p->madrasah_id, '-'),
+                'catatan'       => $p->penilaianPrestasi->catatan,
+            ])
+            ->values();
 
         /*
         |--------------------------------------------------------------------------
@@ -234,8 +208,8 @@ class DashboardAsesorController extends Controller
             'daftarMadrasah',
             'progresPerBidang',
             'distribusiPersentase',
-            'kecocokanRubrikRingkasan',
-            'daftarBedaRubrik',
+            'verifikasiRingkasan',
+            'daftarTidakDiakui',
             'insight'
         ));
     }

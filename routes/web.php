@@ -11,6 +11,7 @@ use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\RankingArsipController;
 use App\Http\Controllers\RankingArsipManualController;
+use App\Http\Controllers\SiklusController;
 use App\Http\Controllers\HasilController;
 use App\Http\Controllers\MonitoringAsesorController;
 use App\Http\Controllers\PengaturanPenguranganPoinController;
@@ -147,6 +148,15 @@ Route::middleware('auth')->group(function () {
 
         Route::get('ranking/export', [RankingController::class, 'export'])
             ->name('ranking.export');
+
+        Route::prefix('siklus')->name('siklus.')->group(function () {
+
+            Route::get('/', [SiklusController::class, 'index'])
+                ->name('index');
+
+            Route::put('{prestasi_siklus}/status', [SiklusController::class, 'updateStatus'])
+                ->name('update-status');
+        });
 
         Route::prefix('ranking-arsip')->name('ranking-arsip.')->group(function () {
  
