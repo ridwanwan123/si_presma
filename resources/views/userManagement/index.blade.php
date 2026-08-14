@@ -31,6 +31,91 @@
             border: none;
         }
 
+        /* =========================
+           STAT CARDS (DASHBOARD)
+        ========================= */
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 0 1rem 1.25rem;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.1rem 1.25rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .04);
+        }
+
+        .stat-icon {
+            flex-shrink: 0;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.total {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .stat-icon.aktif {
+            background: #dcfce7;
+            color: #0f8a43;
+        }
+
+        .stat-icon.nonaktif {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .stat-info .stat-label {
+            font-size: .8rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: .2rem;
+        }
+
+        @media(max-width:768px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+                margin: 0 .5rem 1.25rem;
+            }
+        }
+
+        @media(max-width:480px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+        }
+
         .content-card {
             margin: 0 1rem 1rem;
             background: #fff;
@@ -136,6 +221,19 @@
 
         .modern-table {
             vertical-align: middle;
+            font-size: .85rem;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid #eef2f7;
+            border-radius: 12px;
+        }
+
+        .modern-table {
+            min-width: 820px;
+            margin-bottom: 0;
         }
 
         .modern-table thead th {
@@ -147,14 +245,52 @@
             letter-spacing: .04em;
             border-bottom: 1px solid #e2e8f0;
             white-space: nowrap;
+            padding: .75rem .9rem;
         }
 
         .modern-table tbody td {
             white-space: nowrap;
+            padding: .65rem .9rem;
+        }
+
+        .modern-table tbody tr:not(:last-child) td {
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .modern-table tbody tr:hover {
             background: #f8fafc;
+        }
+
+        /* kolom "No" pinned supaya tetap terlihat saat scroll horizontal */
+        .modern-table thead th:first-child,
+        .modern-table tbody td:first-child {
+            position: sticky;
+            left: 0;
+            background: #fff;
+            z-index: 1;
+        }
+
+        .modern-table thead th:first-child {
+            background: #f8fafc;
+            z-index: 2;
+        }
+
+        .modern-table tbody tr:hover td:first-child {
+            background: #f8fafc;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .table-footer .result-count {
+            color: #64748b;
+            font-size: .82rem;
         }
 
         .modern-table .badge {
@@ -394,6 +530,40 @@
                 Tambah Akun
             </a>
         </div>
+
+        {{-- Dashboard Info: Total / Aktif / Nonaktif --}}
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ number_format($totalUsers) }}</span>
+                    <span class="stat-label">Total Akun</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon aktif">
+                    <i class="bi bi-person-check"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ number_format($totalAktif) }}</span>
+                    <span class="stat-label">Aktif</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon nonaktif">
+                    <i class="bi bi-person-x"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ number_format($jumlahNonaktif) }}</span>
+                    <span class="stat-label">Nonaktif</span>
+                </div>
+            </div>
+        </div>
+
         <div class="content-card">
             <div class="content-card-body">
                 {{-- ================= FILTER ================= --}}
@@ -458,7 +628,7 @@
                     </div>
                 @endif
                 {{-- ================= TABLE ================= --}}
-                <div class="table-responsive">
+                <div class="table-scroll">
                     <table class="table modern-table">
                         <thead>
                             <tr>
@@ -556,7 +726,14 @@
                     </table>
                 </div>
                 {{-- ================= PAGINATION ================= --}}
-                {{ $users->onEachSide(1)->links('pagination::bootstrap-5') }}
+                <div class="table-footer">
+                    <span class="result-count">
+                        Menampilkan {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }}
+                        dari {{ $users->total() }} akun
+                    </span>
+
+                    {{ $users->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </main>

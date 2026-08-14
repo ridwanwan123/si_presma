@@ -51,6 +51,8 @@ class UserManagementController extends Controller
         // Dihitung terpisah (tanpa filter role/status) supaya badge jumlah
         // selalu akurat walau user sedang memfilter.
         $jumlahNonaktif = User::where('is_active', false)->count();
+        $totalUsers = User::count();
+        $totalAktif = $totalUsers - $jumlahNonaktif;
 
         // Dropdown Role
         $roles = Role::orderBy('nama')->get();
@@ -71,6 +73,8 @@ class UserManagementController extends Controller
             'madrasahs',
             'wilayahPengawas',
             'jumlahNonaktif',
+            'totalUsers',
+            'totalAktif',
             'breadcrumb'
         ));
     }

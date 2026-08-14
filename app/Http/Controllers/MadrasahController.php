@@ -65,12 +65,19 @@ class MadrasahController extends Controller
             ->orderBy('kota')
             ->pluck('kota');
 
+        $totalMadrasah = Madrasah::count();
+        $totalNegeri = Madrasah::where('status_madrasah', 'Negeri')->count();
+        $totalSwasta = Madrasah::where('status_madrasah', 'Swasta')->count();
+
         $breadcrumb = breadcrumb(['Madrasah']);
 
         return view('madrasah.index', compact(
             'madrasahs',
             'kotas',
-            'breadcrumb'
+            'breadcrumb',
+            'totalMadrasah',
+            'totalNegeri',
+            'totalSwasta'
         ));
     }
 
@@ -141,6 +148,10 @@ class MadrasahController extends Controller
             'nama_kepala_madrasah' => 'required|string|max:255',
             'nip_kepala_madrasah' => 'nullable|digits:18',
             'no_telepon_kamad' => 'nullable|string|max:20',
+
+            'nama_kepala_urusan_tata_usaha' => 'nullable|string|max:255',
+            'nip_kepala_urusan_tata_usaha' => 'nullable|digits:18',
+            'no_telepon_katu' => 'nullable|string|max:20',
 
             'foto_kamad_cropped' => 'nullable|string',
             'foto_katu_cropped' => 'nullable|string',
@@ -262,9 +273,11 @@ class MadrasahController extends Controller
 
             'nama_kepala_madrasah' => 'required|string|max:255',
             'nip_kepala_madrasah' => 'nullable|digits:18',
+            'no_telepon_kamad' => 'nullable|string|max:20',
 
             'nama_kepala_urusan_tata_usaha' => 'nullable|string|max:255',
             'nip_kepala_urusan_tata_usaha' => 'nullable|digits:18',
+            'no_telepon_katu' => 'nullable|string|max:20',
         ]);
 
         try {

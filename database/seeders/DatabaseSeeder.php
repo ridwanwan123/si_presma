@@ -72,17 +72,6 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | MADRASAH SEEDER
-        |--------------------------------------------------------------------------
-        */
-
-        $this->call([
-            MadrasahSeeder::class,
-            RubrikPenilaianSeeder::class
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
         | SUPERADMIN
         |--------------------------------------------------------------------------
         */
@@ -124,5 +113,11 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]);
         }
+
+        $this->call([
+            MadrasahSeeder::class,
+            PeriodeAktifSeeder::class,
+            RubrikPenilaianSeeder::class,
+        ]);
     }
 }
