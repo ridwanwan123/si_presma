@@ -1,66 +1,155 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PRESMA — Penilaian Prestasi Madrasah
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem penilaian prestasi madrasah berbasis web untuk **Bidang Pendidikan Madrasah, Kantor Wilayah Kementerian Agama Provinsi DKI Jakarta**. PRESMA digunakan untuk mengelola data madrasah, akun pengguna, penilaian prestasi, serta pencatatan aktivitas sistem dalam rangka **Jakarta Madrasah Awards (JMA)**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Daftar Isi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Tentang](#tentang)
+- [Fitur](#fitur)
+- [Teknologi](#teknologi)
+- [Kebutuhan Sistem](#kebutuhan-sistem)
+- [Instalasi](#instalasi)
+- [Konfigurasi Environment](#konfigurasi-environment)
+- [Akun Default (Seeder)](#akun-default-seeder)
+- [Struktur Peran (Role)](#struktur-peran-role)
+- [Struktur Proyek](#struktur-proyek)
+- [Deployment](#deployment)
+- [Lisensi](#lisensi)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tentang
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+PRESMA (**Pen**ilaian **S**iswa/**M**adrasah **A**chievement, atau Penilaian Prestasi Madrasah) dibangun untuk mendukung proses administrasi dan penilaian prestasi madrasah di lingkungan Kanwil Kemenag DKI Jakarta, termasuk proses standarisasi skoring untuk **Jakarta Madrasah Awards (JMA)**.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Fitur
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Manajemen Data Madrasah** — CRUD data madrasah (profil, kepala madrasah, kepala urusan tata usaha, lokasi peta, logo & foto).
+- **Manajemen Akun Pengguna** — Kelola akun Administrator, Madrasah, dan Asesor/Pengawas beserta hak aksesnya.
+- **Wilayah Pengawas** — Pengelompokan madrasah berdasarkan wilayah kerja pengawas/asesor (per Kota Administrasi DKI Jakarta).
+- **Periode Aktif** — Penentuan tahun/periode penilaian yang sedang berjalan sebagai satu-satunya sumber kebenaran (single source of truth), menggantikan hardcode tahun berjalan.
+- **Rubrik & Penilaian Prestasi** — Penilaian prestasi madrasah berdasarkan rubrik yang telah distandarisasi (Bidang Akademik, Keagamaan, Kelembagaan, dll).
+- **Activity Log** — Pencatatan seluruh aktivitas pengguna dalam sistem (create, update, delete, login, logout, import) menggunakan `spatie/laravel-activitylog`, lengkap dengan detail perubahan data.
+- **Dashboard Ringkasan** — Statistik ringkas (total data, status aktif/nonaktif, dsb.) di setiap modul.
 
-## Laravel Sponsors
+## Teknologi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Komponen | Teknologi |
+|---|---|
+| Framework | Laravel |
+| Database | MySQL / MariaDB |
+| Frontend | Blade, Bootstrap 5, Bootstrap Icons / Boxicons |
+| Activity Logging | `spatie/laravel-activitylog` |
+| Peta | Leaflet.js + OpenStreetMap (Nominatim) |
+| Cropping Gambar | Cropper.js |
+| Web Server (produksi) | Nginx + PHP-FPM |
+| Database Server (produksi) | MariaDB |
+| SSL | Certbot (Let's Encrypt) |
+| Process Manager | Supervisor |
 
-### Premium Partners
+## Kebutuhan Sistem
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- PHP >= 8.2
+- Composer
+- Node.js & NPM (untuk build asset, jika ada)
+- MySQL/MariaDB >= 10.x
+- Ekstensi PHP: `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`
 
-## Contributing
+## Instalasi
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+# 1. Clone repository
+git clone <url-repo> presma
+cd presma
 
-## Code of Conduct
+# 2. Install dependency
+composer install
+npm install && npm run build
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 3. Salin file environment
+cp .env.example .env
+php artisan key:generate
 
-## Security Vulnerabilities
+# 4. Sesuaikan koneksi database di .env, lalu migrasi + seed
+php artisan migrate --seed
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 5. Buat symbolic link storage (untuk logo, foto kamad, foto KTU, dll)
+php artisan storage:link
 
-## License
+# 6. Jalankan server lokal
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Konfigurasi Environment
+
+Variabel `.env` penting yang perlu disesuaikan:
+
+```env
+APP_NAME=PRESMA
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=jma_presma
+DB_USERNAME=
+DB_PASSWORD=
+
+FILESYSTEM_DISK=public
+```
+
+## Akun Default (Seeder)
+
+Setelah menjalankan `php artisan migrate --seed`, akun berikut akan tersedia (password default: `penmad123`):
+
+| Role | Username | Keterangan |
+|---|---|---|
+| Administrator | `superadmin` | Akses penuh ke seluruh sistem |
+| Asesor | `asesor1`, `asesor2` | Akun penilai per wilayah pengawas |
+
+> ⚠️ **Wajib diganti** setelah deployment ke lingkungan produksi.
+
+## Struktur Peran (Role)
+
+- **Administrator** — Kelola seluruh data master, akun pengguna, rubrik penilaian, dan periode aktif.
+- **Madrasah** — Mengelola profil madrasah sendiri dan mengajukan data prestasi.
+- **Asesor / Pengawas** — Menilai dan memverifikasi prestasi madrasah pada wilayah kerjanya.
+
+## Struktur Proyek
+
+```
+app/
+├── Helpers/
+│   ├── ActivityLogger.php
+│   └── ImageHelper.php
+├── Http/Controllers/
+│   ├── MadrasahController.php
+│   ├── UserManagementController.php
+│   └── ActivityController.php
+├── Models/
+│   ├── Madrasah.php
+│   ├── User.php
+│   ├── Role.php
+│   ├── WilayahPengawas.php
+│   └── PeriodeAktif.php
+database/
+└── seeders/
+    ├── DatabaseSeeder.php
+    ├── MadrasahSeeder.php
+    ├── RubrikPenilaianSeeder.php
+    └── PeriodeAktifSeeder.php
+resources/views/
+├── madrasah/
+├── userManagement/
+└── activity/
+```
+
+## Deployment
+
+Aplikasi ini di-deploy pada **VPS KVM (Ubuntu 24.04)** dengan stack **Nginx + PHP-FPM + MariaDB + Certbot + Supervisor**. Panduan langkah demi langkah tersedia di `docs/modul-vps-presma.md` (arsitektur, konfigurasi SSH, Nginx, PHP-FPM, MariaDB, SSL, dan queue worker via Supervisor).
+
+## Lisensi
+
+Proyek internal — Kantor Wilayah Kementerian Agama Provinsi DKI Jakarta, Bidang Pendidikan Madrasah. Tidak untuk didistribusikan tanpa izin.
