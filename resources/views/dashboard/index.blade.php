@@ -60,8 +60,6 @@
             background: #e2e8f0;
         }
 
-        /* ============ FILTER ============ */
-
         .filter-form {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
