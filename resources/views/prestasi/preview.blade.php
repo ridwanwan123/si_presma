@@ -27,8 +27,8 @@
         }
 
         /* ===========================
-                                   WARNING CALLOUT
-                                =========================== */
+                                                                       WARNING CALLOUT
+                                                                    =========================== */
 
         .preview-warning {
             display: flex;
@@ -73,8 +73,8 @@
         }
 
         /* ===========================
-                                   SUMMARY CARD (berikon)
-                                =========================== */
+                                                                       SUMMARY CARD (berikon)
+                                                                    =========================== */
 
         .preview-summary-card {
             display: flex;
@@ -124,8 +124,8 @@
         }
 
         /* ===========================
-                                   TABLE — COMPACT
-                                =========================== */
+                                                                       TABLE — COMPACT
+                                                                    =========================== */
 
         .preview-table {
             margin-bottom: 0;
@@ -171,8 +171,8 @@
         }
 
         /* ===========================
-                                   STICKY COLUMN
-                                =========================== */
+                                                                       STICKY COLUMN
+                                                                    =========================== */
 
         .preview-table tbody td.sticky-col {
             position: sticky;
@@ -223,8 +223,8 @@
         }
 
         /* ===========================
-                                   BADGE JUARA (selaras dengan halaman Daftar Prestasi)
-                                =========================== */
+                                                                       BADGE JUARA (selaras dengan halaman Daftar Prestasi)
+                                                                    =========================== */
 
         .badge-juara {
             display: inline-block;
@@ -287,8 +287,92 @@
         }
 
         /* ===========================
-                                   LOADING OVERLAY
-                                =========================== */
+                                                                       PAGINATION (selaras dengan halaman Daftar Prestasi)
+                                                                    =========================== */
+
+        .pagination {
+            gap: 6px;
+            margin: 0;
+        }
+
+        .page-item .page-link {
+            width: 36px;
+            height: 36px;
+
+            border-radius: 10px !important;
+
+            border: 1px solid #e8edf5;
+            background: #fff;
+            color: #475569;
+
+            font-size: 0.82rem;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: 0.18s;
+            box-shadow: none;
+        }
+
+        .page-item .page-link:hover {
+            background: #eaf6ef;
+            border-color: #bfe3cd;
+            color: #0f8a43;
+        }
+
+        .page-item.active .page-link {
+            background: #0f8a43;
+            border-color: #0f8a43;
+            color: #fff;
+        }
+
+        .page-item.disabled .page-link {
+            background: #f8fafc;
+            color: #94a3b8;
+        }
+
+        /* Wrapper bawaan Laravel: <nav><div class="d-flex justify-content-between">
+                   [teks "Showing X to Y of Z results"] [ul.pagination]</div></nav>
+                   Di-scope ke .custom-pagination supaya tidak ganggu .d-flex.justify-content-between lain di halaman ini. */
+        .custom-pagination .justify-content-between {
+            flex-wrap: wrap;
+            row-gap: 10px;
+        }
+
+        .custom-pagination p.text-muted {
+            margin: 0;
+            font-size: 0.78rem;
+        }
+
+        @media(max-width:768px) {
+            .custom-pagination .justify-content-between {
+                flex-direction: column;
+                align-items: center !important;
+            }
+
+            /* Pagination tampil duluan, info di bawahnya */
+            .custom-pagination .justify-content-between>div:first-child {
+                order: 2;
+            }
+
+            .custom-pagination .justify-content-between>div:last-child {
+                order: 1;
+            }
+
+            .custom-pagination p.text-muted {
+                text-align: center;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* ===========================
+                                                                       LOADING OVERLAY
+                                                                    =========================== */
 
         .simpan-loading {
             position: fixed;
@@ -617,7 +701,7 @@
                 </div>
 
                 @if ($paginatedData->hasPages())
-                    <div class="d-flex justify-content-center pt-3">
+                    <div class="custom-pagination pt-3 w-100">
                         {{ $paginatedData->onEachSide(1)->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
