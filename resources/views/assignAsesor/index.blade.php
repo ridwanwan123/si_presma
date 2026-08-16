@@ -3,8 +3,8 @@
 @push('styles')
     <style>
         /* ==========================================================
-                           PAGE HEADER
-                        ========================================================== */
+                               PAGE HEADER
+                            ========================================================== */
         .page-header {
             display: flex;
             align-items: flex-start;
@@ -67,8 +67,8 @@
         }
 
         /* ==========================================================
-                           SUMMARY CARDS
-                        ========================================================== */
+                               SUMMARY CARDS
+                            ========================================================== */
         .summary-row {
             margin-bottom: 24px;
         }
@@ -134,8 +134,8 @@
         }
 
         /* ==========================================================
-                           FILTER CARD
-                        ========================================================== */
+                               FILTER CARD
+                            ========================================================== */
         .filter-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -198,8 +198,8 @@
         }
 
         /* ==========================================================
-                           PROGRESS INFO
-                        ========================================================== */
+                               PROGRESS INFO
+                            ========================================================== */
         .progress-info {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -241,8 +241,8 @@
         }
 
         /* ==========================================================
-                           TOOLBAR
-                        ========================================================== */
+                               TOOLBAR
+                            ========================================================== */
         .assign-toolbar {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -305,8 +305,8 @@
         }
 
         /* ==========================================================
-                           TABLE
-                        ========================================================== */
+                               TABLE
+                            ========================================================== */
         .assign-table-card {
             background: #fff;
             border: 1px solid #eef1f5;
@@ -423,6 +423,11 @@
             color: #fd7e14;
         }
 
+        .status-badge.status-finished {
+            background-color: rgba(73, 80, 87, 0.1);
+            color: #495057;
+        }
+
         .action-btn {
             width: 34px;
             height: 34px;
@@ -466,8 +471,8 @@
         }
 
         /* ==========================================================
-                           PAGINATION FOOTER
-                        ========================================================== */
+                               PAGINATION FOOTER
+                            ========================================================== */
         .table-footer {
             display: flex;
             align-items: center;
@@ -498,8 +503,8 @@
         }
 
         /* ==========================================================
-                           MODAL
-                        ========================================================== */
+                               MODAL
+                            ========================================================== */
         .assign-modal .modal-content {
             border-radius: 20px;
             border: none;
@@ -792,10 +797,13 @@
                         @forelse ($madrasahs as $madrasah)
                             @php
                                 $asesorAktif = $madrasah->assignAsesor?->asesor;
+                                $statusSiklus = $statusSiklusByMadrasah[$madrasah->id] ?? null;
+                                $sudahFinished = $statusSiklus === \App\Models\PrestasiSiklus::FINISHED;
                             @endphp
                             <tr>
                                 <td>
-                                    <input type="checkbox" class="table-check row-check" value="{{ $madrasah->id }}">
+                                    <input type="checkbox" class="table-check row-check" value="{{ $madrasah->id }}"
+                                        @if ($sudahFinished) disabled title="Sudah selesai dinilai, tidak bisa di-assign ulang dari sini" @endif>
                                 </td>
                                 <td>
                                     <div class="madrasah-name">{{ $madrasah->nama_madrasah }}</div>
@@ -819,7 +827,11 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($madrasah->assignAsesor)
+                                    @if ($sudahFinished)
+                                        <span class="status-badge status-finished">
+                                            <i class="bi bi-flag-fill"></i> Selesai Dinilai
+                                        </span>
+                                    @elseif ($madrasah->assignAsesor)
                                         <span class="status-badge status-assigned">
                                             <i class="bi bi-check-circle-fill"></i> Assigned
                                         </span>
@@ -830,7 +842,13 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if ($madrasah->assignAsesor)
+                                    @if ($sudahFinished)
+                                        {{-- Sudah FINISHED -- bukan bagian pipeline assign lagi, jadi
+                                             tombol assign/ubah disembunyikan supaya tidak reassign
+                                             madrasah yang penilaiannya sudah kelar. --}}
+                                        <span class="text-muted" style="font-size:.8rem"
+                                            title="Sudah selesai dinilai">&mdash;</span>
+                                    @elseif ($madrasah->assignAsesor)
                                         <button type="button" class="action-btn" data-bs-toggle="modal"
                                             data-bs-target="#modalAssign" title="Ubah Asesor" data-bs-toggle="tooltip"
                                             data-id="{{ $madrasah->id }}" data-nama="{{ $madrasah->nama_madrasah }}"
@@ -969,7 +987,7 @@
 
             function getCheckedIds() {
                 return Array.from(rowChecks)
-                    .filter(cb => cb.checked)
+                    .filter(cb => cb.checked && !cb.disabled)
                     .map(cb => cb.value);
             }
 
@@ -985,7 +1003,9 @@
 
             if (checkAll) {
                 checkAll.addEventListener('change', function() {
-                    rowChecks.forEach(cb => cb.checked = checkAll.checked);
+                    rowChecks.forEach(cb => {
+                        if (!cb.disabled) cb.checked = checkAll.checked;
+                    });
                     updateSelectedCount();
                 });
             }

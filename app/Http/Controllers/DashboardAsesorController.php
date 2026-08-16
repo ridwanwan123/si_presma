@@ -24,7 +24,8 @@ class DashboardAsesorController extends Controller
         'Lembaga'      => '#94a3b8',
     ];
 
-    private const WARNA_PERSENTASE = ['#1d4ed8', '#38bdf8', '#f59e0b', '#8b5cf6', '#10b981', '#94a3b8'];
+    private const WARNA_PERSENTASE = ['#2563eb', '#8b5cf6', '#10b981', '#f59e0b', '#38bdf8', '#94a3b8'];
+    private const WARNA_NOL_PERSEN = '#ef4444';
 
     public function index(Request $request)
     {
@@ -131,15 +132,24 @@ class DashboardAsesorController extends Controller
             ->filter()
             ->groupBy('persentase')
             ->map(fn ($items, $persentase) => [
-                'label'  => $persentase . '%',
-                'jumlah' => $items->count(),
+                'persentase' => (int) $persentase,
+                'label'      => $persentase . '%',
+                'jumlah'     => $items->count(),
             ])
-            ->sortKeys()
+            // Urutkan dari persentase TERTINGGI dulu supaya warna ke-0 (paling
+            // menarik) jatuh ke nilai tertinggi, bukan sekadar urutan array.
+            ->sortByDesc('persentase')
             ->values()
             ->map(function ($item, $index) {
-                $item['warna'] = self::WARNA_PERSENTASE[$index] ?? '#cbd5e1';
+                $item['warna'] = $item['persentase'] === 0
+                    ? self::WARNA_NOL_PERSEN
+                    : (self::WARNA_PERSENTASE[$index] ?? '#cbd5e1');
                 return $item;
-            });
+            })
+            // Tampilan tetap ascending (0% -> 100%); warna sudah ditentukan
+            // di atas jadi urutan tampil ini tidak memengaruhi pewarnaan.
+            ->sortBy('persentase')
+            ->values();
 
         /*
         |--------------------------------------------------------------------------
@@ -175,7 +185,7 @@ class DashboardAsesorController extends Controller
         $daftarTidakDiakui = $prestasiSudahDinilai
             ->where('diakui', false)
             ->sortByDesc(fn ($p) => $p->penilaianPrestasi->updated_at)
-            ->take(8)
+            ->take(2)
             ->map(fn ($p) => (object) [
                 'nama_kegiatan' => $p->nama_kegiatan,
                 'nama_madrasah' => $namaMadrasahById->get($p->madrasah_id, '-'),

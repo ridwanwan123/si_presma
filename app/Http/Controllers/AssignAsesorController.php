@@ -9,7 +9,6 @@ use App\Models\PrestasiSiklus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class AssignAsesorController extends Controller
 {
@@ -20,7 +19,14 @@ class AssignAsesorController extends Controller
     | "Pipeline" = madrasah yang siklus prestasinya untuk periode berjalan
     | sudah SUBMITTED (menunggu ditugaskan) atau ASSESSMENT (sudah
     | ditugaskan, sedang dinilai). Madrasah yang masih OPEN (belum submit)
-    | atau sudah FINISHED tidak relevan untuk halaman Assign Asesor.
+    | tidak relevan untuk halaman Assign Asesor -- dipakai KHUSUS untuk
+    | index() karena madrasah yang statusnya sudah FINISHED memang tidak
+    | perlu di-assign ulang di sana.
+    |
+    | Untuk LAPORAN (lihat madrasahIdsLaporan()) cakupannya sengaja lebih
+    | luas: FINISHED tetap ikut ditampilkan, karena laporan penugasan untuk
+    | periode 2026 (masih berjalan) harus tetap menunjukkan madrasah mana
+    | dipegang asesor mana walaupun penilaiannya sudah selesai.
     */
 
     private function periodeAktif(): int
@@ -38,12 +44,38 @@ class AssignAsesorController extends Controller
             ->pluck('madrasah_id');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER: MADRASAH UNTUK LAPORAN (mencakup yang sudah FINISHED)
+    |--------------------------------------------------------------------------
+    | OPEN tetap dikecualikan -- madrasah yang belum submit belum relevan
+    | untuk laporan penugasan asesor (memang belum ada apa-apa untuk
+    | ditugaskan). Selain itu (SUBMITTED, ASSESSMENT, FINISHED) semua ikut.
+    */
+
+    private function madrasahIdsLaporan()
+    {
+        return PrestasiSiklus::where('periode', $this->periodeAktif())
+            ->whereIn('status', [
+                PrestasiSiklus::SUBMITTED,
+                PrestasiSiklus::ASSESSMENT,
+                PrestasiSiklus::FINISHED,
+            ])
+            ->pluck('madrasah_id');
+    }
+
     public function index(Request $request)
     {
         /*
         |--------------------------------------------------------------------------
         | SUMMARY
         |--------------------------------------------------------------------------
+        | Tetap dihitung dari pipeline (SUBMITTED/ASSESSMENT) saja -- ini KPI
+        | "pekerjaan yang masih perlu ditugaskan", bukan jumlah seluruh
+        | madrasah periode ini. Kalau ikut menghitung yang FINISHED, angka
+        | "Belum Assigned" jadi bias (padahal semua yang FINISHED sudah pasti
+        | assigned), dan persentasenya jadi kurang berguna sebagai indikator
+        | progres kerja yang tersisa.
         */
 
         $totalAsesor = User::whereHas('role', function ($q) {
@@ -66,6 +98,24 @@ class AssignAsesorController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | MADRASAH UNTUK TABEL (lebih luas dari pipeline)
+        |--------------------------------------------------------------------------
+        | Tabel menampilkan seluruh madrasah periode ini termasuk yang sudah
+        | FINISHED -- supaya tetap kelihatan madrasah mana dipegang asesor
+        | mana walau penilaiannya sudah kelar. Tombol assign untuk baris
+        | FINISHED disembunyikan/dinonaktifkan di view, bukan di-filter di
+        | query, jadi datanya tetap kebaca.
+        */
+
+        $madrasahIdsSemua = $this->madrasahIdsLaporan();
+
+        // Peta madrasah_id => status siklus periode ini, dipakai view untuk
+        // menyembunyikan/menonaktifkan tombol assign pada baris FINISHED.
+        $statusSiklusByMadrasah = PrestasiSiklus::where('periode', $this->periodeAktif())
+            ->pluck('status', 'madrasah_id');
+
+        /*
+        |--------------------------------------------------------------------------
         | FILTER OPTION
         |--------------------------------------------------------------------------
         */
@@ -76,13 +126,13 @@ class AssignAsesorController extends Controller
             ->orderBy('nama')
             ->get();
 
-        $jenjang = Madrasah::whereIn('id', $madrasahIdsPipeline)
+        $jenjang = Madrasah::whereIn('id', $madrasahIdsSemua)
             ->select('jenjang_madrasah')
             ->distinct()
             ->orderBy('jenjang_madrasah')
             ->pluck('jenjang_madrasah');
 
-        $wilayah = Madrasah::whereIn('id', $madrasahIdsPipeline)
+        $wilayah = Madrasah::whereIn('id', $madrasahIdsSemua)
             ->select('kota')
             ->distinct()
             ->orderBy('kota')
@@ -95,7 +145,7 @@ class AssignAsesorController extends Controller
         */
 
         $madrasahs = Madrasah::query()
-            ->whereIn('id', $madrasahIdsPipeline)
+            ->whereIn('id', $madrasahIdsSemua)
             ->withCount('prestasis')
             ->with([
                 'assignAsesor.asesor',
@@ -207,7 +257,8 @@ class AssignAsesorController extends Controller
             'jenjang',
             'wilayah',
 
-            'madrasahs'
+            'madrasahs',
+            'statusSiklusByMadrasah'
         ));
     }
 
@@ -346,7 +397,7 @@ class AssignAsesorController extends Controller
     private function filteredMadrasahQuery(Request $request)
     {
         $query = Madrasah::query()
-            ->whereIn('id', $this->madrasahIdsPipeline())
+            ->whereIn('id', $this->madrasahIdsLaporan())
             ->withCount('prestasis')
             ->with(['assignAsesor.asesor']);
 
@@ -426,11 +477,21 @@ class AssignAsesorController extends Controller
         $dicetakOleh = auth()->user()->nama ?? '-';
         $tanggalCetak = now()->format('d/m/Y H:i');
 
-        $pdf = Pdf::loadView('assignAsesor.pdf', compact(
+        /*
+        |--------------------------------------------------------------------------
+        | CETAK / EXPORT
+        |--------------------------------------------------------------------------
+        | Bukan lagi generate via DomPDF (CSS modern seperti flexbox/grid tidak
+        | didukung penuh, hasilnya sering berantakan). Sekarang halaman ini
+        | dirender sebagai HTML biasa oleh browser user, lalu di-print /
+        | disimpan sebagai PDF lewat window.print() -- lihat tombol "Cetak /
+        | Simpan sebagai PDF" di view. Tidak butuh dependency tambahan di
+        | server (tidak perlu Chromium/Puppeteer).
+        |--------------------------------------------------------------------------
+        */
+        return view('assignAsesor.cetak', compact(
             'grouped', 'bebanAsesor', 'totalAsesor', 'totalMadrasah',
             'sudahAssigned', 'belumAssigned', 'dicetakOleh', 'tanggalCetak'
-        ))->setPaper('F4', 'portrait');
-
-        return $pdf->stream('laporan-penugasan-asesor-' . now()->format('Ymd_His') . '.pdf');
+        ));
     }
 }

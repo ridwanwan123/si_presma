@@ -593,7 +593,7 @@
                             </div>
                         </div>
                         <div class="chart-box-sm">
-                            <cresanvas id="chartPersentase"></cresanvas>
+                            <canvas id="chartPersentase"></canvas>
                         </div>
                         <ul class="legend-list">
                             @forelse ($distribusiPersentase as $item)
