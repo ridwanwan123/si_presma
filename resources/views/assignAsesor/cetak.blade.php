@@ -19,7 +19,7 @@
 
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 13px;
+            font-size: 14px;
             color: #1c1c1c;
             background: #eef1f0;
         }
@@ -75,8 +75,8 @@
         }
 
         .kop img {
-            width: 64px;
-            height: 64px;
+            width: 100px;
+            height: 100px;
             flex-shrink: 0;
         }
 
@@ -86,35 +86,42 @@
         }
 
         .kop-instansi-utama {
-            font-size: 16px;
+            font-size: 19px;
             font-weight: 700;
-            color: #14532d;
+            color: #000;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
         .kop-instansi-sub {
-            font-size: 12.5px;
+            font-size: 15px;
             font-weight: 700;
             text-transform: uppercase;
+            color: #000;
             margin-top: 2px;
         }
 
-        .kop-instansi-unit {
-            font-size: 10.5px;
-            font-weight: 600;
+        .kop-instansi-provinsi {
+            font-size: 17px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #000;
             margin-top: 1px;
-            color: #374151;
         }
 
         .kop-alamat {
-            font-size: 9px;
-            color: #6b7785;
-            margin-top: 4px;
+            font-size: 11.5px;
+            color: #000;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .kop-alamat a {
+            color: #1a56db;
         }
 
         .kop-spacer {
-            width: 64px;
+            width: 100px;
             flex-shrink: 0;
         }
 
@@ -137,11 +144,17 @@
         }
 
         .report-title h1 {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: #14532d;
             letter-spacing: 0.6px;
             text-transform: uppercase;
+        }
+
+        .report-subtitle {
+            font-size: 12px;
+            color: #374151;
+            margin-top: 4px;
         }
 
         .report-title .underline {
@@ -167,14 +180,14 @@
         }
 
         .label {
-            font-size: 9px;
+            font-size: 10px;
             color: #6b7785;
             text-transform: uppercase;
             letter-spacing: 0.4px;
         }
 
         .value {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             margin-top: 3px;
         }
@@ -183,7 +196,7 @@
            SECTION TITLE
            ========================================================== */
         .section-title {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
             color: #14532d;
             text-transform: uppercase;
@@ -209,7 +222,7 @@
         }
 
         .ringkasan-value {
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 700;
             margin-top: 4px;
         }
@@ -239,23 +252,34 @@
         th {
             background: #14532d;
             color: #fff;
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             padding: 8px 8px;
             text-align: left;
-            border: 1px solid #0d3d21;
+            border: 1px solid #000;
         }
 
         td {
-            font-size: 11.5px;
+            font-size: 12.5px;
             padding: 7px 8px;
-            border: 1px solid #e3e6e9;
+            border: 1px solid #000;
             vertical-align: top;
+            color: #000;
         }
 
         tbody tr:nth-child(even) td {
             background: #f7f8f9;
+        }
+
+        /* Setiap grup asesor dibungkus <tbody> sendiri -- browser akan
+           berusaha menjaga satu grup tetap utuh dalam satu halaman kalau
+           muat. Kalau satu asesor pegang sangat banyak madrasah (lebih dari
+           kapasitas satu halaman), browser tetap akan memotongnya secara
+           wajar sebagai fallback -- tidak error, cuma tidak sepenuhnya utuh. */
+        tbody.asesor-group {
+            break-inside: avoid-page;
+            page-break-inside: avoid;
         }
 
         tr {
@@ -300,31 +324,35 @@
             width: 16%;
             text-align: center;
             font-weight: 700;
-            color: #e3e6e9;
         }
 
         .beban-col-proporsi {
             width: 16%;
             text-align: right;
             font-weight: 700;
-            color: #e3e6e9;
+        }
+
+        td.beban-col-jumlah,
+        td.beban-col-proporsi {
+            color: #000;
         }
 
         .madrasah-nama {
             font-weight: 600;
+            color: #000;
         }
 
         .text-muted {
-            color: #8b93a1;
+            color: #000;
         }
 
         /* Baris header per grup asesor -- tidak pakai rowspan, jadi baris
            bebas pindah halaman tanpa risiko sel merge yang pecah. */
         tr.group-header td {
             background: #eef2ef;
-            border: 1px solid #c7d2cb;
+            border: 1px solid #000;
             font-weight: 700;
-            color: #14532d;
+            color: #000;
             page-break-after: avoid;
             /* judul grup jangan sendirian di akhir halaman */
         }
@@ -332,7 +360,7 @@
         tr.group-header .badge {
             float: right;
             font-weight: 400;
-            color: #4b5563;
+            color: #000;
         }
 
         .summary-footer {
@@ -396,12 +424,12 @@
             <img src="{{ asset('assets/images/kemenag.png') }}" alt="Logo Kementerian Agama">
             <div class="kop-text">
                 <div class="kop-instansi-utama">Kementerian Agama Republik Indonesia</div>
-                <div class="kop-instansi-sub">Kantor Wilayah Kementerian Agama Provinsi DKI Jakarta</div>
-                <div class="kop-instansi-unit">Bidang Pendidikan Madrasah</div>
-                <div class="kop-instansi-unit">Jakarta Madrasah Awards (JMA)</div>
+                <div class="kop-instansi-sub">Kantor Wilayah Kementerian Agama</div>
+                <div class="kop-instansi-provinsi">Provinsi DKI Jakarta</div>
                 <div class="kop-alamat">
-                    Jl. DI. Panjaitan No.10, RT.9/RW.1, Cipinang Cempedak, Kecamatan Jatinegara, Kota Jakarta Timur,
-                    Daerah Khusus Ibukota Jakarta 13340
+                    Jalan D.I. Panjaitan No.10 Jakarta Timur 13340<br>
+                    Telepon (021) 8197479, 8512403, 856530; Faksimili (021) 8512402<br>
+                    Website : <a href="http://www.dki.kemenag.go.id">www.dki.kemenag.go.id</a>
                 </div>
             </div>
             <div class="kop-spacer"></div>
@@ -412,6 +440,7 @@
         {{-- JUDUL --}}
         <div class="report-title">
             <h1>Laporan Penugasan Asesor</h1>
+            <div class="report-subtitle">Bidang Pendidikan Madrasah &mdash; Program Jakarta Madrasah Awards (JMA)</div>
             <div class="underline"></div>
         </div>
 
@@ -505,9 +534,9 @@
                     <th class="col-prestasi">Prestasi</th>
                 </tr>
             </thead>
-            <tbody>
-                @php $no = 1; @endphp
-                @forelse ($grouped as $namaAsesor => $items)
+            @php $no = 1; @endphp
+            @forelse ($grouped as $namaAsesor => $items)
+                <tbody class="asesor-group">
                     <tr class="group-header">
                         <td colspan="6">
                             @if ($namaAsesor === 'Belum Ditugaskan')
@@ -528,14 +557,16 @@
                             <td class="col-prestasi">{{ $madrasah->prestasis_count }}</td>
                         </tr>
                     @endforeach
-                @empty
+                </tbody>
+            @empty
+                <tbody>
                     <tr>
                         <td colspan="6" style="text-align:center;padding:16px">
                             Tidak ada data madrasah untuk ditampilkan.
                         </td>
                     </tr>
-                @endforelse
-            </tbody>
+                </tbody>
+            @endforelse
         </table>
 
         <div class="summary-footer">

@@ -19,7 +19,8 @@
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
-    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}" type="image/x-icon" />
+    <link rel="icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}?v=2" type="image/png" />
+    <link rel="shortcut icon" href="{{ asset('assets/images/logo_p_remove_bg.png') }}?v=2" type="image/png" />
 
     @stack('styles')
 </head>
