@@ -401,6 +401,12 @@ class AsesorController extends Controller
             $statusPenilaian = null;
         }
 
+        // FILTER: Diakui / Tidak Diakui (kolom prestasi_siswas.diakui)
+        $diakuiFilter = $request->query('diakui');
+        if (! in_array($diakuiFilter, ['diakui', 'tidak_diakui'], true)) {
+            $diakuiFilter = null;
+        }
+
         $bidang = $request->query('bidang');
         $tingkat = $request->query('tingkat');
         $penyelenggara = $request->query('penyelenggara');
@@ -430,6 +436,12 @@ class AsesorController extends Controller
             })
             ->when($statusPenilaian === 'sudah', function ($query) {
                 $query->whereNotNull('penilaian_prestasis.id');
+            })
+            ->when($diakuiFilter === 'diakui', function ($query) {
+                $query->where('prestasi_siswas.diakui', true);
+            })
+            ->when($diakuiFilter === 'tidak_diakui', function ($query) {
+                $query->where('prestasi_siswas.diakui', false);
             })
             ->with('penilaianPrestasi')
             ->orderBy('urutan_status')
@@ -556,6 +568,7 @@ class AsesorController extends Controller
             'daftarBidang' => $daftarBidang,
             'daftarPenyelenggara' => $daftarPenyelenggara,
             'statusPenilaian' => $statusPenilaian,
+            'diakuiFilter' => $diakuiFilter,
             'daftarRubrikReferensi' => $daftarRubrikReferensi,
         ]);
     }

@@ -231,10 +231,13 @@ Route::middleware('auth')->group(function () {
             ->name('rubrik-penilaian.salin-tahun');
  
 
-        Route::get('export-center', [ExportCenterController::class, 'index'])
-            ->name('export-center.index');
-        Route::get('export-center/export', [ExportCenterController::class, 'export'])
-            ->name('export-center.export');
+         Route::prefix('export-center')
+            ->name('export-center.')
+            ->group(function () {
+                Route::get('/', [ExportCenterController::class, 'index'])->name('index');
+                Route::get('/laporan-penilaian', [ExportCenterController::class, 'exportLaporanPenilaian'])
+                    ->name('laporan-penilaian');
+            });
     });
     
     /*

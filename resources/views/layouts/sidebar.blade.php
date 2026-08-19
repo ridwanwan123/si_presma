@@ -195,6 +195,14 @@
                 <span>Monitoring Asesor</span>
             </a>
 
+            {{-- Export Center -- kumpulan export laporan (mulai dari Laporan
+                 Hasil Penilaian Asesor: rekap ringkasan + detail per prestasi) --}}
+            <a href="{{ route('export-center.index') }}"
+                class="menu-item {{ request()->routeIs('export-center.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                <span>Export Center</span>
+            </a>
+
             {{-- Pengurangan Poin -- pengaturan nilai potongan + data
                  Aduan Masyarakat & Keterlambatan Berkas --}}
             <a href="#"

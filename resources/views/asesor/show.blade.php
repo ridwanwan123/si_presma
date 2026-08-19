@@ -1077,7 +1077,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
                             <div class="col-md-2">
                                 <label class="form-label">Tingkat</label>
                                 <select class="form-select" name="tingkat">
@@ -1090,8 +1089,7 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label class="form-label">Penyelenggara</label>
                                 <select class="form-select" name="penyelenggara">
                                     <option value="">Semua Penyelenggara</option>
@@ -1103,7 +1101,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label class="form-label">Status Penilaian</label>
                                 <select class="form-select" name="status_penilaian">
                                     <option value="" {{ !$statusPenilaian ? 'selected' : '' }}>Semua</option>
@@ -1111,6 +1109,17 @@
                                         Dinilai</option>
                                     <option value="sudah" {{ $statusPenilaian === 'sudah' ? 'selected' : '' }}>Sudah
                                         Dinilai</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Prestasi</label>
+                                <select class="form-select" name="diakui">
+                                    <option value="" {{ !$diakuiFilter ? 'selected' : '' }}>Semua</option>
+                                    <option value="diakui" {{ $diakuiFilter === 'diakui' ? 'selected' : '' }}>
+                                        Diakui</option>
+                                    <option value="tidak_diakui"
+                                        {{ $diakuiFilter === 'tidak_diakui' ? 'selected' : '' }}>
+                                        Tidak Diakui</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
