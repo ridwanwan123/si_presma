@@ -181,6 +181,14 @@ class PrestasiImportService
                 }
             }
 
+            $semuaKosong = collect($row)->every(
+                fn ($value) => is_null($value) || trim((string) $value) === ''
+            );
+
+            if ($semuaKosong) {
+                continue;
+            }
+
             if (count($row) != 11) {
                 $errors[] = [
                     'row' => $index + 2,
