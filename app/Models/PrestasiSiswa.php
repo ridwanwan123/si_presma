@@ -22,6 +22,7 @@ class PrestasiSiswa extends Model
         'kategori_penyelenggara',
         'waktu_kegiatan',
         'metode_pelaksanaan',
+        'kriteria_khusus',
         'skor',
         'diakui',
         'rubrik_penilaian_id',

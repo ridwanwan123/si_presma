@@ -45,6 +45,7 @@ return new class extends Migration
                 'Daring',
             ]);
 
+            $table->string('kriteria_khusus')->nullable();
             $table->decimal('skor', 8, 2);
 
             // Default TRUE -- prestasi yang diinput Madrasah dianggap

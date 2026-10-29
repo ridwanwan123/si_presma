@@ -342,6 +342,11 @@ class RubrikPenilaianController extends Controller
             return "{$rubrik->bidang_prestasi} - {$rubrik->tingkat} - {$rubrik->juara} - {$rubrik->kategori_kegiatan}";
         }
 
-        return "{$rubrik->bidang_prestasi} - {$rubrik->jenis_rubrik} - " . ($rubrik->kriteria_khusus ?? '-');
+        // Sertakan tingkat -- kriteria_khusus banyak yang teksnya sama
+        // persis lintas tingkat (mis. "Karya Tulis Ilmiah" ada di 3
+        // tingkat beda skor), jadi tanpa tingkat log jadi ambigu.
+        $tingkatLabel = $rubrik->tingkat ? "{$rubrik->tingkat} - " : '';
+
+        return "{$rubrik->bidang_prestasi} - {$rubrik->jenis_rubrik} - {$tingkatLabel}" . ($rubrik->kriteria_khusus ?? '-');
     }
 }

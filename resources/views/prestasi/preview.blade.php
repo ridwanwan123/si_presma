@@ -27,8 +27,8 @@
         }
 
         /* ===========================
-                                                                       WARNING CALLOUT
-                                                                    =========================== */
+                                                                           WARNING CALLOUT
+                                                                        =========================== */
 
         .preview-warning {
             display: flex;
@@ -73,8 +73,8 @@
         }
 
         /* ===========================
-                                                                       SUMMARY CARD (berikon)
-                                                                    =========================== */
+                                                                           SUMMARY CARD (berikon)
+                                                                        =========================== */
 
         .preview-summary-card {
             display: flex;
@@ -124,8 +124,8 @@
         }
 
         /* ===========================
-                                                                       TABLE — COMPACT
-                                                                    =========================== */
+                                                                           TABLE — COMPACT
+                                                                        =========================== */
 
         .preview-table {
             margin-bottom: 0;
@@ -171,8 +171,8 @@
         }
 
         /* ===========================
-                                                                       STICKY COLUMN
-                                                                    =========================== */
+                                                                           STICKY COLUMN
+                                                                        =========================== */
 
         .preview-table tbody td.sticky-col {
             position: sticky;
@@ -223,8 +223,8 @@
         }
 
         /* ===========================
-                                                                       BADGE JUARA (selaras dengan halaman Daftar Prestasi)
-                                                                    =========================== */
+                                                                           BADGE JUARA (selaras dengan halaman Daftar Prestasi)
+                                                                        =========================== */
 
         .badge-juara {
             display: inline-block;
@@ -287,8 +287,8 @@
         }
 
         /* ===========================
-                                                                       PAGINATION (selaras dengan halaman Daftar Prestasi)
-                                                                    =========================== */
+                                                                           PAGINATION (selaras dengan halaman Daftar Prestasi)
+                                                                        =========================== */
 
         .pagination {
             gap: 6px;
@@ -333,8 +333,8 @@
         }
 
         /* Wrapper bawaan Laravel: <nav><div class="d-flex justify-content-between">
-                   [teks "Showing X to Y of Z results"] [ul.pagination]</div></nav>
-                   Di-scope ke .custom-pagination supaya tidak ganggu .d-flex.justify-content-between lain di halaman ini. */
+                       [teks "Showing X to Y of Z results"] [ul.pagination]</div></nav>
+                       Di-scope ke .custom-pagination supaya tidak ganggu .d-flex.justify-content-between lain di halaman ini. */
         .custom-pagination .justify-content-between {
             flex-wrap: wrap;
             row-gap: 10px;
@@ -371,8 +371,8 @@
         }
 
         /* ===========================
-                                                                       LOADING OVERLAY
-                                                                    =========================== */
+                                                                           LOADING OVERLAY
+                                                                        =========================== */
 
         .simpan-loading {
             position: fixed;
@@ -578,13 +578,21 @@
                                 <th class="sticky-col sticky-no text-center">No</th>
                                 <th class="sticky-col sticky-nama">Nama Kegiatan</th>
                                 <th>Bidang</th>
-                                <th>Tingkat</th>
-                                <th>Kategori</th>
-                                <th>Juara</th>
-                                <th>Lembaga</th>
-                                <th>Penyelenggara</th>
+                                @if ($pakaiTingkat)
+                                    <th>Tingkat</th>
+                                @endif
+                                @if ($templateTipe === 'lomba')
+                                    <th>Kategori</th>
+                                    <th>Juara</th>
+                                    <th>Lembaga</th>
+                                    <th>Penyelenggara</th>
+                                @else
+                                    <th>Kriteria</th>
+                                @endif
                                 <th>Tanggal</th>
-                                <th>Metode</th>
+                                @if ($templateTipe === 'lomba')
+                                    <th>Metode</th>
+                                @endif
                                 <th hidden>Skor</th>
                             </tr>
 
@@ -626,57 +634,60 @@
                                         {{ $item['bidang_prestasi'] }}
                                     </td>
 
-                                    <td>
-                                        <span
-                                            class="badge-juara {{ $tingkatTinggi ? 'badge-tingkat-tinggi' : 'badge-tingkat-biasa' }}">
-                                            {{ $item['tingkat'] }}
-                                        </span>
-                                    </td>
+                                    @if ($pakaiTingkat)
+                                        <td>
+                                            <span
+                                                class="badge-juara {{ $tingkatTinggi ? 'badge-tingkat-tinggi' : 'badge-tingkat-biasa' }}">
+                                                {{ $item['tingkat'] }}
+                                            </span>
+                                        </td>
+                                    @endif
+
+                                    @if ($templateTipe === 'lomba')
+                                        <td>
+                                            {{ $item['kategori_kegiatan'] }}
+                                        </td>
+
+                                        <td>
+                                            <span class="badge-juara {{ $juaraClass }}">
+                                                {{ $item['juara'] }}
+                                            </span>
+                                        </td>
+
+                                        <td class="col-lembaga">
+                                            {{ $item['lembaga_penyelenggara'] }}
+                                        </td>
+
+                                        <td>
+                                            {{ $item['kategori_penyelenggara'] }}
+                                        </td>
+                                    @else
+                                        {{--
+                                            KOLOM "KRITERIA" -- pengganti Kategori/Juara/Lembaga/
+                                            Penyelenggara untuk Template B. Ini teks yang dipilih
+                                            dari dropdown Excel (lihat kriteria_khusus di
+                                            PrestasiKriteriaImport), dicocokkan EXACT STRING ke
+                                            rubrik_penilaians -- ditampilkan apa adanya, bukan
+                                            dipotong/diformat ulang, supaya Madrasah bisa cross-
+                                            check persis sama teks yang tadi mereka pilih.
+                                        --}}
+                                        <td class="col-lembaga">
+                                            {{ $item['kriteria_khusus'] }}
+                                        </td>
+                                    @endif
 
                                     <td>
-
-                                        {{ $item['kategori_kegiatan'] }}
-
-                                    </td>
-
-                                    <td>
-
-                                        <span class="badge-juara {{ $juaraClass }}">
-
-                                            {{ $item['juara'] }}
-
-                                        </span>
-
-                                    </td>
-
-                                    <td class="col-lembaga">
-
-                                        {{ $item['lembaga_penyelenggara'] }}
-
-                                    </td>
-
-                                    <td>
-
-                                        {{ $item['kategori_penyelenggara'] }}
-
-                                    </td>
-
-                                    <td>
-
                                         {{ $item['waktu_kegiatan'] }}
-
                                     </td>
 
-                                    <td class="text-center">
-
-                                        {{ $item['metode_pelaksanaan'] }}
-
-                                    </td>
+                                    @if ($templateTipe === 'lomba')
+                                        <td class="text-center">
+                                            {{ $item['metode_pelaksanaan'] }}
+                                        </td>
+                                    @endif
 
                                     <td class="text-center" hidden>
-
                                         {{ $item['skor'] }}
-
                                     </td>
 
                                 </tr>
@@ -685,7 +696,8 @@
 
                                 <tr>
 
-                                    <td colspan="11" class="text-center py-5 text-muted">
+                                    <td colspan="{{ 4 + ($pakaiTingkat ? 1 : 0) + ($templateTipe === 'lomba' ? 5 : 1) }}"
+                                        class="text-center py-5 text-muted">
 
                                         Belum ada data.
 

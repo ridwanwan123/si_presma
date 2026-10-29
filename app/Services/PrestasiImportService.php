@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\ImportTerlaluBanyakBarisException;
+use App\Imports\PrestasiKriteriaImport;
 use App\Imports\PrestasiSiswaImport;
 use App\Models\PrestasiSiswa;
 use App\Models\RubrikPenilaian;
@@ -25,6 +26,28 @@ class PrestasiImportService
         'metode_pelaksanaan',
         'link_drive_bukti',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | REQUIRED FIELDS -- TEMPLATE B ("KRITERIA": GTK-Karya, Keagamaan-
+    | Hafalan, Lembaga). 'tingkat' SENGAJA TIDAK didaftarkan di sini --
+    | wajib/tidaknya tergantung $jenisRubrik (Hafalan tidak punya kolom
+    | ini sama sekali), jadi dicek terpisah di dalam validateFileKriteria().
+    |--------------------------------------------------------------------------
+    */
+    private const REQUIRED_FIELDS_KRITERIA = [
+        'bidang_prestasi',
+        'nama_kegiatan',
+        'kriteria_khusus',
+        'waktu_kegiatan',
+        'link_drive_bukti',
+    ];
+
+    // jenis_rubrik yang TIDAK punya dimensi tingkat sama sekali -- cuma
+    // Hafalan (Keagamaan) saat ini, tapi ditulis sebagai array (bukan
+    // perbandingan string langsung) supaya gampang nambah kalau nanti
+    // ada jenis lain yang serupa.
+    private const JENIS_RUBRIK_TANPA_TINGKAT = ['Hafalan'];
 
     private const BIDANG_MAPPING = [
         'akademik' => 'Akademik',
@@ -407,6 +430,242 @@ class PrestasiImportService
                 'metode_pelaksanaan' => $row['metode_pelaksanaan'],
                 'skor' => $row['skor'],
                 'rubrik_penilaian_id' => $row['rubrik_penilaian_id'],
+                'link_drive_bukti' => $row['link_drive_bukti'],
+                'keterangan' => $row['keterangan'] ?? null,
+                'periode' => $periode,
+            ];
+        }
+
+        $groupedErrors = collect($errors)
+            ->groupBy(fn ($item) => ($item['column'] ?? 'general') . '|' . $item['error'])
+            ->map(fn ($items) => [
+                'column' => $items->first()['column'] ?? null,
+                'message' => $items->first()['error'],
+                'rows' => $items->pluck('row')->toArray()
+            ])
+            ->values()
+            ->toArray();
+
+        return [
+            'result' => $result,
+            'errors' => $groupedErrors,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDASI FILE -- TEMPLATE B ("KRITERIA": GTK-Karya, Keagamaan-Hafalan,
+    | Lembaga). STRUKTUR MIRIP validateFile() di atas (baca file bertahap,
+    | muat rubrik sekali di awal, kumpulkan error per baris, kelompokkan
+    | error di akhir) -- tapi SENGAJA method terpisah, bukan digabung
+    | dengan percabangan jenis_rubrik di satu method, karena:
+    | 1. Kolom yang divalidasi beda total (tidak ada juara/kategori_kegiatan/
+    |    metode_pelaksanaan/kategori_penyelenggara di sini).
+    | 2. $bidangPrestasi & $jenisRubrik DITENTUKAN OLEH HALAMAN (dikunci
+    |    dari template yang di-download -- lihat PrestasiKriteriaTemplateExport),
+    |    BUKAN dibaca bebas dari isi Excel seperti Template A. Ini beda
+    |    filosofi yang disengaja: Template A membolehkan 1 file berisi
+    |    campuran Akademik+Non Akademik sekaligus, sedangkan Template B
+    |    tidak mungkin dicampur (kolomnya beda jumlah antar jenis_rubrik --
+    |    Hafalan bahkan tidak punya kolom tingkat sama sekali).
+    |--------------------------------------------------------------------------
+    */
+    public function validateFileKriteria(
+        $file,
+        string $bidangPrestasi,
+        string $jenisRubrik,
+        int $madrasahId,
+        string $submitter,
+        int $periode
+    ): array {
+        $pakaiTingkat = !in_array($jenisRubrik, self::JENIS_RUBRIK_TANPA_TINGKAT, true);
+
+        $errors = [];
+        $result = [];
+
+        $import = new PrestasiKriteriaImport(self::MAKS_BARIS_IMPORT);
+
+        try {
+            Excel::import($import, $file);
+        } catch (ImportTerlaluBanyakBarisException $e) {
+            return [
+                'result' => [],
+                'errors' => [
+                    [
+                        'column' => 'general',
+                        'message' => 'File melebihi batas maksimal ' . number_format($e->batasMaksimal, 0, ',', '.')
+                            . ' baris. Pembacaan file dihentikan begitu batas ini terlampaui. Silakan pecah file '
+                            . 'menjadi beberapa bagian.',
+                        'rows' => [],
+                    ],
+                ],
+            ];
+        }
+
+        $data = $import->rows;
+
+        // MUAT SEKALI DI SINI -- sama alasan seperti validateFile(): 1
+        // query total buat seluruh baris, bukan 1 query per baris.
+        $daftarRubrik = RubrikPenilaian::muatKriteriaUntukPencocokan($jenisRubrik, $periode);
+
+        // Dari PrestasiKriteriaImport::collection() -- SELALU 7 kolom
+        // (bidang_prestasi, nama_kegiatan, tingkat, kriteria_khusus,
+        // waktu_kegiatan, link_drive_bukti, keterangan), TERLEPAS dari
+        // jenis_rubrik. Untuk Hafalan, key 'tingkat' tetap ADA tapi
+        // nilainya selalu null (lihat catatan di PrestasiKriteriaImport) --
+        // makanya count() yang dicek tetap 7 untuk semua jenis, bukan 6/7
+        // tergantung $pakaiTingkat.
+        $jumlahKolomDiharapkan = 7;
+
+        foreach ($data as $index => $row) {
+
+            foreach ($row as $key => $value) {
+                if (is_string($value)) {
+                    $row[$key] = preg_replace('/\s+/', ' ', trim($value));
+                }
+            }
+
+            $semuaKosong = collect($row)->every(
+                fn ($value) => is_null($value) || trim((string) $value) === ''
+            );
+
+            if ($semuaKosong) {
+                continue;
+            }
+
+            if (count($row) != $jumlahKolomDiharapkan) {
+                $errors[] = [
+                    'row' => $index + 2,
+                    'error' => "Jumlah kolom harus {$jumlahKolomDiharapkan}"
+                ];
+                continue;
+            }
+
+            // Validasi wajib isi -- 'tingkat' ikut dicek DI SINI (bukan di
+            // REQUIRED_FIELDS_KRITERIA konstan) supaya cuma wajib untuk
+            // jenis_rubrik yang memang pakai dimensi tingkat.
+            $requiredFields = self::REQUIRED_FIELDS_KRITERIA;
+
+            if ($pakaiTingkat) {
+                $requiredFields[] = 'tingkat';
+            }
+
+            foreach ($requiredFields as $field) {
+
+                $value = $row[$field] ?? null;
+
+                if (is_null($value) || trim((string) $value) === '') {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => $field,
+                        'error' => 'Kolom wajib diisi'
+                    ];
+
+                    continue 2;
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Validasi Bidang Prestasi -- BEDA dari validateFile(): di sini
+            | HARUS SAMA PERSIS dengan $bidangPrestasi yang dikunci halaman
+            | (dari template yang di-download), bukan bebas ditentukan isi
+            | Excel. Mencegah user asal tempel baris dari template bidang
+            | lain ke file yang salah.
+            |--------------------------------------------------------------------------
+            */
+
+            $bidangDiisi = $this->normalizeKey($row['bidang_prestasi']);
+            $bidangDiharapkan = $this->normalizeKey($bidangPrestasi);
+
+            if ($bidangDiisi !== $bidangDiharapkan) {
+
+                $errors[] = [
+                    'row' => $index + 2,
+                    'column' => 'bidang_prestasi',
+                    'error' => "Kolom bidang_prestasi harus \"{$bidangPrestasi}\" sesuai template yang didownload. "
+                        . 'Jangan mencampur baris dari template bidang lain.'
+                ];
+
+                continue;
+            }
+
+            $row['bidang_prestasi'] = $bidangPrestasi;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Validasi Tingkat -- dilewati sama sekali untuk jenis_rubrik
+            | yang tidak pakai dimensi ini (Hafalan).
+            |--------------------------------------------------------------------------
+            */
+
+            if ($pakaiTingkat) {
+
+                $tingkatDiisi = $this->normalizeKey($row['tingkat']);
+
+                if (!isset(self::VALID_TINGKAT[$tingkatDiisi])) {
+
+                    $errors[] = [
+                        'row' => $index + 2,
+                        'column' => 'tingkat',
+                        'error' => 'Tingkat harus Kabupaten/Kota, Provinsi, Nasional atau Internasional'
+                    ];
+
+                    continue;
+                }
+
+                $row['tingkat'] = self::VALID_TINGKAT[$tingkatDiisi];
+            } else {
+                $row['tingkat'] = null;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pencocokan Rubrik -- kriteria_khusus dicocokkan EXACT STRING
+            | (bukan normalizeKey() dulu seperti kolom lain, karena
+            | normalizeKey() membuang spasi & tanda baca sama sekali --
+            | "Karya Tulis Ilmiah" vs "Karyatulisilmiah" akan salah bedakan
+            | dari kriteria lain yang kebetulan mirip setelah dinormalisasi.
+            | Ini konsisten dengan cara dropdown-nya dibuat di
+            | PrestasiKriteriaTemplateExport -- teks di Excel = teks
+            | database, apa adanya, tanpa transformasi.
+            |--------------------------------------------------------------------------
+            */
+
+            $rubrikCocok = RubrikPenilaian::cariKriteriaDariKoleksi(
+                $daftarRubrik,
+                $row['bidang_prestasi'],
+                $row['tingkat'],
+                $row['kriteria_khusus']
+            );
+
+            if (!$rubrikCocok) {
+
+                $pesanTidakCocok = $daftarRubrik->isEmpty()
+                    ? "Rubrik Penilaian untuk periode {$periode} belum tersedia. Hubungi Admin."
+                    : 'Kriteria ini tidak ditemukan di Rubrik Penilaian. Pastikan memilih PERSIS dari dropdown '
+                        . 'template (bukan mengetik manual atau copy-paste dari sumber lain).';
+
+                $errors[] = [
+                    'row' => $index + 2,
+                    'column' => 'kriteria_khusus',
+                    'error' => $pesanTidakCocok
+                ];
+
+                continue;
+            }
+
+            $result[] = [
+                'madrasah_id' => $madrasahId,
+                'bidang_prestasi' => $row['bidang_prestasi'],
+                'submitter' => $submitter,
+                'nama_kegiatan' => $row['nama_kegiatan'],
+                'tingkat' => $row['tingkat'],
+                'kriteria_khusus' => $row['kriteria_khusus'],
+                'waktu_kegiatan' => $row['waktu_kegiatan'],
+                'skor' => (float) $rubrikCocok->skor,
+                'rubrik_penilaian_id' => $rubrikCocok->id,
                 'link_drive_bukti' => $row['link_drive_bukti'],
                 'keterangan' => $row['keterangan'] ?? null,
                 'periode' => $periode,

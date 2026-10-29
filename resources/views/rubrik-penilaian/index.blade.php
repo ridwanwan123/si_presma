@@ -3,12 +3,12 @@
 @push('styles')
     <style>
         /* ===========================================================
-                                               RUBRIK PENILAIAN — DESIGN TOKENS
-                                               Dipakai token yang sama dengan assets/css/prestasi/index.css
-                                               (--presma-*) supaya konsisten satu sistem desain PRESMA.
-                                               Kalau nanti token ini sudah dipindah ke base.css secara
-                                               global, blok :root di bawah ini boleh dihapus.
-                                               =========================================================== */
+                                                   RUBRIK PENILAIAN — DESIGN TOKENS
+                                                   Dipakai token yang sama dengan assets/css/prestasi/index.css
+                                                   (--presma-*) supaya konsisten satu sistem desain PRESMA.
+                                                   Kalau nanti token ini sudah dipindah ke base.css secara
+                                                   global, blok :root di bawah ini boleh dihapus.
+                                                   =========================================================== */
         :root {
             --presma-primary: #0f8a43;
             --presma-primary-soft: #eaf6ef;
@@ -423,7 +423,7 @@
         }
 
         /* Panel khusus untuk grup kondisional (Lomba / Bebas) supaya jelas
-                                                       terpisah secara visual dari section Klasifikasi & Hasil */
+                                                           terpisah secara visual dari section Klasifikasi & Hasil */
         .form-panel {
             border: 1px solid var(--presma-border);
             background: #f8fafc;
@@ -809,15 +809,25 @@
                                             <thead>
                                                 <tr>
                                                     <th>Jenis</th>
+                                                    <th>Tingkat</th>
                                                     <th>Kriteria</th>
                                                     <th class="text-end">Skor</th>
                                                     <th class="text-center" style="width:90px">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                {{--
+                                                    KOLOM "Tingkat" WAJIB ADA DI SINI -- banyak kriteria_khusus
+                                                    yang teksnya PERSIS SAMA tapi beda tingkat & beda skor
+                                                    (mis. "Karya Tulis Ilmiah" muncul di Internasional/Nasional/
+                                                    Provinsi dengan skor 400/250/150). Tanpa kolom ini, baris-
+                                                    baris itu keliatan identik di tabel -- resiko Admin salah
+                                                    edit/hapus baris yang bukan dimaksud.
+                                                --}}
                                                 @foreach ($dataBidang['lainnya'] as $rubrik)
                                                     <tr>
                                                         <td>{{ $rubrik->jenis_rubrik }}</td>
+                                                        <td>{{ $rubrik->tingkat ?? '-' }}</td>
                                                         <td>
                                                             {{ $rubrik->kriteria_khusus ?? '-' }}
                                                             @if ($rubrik->nilai_min !== null)

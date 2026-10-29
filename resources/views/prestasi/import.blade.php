@@ -227,8 +227,8 @@
         }
 
         /* ===========================
-                                                                                       MODAL ERROR IMPORT (SweetAlert)
-                                                                                    =========================== */
+                                                                                           MODAL ERROR IMPORT (SweetAlert)
+                                                                                        =========================== */
 
         .import-error-summary {
             display: flex;
@@ -446,9 +446,15 @@
 
         {{-- TITLE --}}
         <div class="page-title">
-            <h2>Import Prestasi</h2>
+            <h2>
+                Import Prestasi — {{ $bidangLabel }}
+                <span class="badge {{ $templateTipe === 'lomba' ? 'bg-success' : 'bg-info text-dark' }} align-middle"
+                    style="font-size:.6em; vertical-align:middle;">
+                    {{ $templateTipe === 'lomba' ? 'Template Lomba' : 'Template Kriteria' }}
+                </span>
+            </h2>
             <p class="text-muted">
-                Upload file Excel untuk menambahkan banyak data prestasi sekaligus
+                Unggah file Excel untuk menambahkan data prestasi {{ $bidangLabel }} secara massal.
             </p>
         </div>
 
@@ -457,7 +463,7 @@
                 <div class="row text-center g-0 import-steps">
                     <div class="col step active">
                         <div class="step-number">1</div>
-                        <div class="step-title">Upload File</div>
+                        <div class="step-title">Unggah File</div>
                         <small>Pilih file Excel</small>
                     </div>
 
@@ -498,7 +504,9 @@
                         <i class="bi bi-table"></i>
                         <div>
                             <div class="label">Jumlah Kolom</div>
-                            <div class="value">Harus tepat 11 kolom</div>
+                            <div class="value">
+                                Harus tepat {{ $templateTipe === 'lomba' ? 11 : 7 }} kolom
+                            </div>
                         </div>
                     </div>
                     <div class="panduan-summary-item">
@@ -519,8 +527,8 @@
 
                 <div class="alert alert-success border-0 mb-3">
                     <i class="bi bi-lightbulb-fill me-1"></i>
-                    Selalu gunakan <strong>Template</strong> yang disediakan (jangan ubah nama atau urutan kolom); jika data
-                    melebihi <strong>7.000 baris</strong>, bagi menjadi beberapa file dan unggah satu per satu.
+                    Gunakan template yang telah disediakan tanpa mengubah nama atau urutan kolom. Data dengan jumlah
+                    lebih dari <strong>7.000 baris</strong> agar dibagi ke beberapa file dan diunggah secara terpisah.
                 </div>
 
                 {{-- DETAIL PER KOLOM (COLLAPSIBLE) --}}
@@ -535,121 +543,228 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">bidang_prestasi</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>Akademik</strong>, <strong>Non Akademik</strong>,
-                                        <strong>Keagamaan</strong>, <strong>GTK</strong>, atau <strong>Lembaga</strong>;
-                                        satu file boleh berisi campuran semua bidang.
-                                    </td>
-                                    <td class="panduan-contoh">Akademik</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">nama_kegiatan</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>nama kegiatan/lomba</strong> (maksimal <strong>255
-                                            karakter</strong>).
-                                    </td>
-                                    <td class="panduan-contoh">Olimpiade Sains Nasional</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">tingkat</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>Isi salah satu: <strong>Kabupaten/Kota</strong>, <strong>Provinsi</strong>,
-                                        <strong>Nasional</strong>, atau <strong>Internasional</strong>.
-                                    </td>
-                                    <td class="panduan-contoh">Nasional</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">kategori_kegiatan</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>Isi salah satu: <strong>Individu</strong> atau <strong>Beregu</strong>.</td>
-                                    <td class="panduan-contoh">Individu</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">juara</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>Juara 1 / Juara 2 / Juara 3</strong> atau <strong>Harapan 1 /
-                                            Harapan 2</strong>; angka
-                                        biasa maupun romawi (<strong>I/II/III</strong>) sama-sama diterima.
-                                    </td>
-                                    <td class="panduan-contoh">Juara 1 / Harapan 2</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">lembaga_penyelenggara</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>nama penyelenggara</strong> kegiatan (maksimal <strong>255
-                                            karakter</strong>).
-                                    </td>
-                                    <td class="panduan-contoh">Kemendikbudristek</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">kategori_penyelenggara</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>Pemerintah</strong> atau <strong>Non Pemerintah</strong> saja;
-                                        nilai lain akan ditolak.
-                                    </td>
-                                    <td class="panduan-contoh">Pemerintah</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">waktu_kegiatan</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>format Tanggal/date</strong> di Excel (bukan teks); tanggal tidak
-                                        valid akan menyebabkan baris ditolak.
-                                    </td>
-                                    <td class="panduan-contoh">15/03/2025 <br />(format tanggal Excel)</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">metode_pelaksanaan</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>Isi salah satu: <strong>Luring</strong> atau <strong>Daring</strong>.</td>
-                                    <td class="panduan-contoh">Luring</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">link_drive_bukti</div>
-                                        <span class="panduan-wajib wajib">Wajib</span>
-                                    </td>
-                                    <td>
-                                        Isi dengan <strong>link bukti kegiatan</strong> (Google Drive/penyimpanan lain)
-                                        maksimal <strong>255 karakter</strong>; <br /> pastikan akses link diatur ke
-                                        <strong>"Anyone with the link"</strong>.
+                                @if ($templateTipe === 'lomba')
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">bidang_prestasi</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>Akademik</strong>, <strong>Non Akademik</strong>,
+                                            <strong>Keagamaan</strong>, atau <strong>GTK</strong>;
+                                            satu file boleh berisi campuran bidang-bidang ini.
+                                        </td>
+                                        <td class="panduan-contoh">Akademik</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">nama_kegiatan</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>nama kegiatan/lomba</strong> (maksimal <strong>255
+                                                karakter</strong>).
+                                        </td>
+                                        <td class="panduan-contoh">Olimpiade Sains Nasional</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">tingkat</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>Isi salah satu: <strong>Kabupaten/Kota</strong>, <strong>Provinsi</strong>,
+                                            <strong>Nasional</strong>, atau <strong>Internasional</strong>.
+                                        </td>
+                                        <td class="panduan-contoh">Nasional</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">kategori_kegiatan</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>Isi salah satu: <strong>Individu</strong> atau <strong>Beregu</strong>.</td>
+                                        <td class="panduan-contoh">Individu</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">juara</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>Juara 1 / Juara 2 / Juara 3</strong> atau <strong>Harapan 1 /
+                                                Harapan 2</strong>; angka
+                                            biasa maupun romawi (<strong>I/II/III</strong>) sama-sama diterima.
+                                        </td>
+                                        <td class="panduan-contoh">Juara 1 / Harapan 2</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">lembaga_penyelenggara</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>nama penyelenggara</strong> kegiatan (maksimal <strong>255
+                                                karakter</strong>).
+                                        </td>
+                                        <td class="panduan-contoh">Kemendikbudristek</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">kategori_penyelenggara</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>Pemerintah</strong> atau <strong>Non Pemerintah</strong>
+                                            saja;
+                                            nilai lain akan ditolak.
+                                        </td>
+                                        <td class="panduan-contoh">Pemerintah</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">waktu_kegiatan</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>format Tanggal/date</strong> di Excel (bukan teks); tanggal
+                                            tidak
+                                            valid akan menyebabkan baris ditolak.
+                                        </td>
+                                        <td class="panduan-contoh">15/03/2025 <br />(format tanggal Excel)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">metode_pelaksanaan</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>Isi salah satu: <strong>Luring</strong> atau <strong>Daring</strong>.</td>
+                                        <td class="panduan-contoh">Luring</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">link_drive_bukti</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>link bukti kegiatan</strong> (Google Drive/penyimpanan lain)
+                                            maksimal <strong>255 karakter</strong>; <br /> pastikan akses link diatur ke
+                                            <strong>"Anyone with the link"</strong>.
 
-                                    </td>
-                                    <td class="panduan-contoh">https://drive.google.com/...</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="panduan-kolom-nama">keterangan</div>
-                                        <span class="panduan-wajib opsional">Opsional</span>
-                                    </td>
-                                    <td>Catatan tambahan, boleh dikosongkan.</td>
-                                    <td class="panduan-contoh">-</td>
-                                </tr>
+                                        </td>
+                                        <td class="panduan-contoh">https://drive.google.com/...</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">keterangan</div>
+                                            <span class="panduan-wajib opsional">Opsional</span>
+                                        </td>
+                                        <td>Catatan tambahan, boleh dikosongkan.</td>
+                                        <td class="panduan-contoh">-</td>
+                                    </tr>
+                                @else
+                                    {{--
+                                    TEMPLATE B ("KRITERIA") -- kolomnya JAUH lebih
+                                    sedikit dari Lomba, dan BIDANG PRESTASI TIDAK
+                                    BOLEH dicampur (beda dari Template A) karena
+                                    dropdown 'kriteria_khusus' di file yang
+                                    didownload sudah dikunci khusus {{ $bidangLabel }}.
+                                    Lihat PrestasiKriteriaTemplateExport &
+                                    PrestasiImportService::validateFileKriteria().
+                                --}}
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">bidang_prestasi</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Harus diisi persis <strong>{{ $bidangLabel }}</strong> di semua baris --
+                                            <strong>tidak boleh</strong> dicampur bidang lain, beda dari Template Lomba.
+                                        </td>
+                                        <td class="panduan-contoh">{{ $bidangLabel }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">nama_kegiatan</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>nama kegiatan/karya</strong> (maksimal <strong>255
+                                                karakter</strong>).
+                                        </td>
+                                        <td class="panduan-contoh">
+                                            @if ($jenisRubrik === 'Hafalan')
+                                                Wisuda Tahfidz 10 Juz
+                                            @else
+                                                Adiwiyata Tingkat Kota
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @if ($pakaiTingkat)
+                                        <tr>
+                                            <td>
+                                                <div class="panduan-kolom-nama">tingkat</div>
+                                                <span class="panduan-wajib wajib">Wajib</span>
+                                            </td>
+                                            <td>Isi salah satu: <strong>Kabupaten/Kota</strong>, <strong>Provinsi</strong>,
+                                                <strong>Nasional</strong>, atau <strong>Internasional</strong> --
+                                                <strong>pilih dari dropdown</strong> di file Excel-nya, jangan ketik manual.
+                                            </td>
+                                            <td class="panduan-contoh">Provinsi</td>
+                                        </tr>
+                                    @endif
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">kriteria_khusus</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            <strong>Pilih PERSIS dari dropdown</strong> di file Excel-nya -- jangan diketik
+                                            manual atau copy-paste dari sumber lain. Sistem mencocokkan skor berdasarkan
+                                            teks yang <strong>sama persis</strong> dengan Rubrik Penilaian.
+                                        </td>
+                                        <td class="panduan-contoh">
+                                            @if ($jenisRubrik === 'Hafalan')
+                                                10 Juz
+                                            @elseif ($jenisRubrik === 'Karya')
+                                                Karya Tulis Ilmiah
+                                            @else
+                                                Adiwiyata
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">waktu_kegiatan</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>format Tanggal/date</strong> di Excel (bukan teks); tanggal
+                                            tidak
+                                            valid akan menyebabkan baris ditolak.
+                                        </td>
+                                        <td class="panduan-contoh">15/03/2025 <br />(format tanggal Excel)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">link_drive_bukti</div>
+                                            <span class="panduan-wajib wajib">Wajib</span>
+                                        </td>
+                                        <td>
+                                            Isi dengan <strong>link bukti kegiatan</strong> (Google Drive/penyimpanan lain)
+                                            maksimal <strong>255 karakter</strong>; <br /> pastikan akses link diatur ke
+                                            <strong>"Anyone with the link"</strong>.
+                                        </td>
+                                        <td class="panduan-contoh">https://drive.google.com/...</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="panduan-kolom-nama">keterangan</div>
+                                            <span class="panduan-wajib opsional">Opsional</span>
+                                        </td>
+                                        <td>Catatan tambahan, boleh dikosongkan.</td>
+                                        <td class="panduan-contoh">-</td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -664,21 +779,27 @@
                     class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                     <div>
                         <h5 class="mb-1 fw-bold">
-                            Upload File Excel
+                            Unggah File Excel
                         </h5>
 
                         <small class="text-muted">
-                            Gunakan template resmi agar format sesuai sistem
+                            Gunakan template resmi agar format data sesuai dengan ketentuan sistem.
                         </small>
                     </div>
 
-                    <a href="{{ route('prestasi.template') }}"
+                    <a href="{{ route('prestasi.template', ['bidang_prestasi' => $bidangSlug, 'jenis_rubrik' => $jenisRubrik]) }}"
                         class="btn btn-success btn-sm d-inline-flex align-items-center justify-content-center btn-template">
-                        <span>Download Template</span>
+                        <span>Unduh Template {{ $bidangLabel }}</span>
                         <span class="mx-2 opacity-50">|</span>
                         <i class="bi bi-file-earmark-excel-fill"></i>
                     </a>
                 </div>
+
+                {{-- Hidden -- dikirim bareng file_import ke checking_import, supaya
+                     server tahu template mana yang harus dipakai untuk validasi
+                     (lihat PrestasiController::checking_import_prestasi()). --}}
+                <input type="hidden" id="bidang_prestasi_terpilih" value="{{ $bidangSlug }}">
+                <input type="hidden" id="jenis_rubrik_terpilih" value="{{ $jenisRubrik }}">
 
                 <div class="row g-4 align-items-stretch">
                     {{-- LEFT --}}
@@ -689,8 +810,15 @@
                             <div class="col-12">
                                 <div class="alert alert-success border-0 mb-0">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Bidang Prestasi dibaca otomatis dari setiap baris Excel, sehingga satu file dapat berisi
-                                    campuran Akademik, Non Akademik, Keagamaan, GTK, dan Lembaga.
+                                    @if ($templateTipe === 'lomba')
+                                        Bidang prestasi dibaca secara otomatis dari setiap baris Excel, sehingga satu
+                                        file dapat berisi kombinasi bidang Akademik, Non Akademik, Keagamaan, dan GTK
+                                        (kompetisi).
+                                    @else
+                                        File ini khusus untuk bidang <strong>{{ $bidangLabel }}</strong>. Seluruh baris
+                                        pada file harus berada dalam bidang yang sama dan tidak boleh dicampur dengan
+                                        bidang lain.
+                                    @endif
                                 </div>
                             </div>
 
@@ -726,7 +854,7 @@
                     {{-- RIGHT --}}
                     <div class="col-md-6">
                         <label class="form-label">
-                            Upload File Excel Prestasi
+                            Unggah File Excel Prestasi
                             <span class="text-danger">*</span>
                         </label>
                         <div class="file-input-field">
@@ -738,11 +866,11 @@
                                 </div>
 
                                 <h5 class="fw-bold text-success">
-                                    Upload Template Prestasi
+                                    Unggah Template Prestasi
                                 </h5>
 
                                 <p class="text-muted mb-2">
-                                    Drag & Drop atau klik untuk memilih file
+                                    Seret file ke area ini atau klik untuk memilih file.
                                 </p>
 
                                 <small class="text-muted">
@@ -785,7 +913,7 @@
                 Memproses Data
             </h5>
             <div class="text-muted small">
-                Mohon tunggu,<br /> Sistem sedang melakukan validasi file Excel.
+                Mohon tunggu, sistem sedang melakukan validasi file Excel.
             </div>
         </div>
     </div>
@@ -827,8 +955,8 @@
                 if (!fileInput) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Data Required',
-                        text: 'Silakan pilih file terlebih dahulu',
+                        title: 'Berkas Belum Dipilih',
+                        text: 'Pilih file Excel yang akan diunggah terlebih dahulu.',
                         confirmButtonText: 'OK',
                         confirmButtonColor: '#198754'
                     });
@@ -836,6 +964,8 @@
                 }
 
                 formData.append('file_import', fileInput);
+                formData.append('bidang_prestasi', $('#bidang_prestasi_terpilih').val());
+                formData.append('jenis_rubrik', $('#jenis_rubrik_terpilih').val());
 
                 $('#loading').show();
 
@@ -895,6 +1025,10 @@
                                 skor: {
                                     label: 'Skor',
                                     icon: 'bi-123'
+                                },
+                                kriteria_khusus: {
+                                    label: 'Kriteria',
+                                    icon: 'bi-list-check'
                                 },
                                 link_drive_bukti: {
                                     label: 'Link Drive Bukti',
@@ -958,7 +1092,7 @@
                                                     Ditemukan ${response.errors.length} jenis masalah pada ${semuaBarisBermasalah.size} baris
                                                 </div>
                                                 <div class="import-error-summary-sub">
-                                                    Silakan perbaiki data berikut di file Excel, lalu upload ulang.
+                                                    Perbaiki data berikut pada file Excel, kemudian unggah kembali.
                                                 </div>
                                             </div>
                                         </div>
@@ -978,7 +1112,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
-                                text: 'Data valid, menyiapkan preview...',
+                                text: 'Data valid. Sedang menyiapkan preview data.',
                                 showConfirmButton: false,
                                 timer: 1200,
                                 timerProgressBar: true,
@@ -1008,15 +1142,15 @@
                             if (data.row) {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Error',
-                                    text: `Error on row ${data.row}: ${data.error}`,
+                                    title: 'Terjadi Kesalahan',
+                                    text: `Kesalahan pada baris ${data.row}: ${data.error}`,
                                     confirmButtonText: 'OK',
                                     confirmButtonColor: '#198754'
                                 });
                             } else {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Error',
+                                    title: 'Terjadi Kesalahan',
                                     text: data.error,
                                     confirmButtonText: 'OK',
                                     confirmButtonColor: '#198754'
@@ -1025,7 +1159,7 @@
                         }).catch(error => {
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Error',
+                                title: 'Terjadi Kesalahan',
                                 text: 'Terjadi kesalahan saat memproses data.',
                                 confirmButtonText: 'OK',
                                 confirmButtonColor: '#198754'
@@ -1034,7 +1168,7 @@
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
+                            title: 'Terjadi Kesalahan',
                             text: 'Terjadi kesalahan saat memproses data.',
                             confirmButtonText: 'OK',
                             confirmButtonColor: '#198754'

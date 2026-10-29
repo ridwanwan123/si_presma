@@ -12,7 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PrestasiSiswaImport;
+use App\Imports\PrestasiKriteriaImport;
 use App\Exports\PrestasiTemplateExport;
+use App\Exports\PrestasiKriteriaTemplateExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\ActivityLogger;
@@ -28,6 +30,121 @@ class PrestasiController extends Controller
     public function __construct(
         private PrestasiImportService $importService
     ) {
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PEMETAAN BIDANG & JENIS RUBRIK -- SUMBER KEBENARAN TUNGGAL
+    |--------------------------------------------------------------------------
+    | Dipakai bareng oleh import(), template(), upload(), dan
+    | checking_import_prestasi() -- SENGAJA disatukan di sini (bukan
+    | didefinisikan ulang di tiap method) supaya kombinasi bidang+jenis
+    | yang dianggap valid selalu konsisten di 4 tempat itu. Kalau nanti
+    | ada bidang/jenis baru, cukup ubah DI SINI SAJA.
+    |
+    | GTK & Keagamaan SENGAJA bisa dipakai untuk Template A (Lomba) MAUPUN
+    | Template B (Kriteria, lihat BIDANG_JENIS_KRITERIA) -- itu bukan
+    | kesalahan, keduanya memang punya 2 sub-jenis rubrik yang berbeda
+    | (lihat RubrikPenilaianSeeder). Untuk Template A, GTK/Keagamaan tidak
+    | perlu perlakuan khusus di sini -- Template A memang bidang-agnostic,
+    | siapa saja boleh masuk asal isi Excel-nya valid (lihat penjelasan
+    | resolveTemplateImport() di bawah).
+    |--------------------------------------------------------------------------
+    */
+    private const BIDANG_LABEL = [
+        'akademik' => 'Akademik',
+        'non-akademik' => 'Non Akademik',
+        'keagamaan' => 'Keagamaan',
+        'gtk' => 'GTK',
+        'lembaga' => 'Lembaga',
+    ];
+
+    // Bidang yang sah pakai Template B, dan jenis_rubrik SPESIFIK yang
+    // wajib menyertainya (bukan cuma "yang penting bukan Lomba") --
+    // mencegah misalnya GTK dikirim dengan jenis_rubrik 'Hafalan' yang
+    // sebetulnya cuma valid untuk Keagamaan.
+    private const BIDANG_JENIS_KRITERIA = [
+        'gtk' => 'Karya',
+        'keagamaan' => 'Hafalan',
+        'lembaga' => 'Kelembagaan',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESOLVE KOMBINASI BIDANG+JENIS DARI QUERY STRING / INPUT REQUEST
+    |--------------------------------------------------------------------------
+    | Balikan null berarti kombinasinya TIDAK SAH -- baik karena bidang
+    | tidak dikenal, jenis_rubrik tidak dikenal, ATAU kombinasi keduanya
+    | tidak match (mis. bidang=lembaga tapi jenis_rubrik=Lomba). Pemanggil
+    | WAJIB menangani null sebagai penolakan, bukan diteruskan mentah --
+    | ini satu-satunya gerbang validasi, jangan percaya input mentah dari
+    | query string di method manapun.
+    |--------------------------------------------------------------------------
+    */
+    private function resolveTemplateImport(?string $bidangSlug, ?string $jenisRubrik): ?array
+    {
+        if (!$jenisRubrik) {
+            return null;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | TEMPLATE A ("LOMBA") -- SENGAJA TIDAK BUTUH $bidangSlug SAMA
+        | SEKALI. Beda dari Template B, di sini bidang_prestasi dibaca
+        | BEBAS dari isi tiap baris Excel oleh PrestasiImportService::
+        | validateFile() (lihat BIDANG_MAPPING di sana) -- satu file boleh
+        | berisi campuran Akademik + Non Akademik + GTK + Keagamaan
+        | sekaligus. Makanya user TIDAK PERLU milih bidang spesifik di UI
+        | untuk jalur ini -- $bidangSlug yang mungkin ikut terkirim
+        | (misalnya sisa dari flow lama) diabaikan begitu saja, bukan
+        | divalidasi.
+        |--------------------------------------------------------------------------
+        */
+        if ($jenisRubrik === 'Lomba') {
+
+            return [
+                'bidangSlug' => null,
+                'bidangLabel' => 'Prestasi Siswa (Akademik, Non Akademik, GTK, Keagamaan)',
+                'jenisRubrik' => 'Lomba',
+                'templateTipe' => 'lomba',
+                'pakaiTingkat' => true,
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | TEMPLATE B ("KRITERIA") -- BUTUH $bidangSlug spesifik, karena
+        | dropdown kriteria_khusus di file yang di-generate memang dikunci
+        | per bidang (lihat PrestasiKriteriaTemplateExport) -- tidak bisa
+        | 1 file dipakai campur beberapa bidang seperti Template A.
+        |--------------------------------------------------------------------------
+        */
+        if (!$bidangSlug) {
+            return null;
+        }
+
+        $label = self::BIDANG_LABEL[$bidangSlug] ?? null;
+
+        if (!$label) {
+            return null;
+        }
+
+        $jenisDiharapkan = self::BIDANG_JENIS_KRITERIA[$bidangSlug] ?? null;
+
+        if ($jenisDiharapkan === null || $jenisDiharapkan !== $jenisRubrik) {
+            return null;
+        }
+
+        return [
+            'bidangSlug' => $bidangSlug,
+            'bidangLabel' => $label,
+            'jenisRubrik' => $jenisRubrik,
+            'templateTipe' => 'kriteria',
+            // Cuma Hafalan (Keagamaan) yang tidak punya dimensi tingkat --
+            // lihat catatan yang sama di PrestasiKriteriaTemplateExport &
+            // PrestasiImportService::JENIS_RUBRIK_TANPA_TINGKAT.
+            'pakaiTingkat' => $jenisRubrik !== 'Hafalan',
+        ];
     }
 
     /*
@@ -236,11 +353,41 @@ class PrestasiController extends Controller
     | FITUR IMPORT
     |--------------------------------------------------------------------------
     */
-    public function template()
+    public function template(Request $request)
     {
+        $template = $this->resolveTemplateImport(
+            $request->query('bidang_prestasi'),
+            $request->query('jenis_rubrik')
+        );
+
+        if (!$template) {
+            abort(404, 'Kombinasi bidang/jenis template tidak dikenali.');
+        }
+
+        // bidangSlug bisa null khusus jalur Lomba (lihat resolveTemplateImport)
+        // -- fallback 'siswa' supaya nama file tetap rapi, bukan
+        // 'template-prestasi--lomba.xlsx' dengan celah kosong.
+        $namaFile = 'template-prestasi-' . ($template['bidangSlug'] ?? 'siswa') . '-' . strtolower($template['jenisRubrik']) . '.xlsx';
+
+        if ($template['templateTipe'] === 'lomba') {
+            // Template A -- SATU file yang sama dipakai untuk Akademik, Non
+            // Akademik, GTK-Lomba, maupun Keagamaan-Lomba (kolomnya identik,
+            // bidang_prestasi diisi bebas oleh Madrasah di dalam Excel-nya).
+            // Lihat catatan di validateFile() soal filosofi ini.
+            return Excel::download(new PrestasiTemplateExport, $namaFile);
+        }
+
+        // Template B -- dropdown tingkat & kriteria_khusus di dalam file
+        // ini di-generate KHUSUS untuk kombinasi bidang+jenis+periode ini,
+        // jadi TIDAK bisa dipakai 1 file untuk semua bidang seperti
+        // Template A (lihat PrestasiKriteriaTemplateExport).
         return Excel::download(
-            new PrestasiTemplateExport,
-            'template-prestasi.xlsx'
+            new PrestasiKriteriaTemplateExport(
+                $template['bidangLabel'],
+                $template['jenisRubrik'],
+                PeriodeAktif::aktif()
+            ),
+            $namaFile
         );
     }
 
@@ -310,18 +457,36 @@ class PrestasiController extends Controller
         );
     }
 
-    public function import()
+    public function import(Request $request)
     {
         if ($response = $this->cekAksesSiklus()) {
             return $response;
         }
 
+        $bidangSlug = $request->query('bidang_prestasi');
+        $jenisRubrik = $request->query('jenis_rubrik');
+
+        $template = $this->resolveTemplateImport($bidangSlug, $jenisRubrik);
+
+        if (!$template) {
+            // Kombinasi tidak sah -- kemungkinan query string diketik/
+            // diubah manual di address bar, atau link lama sebelum bidang
+            // Lomba/Kriteria dipisah. Balik ke halaman pilih bidang,
+            // JANGAN ditebak/dipaksakan ke salah satu default.
+            return redirect()
+                ->route('prestasi.tambah')
+                ->with('error', 'Bidang & jenis import belum dipilih atau tidak valid. Silakan pilih ulang.');
+        }
+
         $breadcrumb = breadcrumb([
             'Tambah Prestasi' => route('prestasi.tambah'),
-            'Import Excel'
+            'Import Excel — ' . $template['bidangLabel'],
         ]);
 
-        return view('prestasi.import', compact('breadcrumb'));
+        return view('prestasi.import', array_merge(
+            compact('breadcrumb'),
+            $template
+        ));
     }
 
     public function upload(Request $request)
@@ -329,10 +494,33 @@ class PrestasiController extends Controller
         try {
 
             $request->validate([
-                'file' => 'required|mimes:xlsx,xls'
+                'file' => 'required|mimes:xlsx,xls',
+                // nullable -- Template A (Lomba) tidak lagi mengirim bidang
+                // spesifik, lihat catatan di resolveTemplateImport().
+                'bidang_prestasi' => 'nullable|string',
+                'jenis_rubrik' => 'required|string',
             ]);
 
-            $import = new PrestasiSiswaImport();
+            $template = $this->resolveTemplateImport(
+                $request->input('bidang_prestasi'),
+                $request->input('jenis_rubrik')
+            );
+
+            if (!$template) {
+                return response()->json([
+                    'message' => 'Kombinasi bidang/jenis tidak valid.',
+                ], 422);
+            }
+
+            // Parser HARUS mengikuti templateTipe -- PrestasiSiswaImport
+            // (Template A) membaca kolom juara/kategori_kegiatan/dst yang
+            // TIDAK ADA di file Template B, begitu juga sebaliknya
+            // PrestasiKriteriaImport tidak akan menemukan kolom-kolom
+            // Lomba. Salah pasang = seluruh baris kebaca null/kosong
+            // tanpa error yang jelas.
+            $import = $template['templateTipe'] === 'lomba'
+                ? new PrestasiSiswaImport()
+                : new PrestasiKriteriaImport();
 
             Excel::import($import, $request->file('file'));
 
@@ -362,7 +550,23 @@ class PrestasiController extends Controller
         // 5.000-20.000 baris tidak langsung ditolak sebelum sempat diproses.
         $request->validate([
             'file_import' => 'required|mimes:xlsx,xls,csv|max:20480',
+            // nullable -- Template A (Lomba) tidak lagi mengirim bidang
+            // spesifik, lihat catatan di resolveTemplateImport().
+            'bidang_prestasi' => 'nullable|string',
+            'jenis_rubrik' => 'required|string',
         ]);
+
+        $template = $this->resolveTemplateImport(
+            $request->input('bidang_prestasi'),
+            $request->input('jenis_rubrik')
+        );
+
+        if (!$template) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kombinasi bidang/jenis tidak valid. Silakan buka ulang halaman Import dari menu Tambah Prestasi.',
+            ], 422);
+        }
 
         // Jaring pengaman di level kode untuk import besar. Idealnya
         // memory_limit, max_execution_time, upload_max_filesize, dan
@@ -378,12 +582,32 @@ class PrestasiController extends Controller
 
         try {
 
-            $validated = $this->importService->validateFile(
-                $request->file('file_import'),
-                $madrasahId,
-                $submitter,
-                $periode
-            );
+            /*
+            |--------------------------------------------------------------------------
+            | PILIH VALIDATOR SESUAI TEMPLATE -- Template A (Lomba) dan
+            | Template B (Kriteria) punya kolom & aturan validasi yang
+            | beda total (lihat PrestasiImportService), jadi method
+            | service-nya juga beda. $template['bidangLabel'] &
+            | $template['jenisRubrik'] dikunci dari resolveTemplateImport()
+            | (bukan dari isi Excel), konsisten dengan filosofi Template B
+            | yang sudah dijelaskan di validateFileKriteria().
+            |--------------------------------------------------------------------------
+            */
+            $validated = $template['templateTipe'] === 'lomba'
+                ? $this->importService->validateFile(
+                    $request->file('file_import'),
+                    $madrasahId,
+                    $submitter,
+                    $periode
+                )
+                : $this->importService->validateFileKriteria(
+                    $request->file('file_import'),
+                    $template['bidangLabel'],
+                    $template['jenisRubrik'],
+                    $madrasahId,
+                    $submitter,
+                    $periode
+                );
 
             $response = [
                 'success' => true,
@@ -494,9 +718,30 @@ class PrestasiController extends Controller
         $bidangList = collect($data)->pluck('bidang_prestasi')->filter()->unique()->values();
         $submitter = $data[0]['submitter'] ?? '-';
 
+        /*
+        |--------------------------------------------------------------------------
+        | DETEKSI TEMPLATE DARI SHAPE DATA -- token session ini SELALU berisi
+        | hasil SATU KALI upload (satu panggilan checking_import_prestasi()),
+        | jadi $data PASTI homogen: seluruhnya baris Template A ATAU
+        | seluruhnya Template B, tidak akan tercampur. Key 'kriteria_khusus'
+        | HANYA ada di hasil validateFileKriteria() (Template B) -- lihat
+        | PrestasiImportService -- jadi cukup dicek dari baris pertama.
+        |--------------------------------------------------------------------------
+        */
+        $templateTipe = (isset($data[0]) && array_key_exists('kriteria_khusus', $data[0]))
+            ? 'kriteria'
+            : 'lomba';
+
+        // Untuk Template B: Hafalan (Keagamaan) TIDAK punya kolom tingkat
+        // (selalu null), sedangkan Karya (GTK) & Kelembagaan (Lembaga)
+        // punya. Dicek dari baris pertama, sama alasannya seperti di atas.
+        $pakaiTingkat = $templateTipe === 'lomba'
+            ? true
+            : !empty($data[0]['tingkat'] ?? null);
+
         return view(
             'prestasi.preview',
-            compact('paginatedData', 'totalData', 'bidangList', 'submitter')
+            compact('paginatedData', 'totalData', 'bidangList', 'submitter', 'templateTipe', 'pakaiTingkat')
         );
     }
 

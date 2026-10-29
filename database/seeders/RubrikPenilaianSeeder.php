@@ -12,10 +12,16 @@ class RubrikPenilaianSeeder extends Seeder
     /*
     |--------------------------------------------------------------------------
     | SEMUA 5 BIDANG SEKARANG TERISI:
-    | - Akademik & Non Akademik  -> jenis_rubrik 'Lomba' (Tingkat x Juara)
+    | - Akademik, Non Akademik, & Keagamaan (sub-Lomba)
+    |                             -> jenis_rubrik 'Lomba' (Tingkat x Juara),
+    |                                SEMUANYA pakai tabel skor yang SAMA
+    |                                (Keagamaan-Lomba duplikasi dari
+    |                                Akademik, lihat catatan di
+    |                                seedPrestasiSiswa() -- ini asumsi,
+    |                                belum dari Juknis eksplisit)
     | - GTK                      -> jenis_rubrik 'Lomba' (kompetisi) DAN
     |                                'Karya' (karya tulis/publikasi)
-    | - Keagamaan                -> jenis_rubrik 'Hafalan' (linear per Juz)
+    | - Keagamaan (sub-Hafalan)  -> jenis_rubrik 'Hafalan' (linear per Juz)
     | - Lembaga                  -> jenis_rubrik 'Kelembagaan' (paling
     |                                heterogen, lihat catatan di
     |                                seedLembaga() soal beberapa item yang
@@ -34,8 +40,8 @@ class RubrikPenilaianSeeder extends Seeder
 
     /*
     |--------------------------------------------------------------------------
-    | PRESTASI SISWA (Akademik / Non Akademik) -- Tingkat x Juara x
-    | Individu/Beregu x Luring/Daring x Pemerintah/Non-Pemerintah
+    | PRESTASI SISWA (Akademik / Non Akademik / Keagamaan-Lomba) -- Tingkat x
+    | Juara x Individu/Beregu x Luring/Daring x Pemerintah/Non-Pemerintah
     |--------------------------------------------------------------------------
     */
     private function seedPrestasiSiswa(): void
@@ -92,10 +98,23 @@ class RubrikPenilaianSeeder extends Seeder
                     ];
 
                     foreach ($baris as [$kategoriKegiatan, $metode, $nilaiSkor]) {
-                        // Berlaku untuk Akademik & Non Akademik -- Juknis tidak
-                        // membedakan skornya per bidang, tabelnya sama untuk
-                        // keduanya (cuma beda label bidang di prestasi_siswas).
-                        foreach (['Akademik', 'Non Akademik'] as $bidang) {
+                        // Berlaku untuk Akademik, Non Akademik, DAN Keagamaan
+                        // -- Juknis tidak punya tabel skor Lomba terpisah
+                        // untuk Keagamaan (yang ada cuma tabel Hafalan
+                        // Qur'an, lihat seedHafalanQuran()). Atas arahan
+                        // Ridwan, prestasi Keagamaan yang berbentuk LOMBA
+                        // (MTQ, Cerdas Cermat Agama, Kaligrafi, dst -- bukan
+                        // hafalan) dianggap 1 kategori sama seperti
+                        // Akademik, jadi skornya di-duplikasi dari tabel
+                        // yang sama. INI ASUMSI SEMENTARA, bukan dari
+                        // Juknis eksplisit -- kalau nanti ternyata ada
+                        // tabel skor Keagamaan-Lomba yang beda, tinggal
+                        // update baris Keagamaan lewat halaman Kelola
+                        // Rubrik (nggak akan ikut kebawa berubah kalau
+                        // Akademik/Non Akademik direvisi belakangan, karena
+                        // ini SUDAH jadi baris DB independen begitu di-seed,
+                        // bukan referensi hidup ke tabel Akademik).
+                        foreach (['Akademik', 'Non Akademik', 'Keagamaan'] as $bidang) {
                             RubrikPenilaian::create([
                                 'bidang_prestasi' => $bidang,
                                 'jenis_rubrik' => 'Lomba',
@@ -239,7 +258,11 @@ class RubrikPenilaianSeeder extends Seeder
     | berbasis RENTANG ANGKA (nilai_min/nilai_max) -- persentase serapan,
     | jumlah siswa PASKIBRAKA, dst.
     |
-    | !! PENTING -- MOHON DICEK ULANG !!
+    | !! PENTING -- MASIH ADA YANG PERLU DICEK ULANG !!
+    | (Catatan "IKPA Provinsi (KPPN)" yang sebelumnya di sini SUDAH
+    | dikonfirmasi & diperbaiki -- lihat seedLembaga() bagian tingkat
+    | Provinsi. Sisanya di bawah ini MASIH asumsi, belum final.)
+    |
     | Beberapa rentang di bawah ini saya isi berdasarkan pembacaan dokumen
     | yang menurut saya BATASNYA SEDIKIT AMBIGU (kemungkinan ada bagian
     | yang kepotong/kurang jelas pas dokumennya di-scan):
@@ -272,6 +295,12 @@ class RubrikPenilaianSeeder extends Seeder
                 'Adiwiyata' => 400,
                 'Sekolah Sehat' => 350,
                 'Ramah Anak' => 300,
+                // DIPINDAH dari grup 'Kabupaten/Kota' -- nama item ini
+                // "IKPA PROVINSI", jadi tingkat-nya disesuaikan ke Provinsi
+                // (kemungkinan sebelumnya human error, dokumen aslinya
+                // menomori item ini lanjut dari daftar Kota tanpa heading
+                // baru yang eksplisit). Dikonfirmasi ke Ridwan 2026-09.
+                'IKPA Provinsi (KPPN)' => 150,
             ],
             'Kabupaten/Kota' => [
                 'Adiwiyata' => 150,
@@ -280,7 +309,6 @@ class RubrikPenilaianSeeder extends Seeder
                 'Madrasah Digital - Pelayanan' => 50,
                 'Madrasah Digital - Pembelajaran' => 50,
                 'Madrasah Digital - Asesmen' => 50,
-                'IKPA Provinsi (KPPN)' => 150,
                 'Donasi Tertinggi PMI/ZIS - Terbaik 1' => 100,
                 'Donasi Tertinggi PMI/ZIS - Terbaik 2' => 75,
                 'Donasi Tertinggi PMI/ZIS - Terbaik 3' => 50,
